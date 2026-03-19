@@ -1,4 +1,221 @@
-<section id="investimento" class="py-24 bg-brandDarker border-t border-white/5">
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zurche - Gerador de Horário Escolar Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brandDark: '#000000', 
+                        brandDarker: '#111111',
+                        brandOrange: '#f97316', 
+                        brandOrangeHover: '#ea580c',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+        * { transition: all 0.2s ease; }
+        .progress-bar-fill { transition: width 0.4s ease-in-out; }
+        
+        /* Estilo para a animação de troca dos blocos */
+        #animated-grid div {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-icon-bg {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 5rem;
+            height: 5rem;
+            opacity: 0.05;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .group:hover .step-icon-bg {
+            opacity: 0.12;
+            color: #ea580c;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-brandDark text-gray-100">
+
+    <div id="mobile-warning" class="hidden bg-orange-600 text-white px-4 py-3 relative z-[100] text-center text-sm font-medium">
+        <div class="flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>Atenção: A visualização de tabelas e grades de horário é otimizada para computadores, o uso em telas pequenas torna a navegação um pouco mais difícil.</span>
+        </div>
+        <button onclick="document.getElementById('mobile-warning').remove()" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 opacity-70 hover:opacity-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <nav class="bg-brandDarker/80 backdrop-blur-md shadow-md fixed w-full z-30 top-0 border-b border-white/10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="text-2xl font-bold text-brandOrange tracking-tighter">.Zurche.</span>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-medium">
+                    <a href="#como-funciona" class="text-gray-300 hover:text-brandOrange">Como Funciona</a>
+                    <a href="#investimento" class="text-gray-300 hover:text-brandOrange">Investimento</a>
+                </div>
+                <div>
+                    <a href="https://script.google.com/macros/s/AKfycbwuechdPh6ppvy18n0EGmtKT7kgoUuewY4p_zBRJ8CdU2mGLgRKebbN7Av429ZHKvz3/exec?p=login" class="bg-brandOrange text-white px-4 py-2 rounded-full font-bold hover:bg-brandOrangeHover shadow-lg shadow-orange-900/50 flex items-center gap-2 text-sm whitespace-nowrap">
+                        <span>Entrar</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="mt-16 overflow-hidden relative min-h-[80vh] flex items-center">
+        <div class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center py-20 relative z-10 text-center md:text-left">
+                <div>
+                    <div class="inline-flex items-center py-2 px-4 rounded-full bg-orange-900/30 border border-orange-700/30 mb-6 text-brandOrange text-xs font-bold uppercase tracking-widest">
+                        Solução Profissional para Escolas
+                    </div>
+                    <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
+                        Cansado de montar o <span class="text-brandOrange">horário escolar</span> na mão?
+                    </h1>
+                    <p class="text-lg text-zinc-400 mb-8 leading-relaxed">
+                        O Zurche utiliza inteligência algorítmica para resolver conflitos de grade em segundos, eliminando janelas e erros manuais.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <a href="https://script.google.com/macros/s/AKfycbwuechdPh6ppvy18n0EGmtKT7kgoUuewY4p_zBRJ8CdU2mGLgRKebbN7Av429ZHKvz3/exec?p=cadastro" class="bg-brandOrange text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-brandOrangeHover shadow-xl shadow-orange-900/40 transition transform hover:-translate-y-1">
+                            Cadastre sua escola
+                        </a>
+                        <a href="#como-funciona" class="border border-zinc-700 text-zinc-300 px-8 py-4 rounded-xl font-bold text-lg hover:bg-zinc-800 transition text-center">
+                            Como Funciona?
+                        </a>
+                    </div>
+                </div>
+
+                <div class="relative hidden md:block">
+                    <div class="absolute inset-0 bg-brandOrange/10 rounded-3xl blur-3xl"></div>
+                    <div class="relative bg-brandDarker p-6 rounded-3xl border border-white/5 shadow-2xl">
+                        <div class="space-y-6">
+                            <div class="h-8 bg-white/5 rounded w-1/3"></div>
+                            <div class="grid grid-cols-5 gap-2" id="animated-grid">
+                                <div class="h-16 bg-orange-900/30 rounded border border-orange-500/30 flex items-center justify-center text-xs text-orange-300 font-bold">MAT</div>
+                                <div class="h-16 bg-zinc-800 rounded border border-zinc-700 flex items-center justify-center text-xs text-zinc-400 font-bold">PORT</div>
+                                <div class="h-16 bg-orange-900/20 rounded border border-orange-500/20 flex items-center justify-center text-xs text-orange-200 font-bold">HIST</div>
+                                <div class="h-16 bg-zinc-800 rounded border border-zinc-700 flex items-center justify-center text-xs text-zinc-400 font-bold">GEO</div>
+                                <div class="h-16 bg-orange-900/40 rounded border border-orange-500/40 flex items-center justify-center text-xs text-orange-400 font-bold">CIE</div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between mb-2 text-xs font-bold text-brandOrange uppercase">
+                                    <span class="animate-pulse">Otimizando grade...</span>
+                                    <span id="percent-text">0%</span>
+                                </div>
+                                <div class="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                                    <div id="progress-fill" class="bg-brandOrange h-1.5 w-0 progress-bar-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="como-funciona" class="py-24 bg-brandDark border-t border-white/5">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">6 Passos para seu Horário Pronto</h2>
+                <p class="text-zinc-400 text-lg">Realize seu cadastro e siga nosso fluxo inteligente e intuitivo.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="p-8 rounded-3xl bg-brandDarker border border-white/5 relative group hover:border-brandOrange/50 transition overflow-hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="step-icon-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">1</div>
+                    <h3 class="text-xl font-bold text-white mb-3 relative z-10">Configurações</h3>
+                    <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Defina intervalos (recreio), horários de início, término e a duração de cada aula. <span class="text-brandOrange font-medium ml-1">⏱ 1 min</span></p>
+                </div>
+
+                <div class="p-8 rounded-3xl bg-brandDarker border border-white/5 relative group hover:border-brandOrange/50 transition overflow-hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="step-icon-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">2</div>
+                    <h3 class="text-xl font-bold text-white mb-3 relative z-10">Componentes Curriculares</h3>
+                    <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Cadastre todas as disciplinas e matérias que compõem a grade da sua instituição. <span class="text-brandOrange font-medium ml-1">⏱ 1 min</span></p>
+                </div>
+
+                <div class="p-8 rounded-3xl bg-brandDarker border border-white/5 relative group hover:border-brandOrange/50 transition overflow-hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="step-icon-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 20h5v-2a3 3 0 00-5.356-1.857C17.116 17.158 17 17.561 17 18v2zM9 20H4v-2a3 3 0 015.356-1.857C8.884 17.158 8 17.561 8 18v2zM15 8a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">3</div>
+                    <h3 class="text-xl font-bold text-white mb-3 relative z-10">Turmas</h3>
+                    <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Defina as turmas do turno e vincule quais componentes pertencem a cada uma delas. <span class="text-brandOrange font-medium ml-1">⏱ 1 min</span></p>
+                </div>
+
+                <div class="p-8 rounded-3xl bg-brandDarker border border-white/5 relative group hover:border-brandOrange/50 transition overflow-hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="step-icon-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">4</div>
+                    <h3 class="text-xl font-bold text-white mb-3 relative z-10">Professores</h3>
+                    <h4 class="text-brandOrange text-[10px] uppercase tracking-widest font-bold mb-2 relative z-10">Foco Total Aqui</h4>
+                    <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Cadastre os docentes vinculando suas respectivas disciplinas e turmas com atenção. <span class="text-brandOrange font-medium ml-1">⏱ 2 min</span></p>
+                </div>
+
+                <div class="p-8 rounded-3xl bg-brandDarker border border-white/5 relative group hover:border-brandOrange/50 transition overflow-hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="step-icon-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">5</div>
+                    <h3 class="text-xl font-bold text-white mb-3 relative z-10">Regras e Preferências</h3>
+                    <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Configure se o professor aceita aulas geminadas (dobradinhas) ou se permite janelas na grade. <span class="text-brandOrange font-medium ml-1">⏱ 1 min</span></p>
+                </div>
+
+                <div class="p-8 rounded-3xl bg-brandDarker border border-white/5 relative group hover:border-brandOrange/50 transition overflow-hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="step-icon-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 16l2 2 4-4" />
+                    </svg>
+                    <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">6</div>
+                    <h3 class="text-xl font-bold text-white mb-3 relative z-10">Disponibilidade</h3>
+                    <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Nossa tela inteligente faz a contagem automática de aulas e horas por dia e por turma. Defina aqui exatamente qual aula o professor irá ministrar. <span class="text-brandOrange font-medium ml-1">⏱ 5 min</span></p>
+                </div>
+            </div>
+
+            <div class="mt-12 p-8 rounded-3xl bg-orange-900/10 border border-brandOrange/20 text-center max-w-4xl mx-auto">
+                <h3 class="text-2xl font-bold text-white mb-4">Finalização e Entrega</h3>
+                <p class="text-zinc-300 leading-relaxed mb-6">
+                    Após completar os passos, nosso sistema realiza uma varredura completa em busca de conflitos. 
+                    Você receberá um <strong>relatório resumo</strong>. Estando tudo correto, basta enviar e geramos seu horário!
+                </p>
+                <a href="https://script.google.com/macros/s/AKfycbwuechdPh6ppvy18n0EGmtKT7kgoUuewY4p_zBRJ8CdU2mGLgRKebbN7Av429ZHKvz3/exec?p=cadastro" class="inline-block bg-brandOrange text-white px-8 py-3 rounded-full font-bold hover:bg-brandOrangeHover transition shadow-lg shadow-orange-900/20">Quero cadastrar a minha escola!</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="investimento" class="py-24 bg-brandDarker border-t border-white/5">
         <div class="max-w-6xl mx-auto px-4 text-center">
             <h2 class="text-3xl md:text-5xl font-bold mb-4">Investimento Transparente</h2>
             <p class="text-zinc-400 text-lg mb-16">O melhor custo-benefício para a gestão da sua grade escolar.</p>
@@ -42,3 +259,69 @@
             </div>
         </div>
     </section>
+
+    <footer class="bg-brandDark text-zinc-600 py-12 border-t border-white/5 text-center text-sm">
+        <p>&copy; 2026 Zurche. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DETECÇÃO DE CELULAR
+            if (window.innerWidth < 768) {
+                const warning = document.getElementById('mobile-warning');
+                if (warning) warning.classList.remove('hidden');
+            }
+
+            // ANIMAÇÃO DE PROGRESSO E SHUFFLE DOS BLOCOS
+            const gridContainer = document.getElementById('animated-grid');
+            const progressFill = document.getElementById('progress-fill');
+            const percentText = document.getElementById('percent-text');
+            
+            let items = Array.from(gridContainer.children);
+            let progress = 0;
+
+            function updateAnimation() {
+                // Progresso
+                if (progress >= 100) progress = 0;
+                progress += Math.floor(Math.random() * 8) + 2;
+                if (progress > 100) progress = 100;
+                if(progressFill) progressFill.style.width = progress + '%';
+                if(percentText) percentText.innerText = progress + '%';
+
+                // Shuffle (Troca de posições)
+                let idx1 = Math.floor(Math.random() * items.length);
+                let idx2 = Math.floor(Math.random() * items.length);
+                while (idx1 === idx2) idx2 = Math.floor(Math.random() * items.length);
+
+                const item1 = items[idx1];
+                const item2 = items[idx2];
+
+                // Efeito visual de troca
+                item1.style.opacity = '0.5';
+                item1.style.transform = 'scale(0.9)';
+                item2.style.opacity = '0.5';
+                item2.style.transform = 'scale(0.9)';
+
+                setTimeout(() => {
+                    const marker = document.createElement('div');
+                    gridContainer.insertBefore(marker, item1);
+                    gridContainer.insertBefore(item1, item2);
+                    gridContainer.insertBefore(item2, marker);
+                    gridContainer.removeChild(marker);
+                    
+                    items = Array.from(gridContainer.children);
+
+                    setTimeout(() => {
+                        item1.style.opacity = '1';
+                        item1.style.transform = 'scale(1)';
+                        item2.style.opacity = '1';
+                        item2.style.transform = 'scale(1)';
+                    }, 50);
+                }, 400);
+            }
+
+            setInterval(updateAnimation, 2000);
+        });
+    </script>
+</body>
+</html>
