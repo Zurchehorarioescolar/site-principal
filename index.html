@@ -331,42 +331,43 @@ async function carregarPrecos() {
     const URL_GAS = "https://script.google.com/macros/s/AKfycbxNeWVb1pG3ORSYtYN4lbaxieXBXdLhkTpmFdUAkVtLH8x8itP7SotfsJEosM8aEkRr/exec?getPrecos=true";
 
     try {
-        // O fetch faz a ponte entre GitHub e Google
         const response = await fetch(URL_GAS);
         const precos = await response.json();
 
         if (!precos) return;
 
-        const p = precos.fund2; // Usando Fundamental II como padrão
-        
-        // Atualiza o valor na tela
-        const precoDisplay = document.getElementById('preco-display');
-        if (precoDisplay) {
-            precoDisplay.innerText = Number(p.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        // --- ATUALIZA FUNDAMENTAL I (Dados que vêm da Linha 3 da planilha) ---
+        if (precos.fund1) {
+            const f1 = precos.fund1;
+            document.getElementById('preco-fund1').innerText = Number(f1.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            
+            if (f1.pix === 'S') {
+                const totalF1 = f1.valor * (1 - (f1.desconto / 100));
+                document.getElementById('pix-fund1').classList.remove('hidden');
+                document.getElementById('desc-fund1').innerText = f1.desconto + '% de desconto';
+                document.getElementById('total-fund1').innerText = 'Apenas R$ ' + totalF1.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' no PIX';
+            }
         }
 
-        // Lógica do Bloco PIX
-        const blocoPix = document.getElementById('bloco-pix');
-        if (p.pix === 'S' || p.pix === true) {
-            const descontoDecimal = Number(p.desconto) / 100;
-            const valorComDesconto = Number(p.valor) * (1 - descontoDecimal);
+        // --- ATUALIZA FUNDAMENTAL II (Dados que vêm da Linha 2 da planilha) ---
+        if (precos.fund2) {
+            const f2 = precos.fund2;
+            document.getElementById('preco-fund2').innerText = Number(f2.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             
-            if (blocoPix) {
-                blocoPix.classList.remove('hidden');
-                document.getElementById('texto-desconto').innerText = p.desconto + '% de desconto extra';
-                document.getElementById('preco-pix').innerText = 'Apenas R$ ' + valorComDesconto.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' por turma';
+            if (f2.pix === 'S') {
+                const totalF2 = f2.valor * (1 - (f2.desconto / 100));
+                document.getElementById('pix-fund2').classList.remove('hidden');
+                document.getElementById('desc-fund2').innerText = f2.desconto + '% de desconto';
+                document.getElementById('total-fund2').innerText = 'Apenas R$ ' + totalF2.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' no PIX';
             }
-        } else {
-            if (blocoPix) blocoPix.classList.add('hidden');
         }
 
     } catch (error) {
-        console.error("Erro ao buscar preços do Gerencial:", error);
-        // Se der erro (ex: internet fora), ele mantém o que estiver escrito no HTML original
+        console.error("Erro ao carregar preços do Google:", error);
     }
 }
 
-// Executa a função
+// Inicia a chamada
 carregarPrecos();
     </script>
 </body>
