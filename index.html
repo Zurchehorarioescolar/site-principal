@@ -225,16 +225,16 @@
                     <h3 class="text-xl font-bold mb-6 text-brandOrange">Por Turma</h3>
                     
                     <div class="flex items-baseline gap-1 mb-2">
-                        <span class="text-zinc-400 text-lg font-medium">R$</span>
-                        <span class="text-6xl font-extrabold text-white tracking-tight">30,00</span>
-                    </div>
-                    <p class="text-zinc-500 text-sm mb-8">valor único por turma cadastrada</p>
-                    
-                    <div class="bg-green-900/20 p-4 rounded-2xl mb-8 border border-green-500/20">
-                        <p class="text-green-500 font-bold text-sm uppercase tracking-tight">Pagamento via PIX</p>
-                        <p class="text-white text-xl font-extrabold">10% de desconto extra</p>
-                        <p class="text-green-200/60 text-xs mt-1">Apenas R$ 27,00 por turma</p>
-                    </div>
+    <span class="text-zinc-400 text-lg font-medium">R$</span>
+    <span id="preco-display" class="text-6xl font-extrabold text-white tracking-tight">--</span>
+</div>
+<p class="text-zinc-500 text-sm mb-8">valor único por turma cadastrada</p>
+
+<div id="bloco-pix" class="bg-green-900/20 p-4 rounded-2xl mb-8 border border-green-500/20 hidden">
+    <p class="text-green-500 font-bold text-sm uppercase tracking-tight">Pagamento via PIX</p>
+    <p id="texto-desconto" class="text-white text-xl font-extrabold">--% de desconto extra</p>
+    <p id="preco-pix" class="text-green-200/60 text-xs mt-1">Apenas R$ -- por turma</p>
+</div>
                     
                     <a href="https://script.google.com/macros/s/AKfycbwuechdPh6ppvy18n0EGmtKT7kgoUuewY4p_zBRJ8CdU2mGLgRKebbN7Av429ZHKvz3/exec?p=cadastro" class="block text-center bg-brandOrange hover:bg-brandOrangeHover text-white py-4 rounded-xl font-bold transition shadow-lg shadow-orange-900/20">Começar Agora</a>
                 </div>
@@ -322,6 +322,48 @@
 
             setInterval(updateAnimation, 2000);
         });
+
+async function carregarPrecos() {
+    const URL_GAS = "https://script.google.com/macros/s/AKfycbxNeWVb1pG3ORSYtYN4lbaxieXBXdLhkTpmFdUAkVtLH8x8itP7SotfsJEosM8aEkRr/exec?getPrecos=true";
+
+    try {
+        // O fetch faz a ponte entre GitHub e Google
+        const response = await fetch(URL_GAS);
+        const precos = await response.json();
+
+        if (!precos) return;
+
+        const p = precos.fund2; // Usando Fundamental II como padrão
+        
+        // Atualiza o valor na tela
+        const precoDisplay = document.getElementById('preco-display');
+        if (precoDisplay) {
+            precoDisplay.innerText = Number(p.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        }
+
+        // Lógica do Bloco PIX
+        const blocoPix = document.getElementById('bloco-pix');
+        if (p.pix === 'S' || p.pix === true) {
+            const descontoDecimal = Number(p.desconto) / 100;
+            const valorComDesconto = Number(p.valor) * (1 - descontoDecimal);
+            
+            if (blocoPix) {
+                blocoPix.classList.remove('hidden');
+                document.getElementById('texto-desconto').innerText = p.desconto + '% de desconto extra';
+                document.getElementById('preco-pix').innerText = 'Apenas R$ ' + valorComDesconto.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' por turma';
+            }
+        } else {
+            if (blocoPix) blocoPix.classList.add('hidden');
+        }
+
+    } catch (error) {
+        console.error("Erro ao buscar preços do Gerencial:", error);
+        // Se der erro (ex: internet fora), ele mantém o que estiver escrito no HTML original
+    }
+}
+
+// Executa a função
+carregarPrecos();
     </script>
 </body>
 </html>
