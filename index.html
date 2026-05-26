@@ -73,6 +73,7 @@
                 </div>
                 <div class="hidden md:flex space-x-8 text-sm font-medium">
                     <a href="#como-funciona" class="text-gray-300 hover:text-brandOrange">Como Funciona</a>
+                    <a href="#video-tutorial" class="text-gray-300 hover:text-brandOrange">Vídeo Tutorial</a>
                     <a href="#investimento" class="text-gray-300 hover:text-brandOrange">Investimento</a>
                 </div>
                 <div>
@@ -215,7 +216,39 @@
         </div>
     </section>
 
-   <section id="investimento" class="py-24 bg-brandDarker border-t border-white/5">
+    <section id="video-tutorial" class="py-24 bg-brandDarker border-t border-white/5 relative overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brandOrange/5 w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none"></div>
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Vídeo Tutorial</h2>
+                <p class="text-zinc-400 text-lg">Veja na prática como é rápido e fácil gerar a grade de horários da sua escola.</p>
+            </div>
+            
+            <a href="https://www.youtube.com/watch?v=k0OYgBmdcdM&t=16s" target="_blank" class="block relative w-full aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-orange-950/20 bg-zinc-900 group cursor-pointer">
+                
+                <img 
+                    src="https://img.youtube.com/vi/k0OYgBmdcdM/maxresdefault.jpg" 
+                    alt="Capa do Tutorial Zurche" 
+                    class="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-40 transition duration-500"
+                >
+
+                <div class="absolute inset-0 bg-gradient-to-t from-brandDark via-transparent to-transparent opacity-80"></div>
+                
+                <div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                    <div class="w-20 h-20 bg-brandOrange text-white rounded-full flex items-center justify-center shadow-xl shadow-orange-900/50 transform group-hover:scale-110 group-hover:bg-brandOrangeHover transition duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 fill-current ml-2" viewBox="0 0 20 20">
+                            <path d="M4.516 3.548a.75.75 0 0 1 .792-.04l10.5 6a.75.75 0 0 1 0 1.284l-10.5 6A.75.75 0 0 1 4 15.5V4.5a.75.75 0 0 1 .516-.652z"/>
+                        </svg>
+                    </div>
+                    <span class="text-white font-bold tracking-wide text-sm md:text-base bg-brandDarker/60 backdrop-blur-sm px-4 py-2 rounded-full border border-white/5 opacity-90 group-hover:opacity-100 transition">
+                        Clique para assistir o tutorial (abre no YouTube)
+                    </span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+   <section id="investimento" class="py-24 bg-brandDark border-t border-white/5">
     <div class="max-w-6xl mx-auto px-4 text-center">
         <h2 class="text-3xl md:text-5xl font-bold mb-4">Investimento Transparente</h2>
         <p class="text-zinc-400 text-lg mb-8">O melhor custo-benefício para a gestão da sua grade escolar.</p>
