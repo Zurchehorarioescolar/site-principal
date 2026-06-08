@@ -20,7 +20,7 @@
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
         * { transition: all 0.2s ease; }
@@ -51,6 +51,86 @@
 </head>
 <body class="bg-brandDark text-gray-100">
 
+    <!-- POPUP 1: ENTRADA AUTOMÁTICA (ZURCHE FOI FEITO PARA A SUA ESCOLA) -->
+    <div id="welcome-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-brandDarker border border-white/10 rounded-3xl max-w-lg w-full p-6 md:p-8 relative shadow-2xl shadow-orange-950/20 transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+            
+            <button onclick="closeWelcomeModal()" class="absolute right-4 top-4 text-zinc-400 hover:text-white p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div class="w-16 h-16 bg-brandOrange/10 text-brandOrange rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+            </div>
+
+            <h3 class="text-2xl font-bold text-center text-white mb-4">Zurche foi feito para a sua escola!</h3>
+            
+            <div class="space-y-4 text-zinc-300 text-sm md:text-base leading-relaxed mb-6">
+                <p class="flex items-start gap-2">
+                    <span class="text-brandOrange mt-1">✔</span>
+                    <span><strong>100% Online e Seguro:</strong> Não há necessidade de realizar nenhum tipo de instalação no seu computador.</span>
+                </p>
+                <p class="flex items-start gap-2">
+                    <span class="text-brandOrange mt-1">✔</span>
+                    <span><strong>Pague apenas pelo resultado:</strong> Você pode realizar todos os cadastros, turmas e configurações de forma totalmente gratuita.</span>
+                </p>
+                <p class="flex items-start gap-2">
+                    <span class="text-brandOrange mt-1">✔</span>
+                    <span><strong>Risco Zero:</strong> Só haverá custos após o seu horário ser completamente finalizado e validado como possível pela equipe Zurche. Se não for possível gerar, você não paga nada!</span>
+                </p>
+            </div>
+
+            <button onclick="closeWelcomeModal()" class="w-full bg-brandOrange hover:bg-brandOrangeHover text-white py-3.5 rounded-xl font-bold transition text-center shadow-lg shadow-orange-900/20">
+                Entendi, Quero Começar!
+            </button>
+        </div>
+    </div>
+
+
+    <!-- POPUP 2: ACIONADO PELO BOTÃO (COMO FUNCIONA O ZURCHE) -->
+    <div id="how-it-works-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-brandDarker border border-white/10 rounded-3xl max-w-lg w-full p-6 md:p-8 relative shadow-2xl shadow-orange-950/20 transform scale-95 opacity-0 transition-all duration-300" id="how-content">
+            
+            <button onclick="closeHowModal()" class="absolute right-4 top-4 text-zinc-400 hover:text-white p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div class="w-16 h-16 bg-brandOrange/10 text-brandOrange rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+
+            <h3 class="text-2xl font-bold text-center text-white mb-4">Como funciona o Zurche?</h3>
+            
+            <div class="space-y-4 text-zinc-300 text-sm md:text-base leading-relaxed mb-6">
+                <p class="flex items-start gap-2">
+                    <span class="text-brandOrange mt-1">✔</span>
+                    <span><strong>Uso 100% Online:</strong> Acesse de onde quiser, direto pelo navegador. Não precisa baixar nem instalar programas no computador.</span>
+                </p>
+                <p class="flex items-start gap-2">
+                    <span class="text-brandOrange mt-1">✔</span>
+                    <span><strong>Cadastro e Testes Gratuitos:</strong> Crie sua conta, configure seus professores, turmas e disponibilidades sem pagar nada por isso.</span>
+                </p>
+                <p class="flex items-start gap-2">
+                    <span class="text-brandOrange mt-1">✔</span>
+                    <span><strong>Sem riscos para sua escola:</strong> Você só faz o investimento financeiro após a nossa plataforma calcular e validar o seu horário sem conflitos.</span>
+                </p>
+            </div>
+
+            <button onclick="closeHowModal()" class="w-full bg-brandOrange hover:bg-brandOrangeHover text-white py-3.5 rounded-xl font-bold transition text-center shadow-lg shadow-orange-900/20">
+                Ver os 6 Passos Abaixo
+            </button>
+        </div>
+    </div>
+
+
     <div id="mobile-warning" class="hidden bg-orange-600 text-white px-4 py-3 relative z-[100] text-center text-sm font-medium">
         <div class="flex items-center justify-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -72,7 +152,8 @@
                     <span class="text-2xl font-bold text-brandOrange tracking-tighter">.Zurche.</span>
                 </div>
                 <div class="hidden md:flex space-x-8 text-sm font-medium">
-                    <a href="#como-funciona" class="text-gray-300 hover:text-brandOrange">Como Funciona</a>
+                    <!-- Botão alterado para chamar a função combinada de modal + scroll -->
+                    <button onclick="handleHowItWorks()" class="text-gray-300 hover:text-brandOrange cursor-pointer">Como Funciona</button>
                     <a href="#video-tutorial" class="text-gray-300 hover:text-brandOrange">Vídeo Tutorial</a>
                     <a href="#investimento" class="text-gray-300 hover:text-brandOrange">Investimento</a>
                 </div>
@@ -105,9 +186,10 @@
                         <a href="https://sites.google.com/view/zurche-cadastro/cadastro" class="bg-brandOrange text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-brandOrangeHover shadow-xl shadow-orange-900/40 transition transform hover:-translate-y-1">
                             Cadastre sua escola
                         </a>
-                        <a href="#como-funciona" class="border border-zinc-700 text-zinc-300 px-8 py-4 rounded-xl font-bold text-lg hover:bg-zinc-800 transition text-center">
+                        <!-- Botão alterado para chamar a função combinada de modal + scroll -->
+                        <button onclick="handleHowItWorks()" class="border border-zinc-700 text-zinc-300 px-8 py-4 rounded-xl font-bold text-lg hover:bg-zinc-800 transition text-center cursor-pointer">
                             Como Funciona?
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -139,7 +221,8 @@
         </div>
     </header>
 
-    <section id="como-funciona" class="py-24 bg-brandDark border-t border-white/5">
+    <!-- ID adicionado para o Scroll Suave funcionar corretamente -->
+    <section id="secao-passos" class="py-24 bg-brandDark border-t border-white/5">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-5xl font-bold mb-4">6 Passos para seu Horário Pronto</h2>
@@ -147,9 +230,7 @@
                 <p class="text-brandOrange text-xs font-semibold mt-2 uppercase tracking-wider animate-pulse md:block hidden">💡 Passe o mouse sobre os passos para ver o sistema em tamanho expandido</p>
             </div>
 
-            <!-- Grid de Passos -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                
                 <!-- PASSO 1 -->
                 <div class="p-8 rounded-3xl bg-brandDarker border border-white/5 relative group hover:border-brandOrange/50 transition overflow-visible">
                     <svg xmlns="http://www.w3.org/2000/svg" class="step-icon-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -159,8 +240,6 @@
                     <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">1</div>
                     <h3 class="text-xl font-bold text-white mb-3 relative z-10">Configurações</h3>
                     <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Defina intervalos (recreio), horários de início, término e a duração de cada aula. <span class="text-brandOrange font-medium ml-1">⏱ 1 min</span></p>
-                    
-                    <!-- Preview Ampliado Passo 1 -->
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 -top-4 w-72 md:w-[550px] h-auto invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 z-50 pointer-events-none">
                         <img src="Passo 01.fw.png" alt="Preview Passo 1" class="rounded-2xl border-2 border-brandOrange shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] bg-brandDarker w-full object-contain">
                     </div>
@@ -174,8 +253,6 @@
                     <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">2</div>
                     <h3 class="text-xl font-bold text-white mb-3 relative z-10">Componentes Curriculares</h3>
                     <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Cadastre todas as disciplinas e matérias que compõem a grade da sua instituição. <span class="text-brandOrange font-medium ml-1">⏱ 1 min</span></p>
-                    
-                    <!-- Preview Ampliado Passo 2 -->
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 -top-4 w-72 md:w-[550px] h-auto invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 z-50 pointer-events-none">
                         <img src="Passo 02.fw.png" alt="Preview Passo 2" class="rounded-2xl border-2 border-brandOrange shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] bg-brandDarker w-full object-contain">
                     </div>
@@ -189,8 +266,6 @@
                     <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">3</div>
                     <h3 class="text-xl font-bold text-white mb-3 relative z-10">Turmas</h3>
                     <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Defina as turmas do turno e vincule quais componentes pertencem a cada uma delas. <span class="text-brandOrange font-medium ml-1">⏱ 3 min</span></p>
-                    
-                    <!-- Preview Ampliado Passo 3 -->
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 -top-4 w-72 md:w-[550px] h-auto invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 z-50 pointer-events-none">
                         <img src="Passo 03.fw.png" alt="Preview Passo 3" class="rounded-2xl border-2 border-brandOrange shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] bg-brandDarker w-full object-contain">
                     </div>
@@ -205,8 +280,6 @@
                     <h3 class="text-xl font-bold text-white mb-3 relative z-10">Professores</h3>
                     <h4 class="text-brandOrange text-[10px] uppercase tracking-widest font-bold mb-2 relative z-10">Foco Total Aqui</h4>
                     <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Cadastre os docentes vinculando suas respectivas disciplinas e turmas com atenção. <span class="text-brandOrange font-medium ml-1">⏱ 4 min</span></p>
-                    
-                    <!-- Preview Ampliado Passo 4 -->
                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 -top-4 w-72 md:w-[550px] h-auto invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 z-50 pointer-events-none">
                         <img src="Passo 04.fw.png" alt="Preview Passo 4" class="rounded-2xl border-2 border-brandOrange shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] bg-brandDarker w-full object-contain">
                     </div>
@@ -220,8 +293,6 @@
                     <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">5</div>
                     <h3 class="text-xl font-bold text-white mb-3 relative z-10">Regras e Preferências</h3>
                     <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Configure se o professor aceita aulas geminadas (dobradinhas) ou se permite janelas na grade. <span class="text-brandOrange font-medium ml-1">⏱ 1 min</span></p>
-                    
-                    <!-- Preview Extra Grande Passo 5 (Tabela de Regras) -->
                     <div class="absolute bottom-full lg:left-auto lg:right-0 left-1/2 lg:translate-x-0 -translate-x-1/2 -top-4 w-72 md:w-[650px] h-auto invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 z-50 pointer-events-none">
                         <img src="Passo 05.fw.png" alt="Preview Passo 5" class="rounded-2xl border-2 border-brandOrange shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] bg-brandDarker w-full object-contain">
                     </div>
@@ -236,15 +307,12 @@
                     <div class="w-12 h-12 bg-brandOrange/10 text-brandOrange rounded-xl flex items-center justify-center font-bold mb-6 text-xl relative z-10">6</div>
                     <h3 class="text-xl font-bold text-white mb-3 relative z-10">Disponibilidade</h3>
                     <p class="text-zinc-400 text-sm leading-relaxed relative z-10">Nossa tela inteligente faz a contagem automática de aulas. Defina aqui exatamente qual aula o professor irá ministrar. <span class="text-brandOrange font-medium ml-1">⏱ 5 min</span></p>
-                    
-                    <!-- Preview Extra Grande Passo 6 (Grade Completa) -->
                     <div class="absolute bottom-full right-0 -top-4 w-72 md:w-[650px] h-auto invisible opacity-0 scale-95 group-hover:visible group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 z-50 pointer-events-none">
                         <img src="Passo 06.fw.png" alt="Preview Passo 6" class="rounded-2xl border-2 border-brandOrange shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] bg-brandDarker w-full object-contain">
                     </div>
                 </div>
             </div>
 
-            <!-- Bloco de Finalização -->
             <div class="mt-12 p-8 rounded-3xl bg-orange-900/10 border border-brandOrange/20 text-center max-w-4xl mx-auto">
                 <h3 class="text-2xl font-bold text-white mb-4">Finalização e Entrega</h3>
                 <p class="text-zinc-300 leading-relaxed mb-6">
@@ -255,6 +323,7 @@
             </div>
         </div>
     </section>
+
     <section id="video-tutorial" class="py-24 bg-brandDarker border-t border-white/5 relative overflow-hidden">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brandOrange/5 w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none"></div>
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -264,15 +333,8 @@
             </div>
             
             <a href="https://www.youtube.com/watch?v=k0OYgBmdcdM&t=16s" target="_blank" class="block relative w-full aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-orange-950/20 bg-zinc-900 group cursor-pointer">
-                
-                <img 
-                    src="https://img.youtube.com/vi/k0OYgBmdcdM/maxresdefault.jpg" 
-                    alt="Capa do Tutorial Zurche" 
-                    class="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-40 transition duration-500"
-                >
-
+                <img src="https://img.youtube.com/vi/k0OYgBmdcdM/maxresdefault.jpg" alt="Capa do Tutorial Zurche" class="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-40 transition duration-500">
                 <div class="absolute inset-0 bg-gradient-to-t from-brandDark via-transparent to-transparent opacity-80"></div>
-                
                 <div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
                     <div class="w-20 h-20 bg-brandOrange text-white rounded-full flex items-center justify-center shadow-xl shadow-orange-900/50 transform group-hover:scale-110 group-hover:bg-brandOrangeHover transition duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 fill-current ml-2" viewBox="0 0 20 20">
@@ -300,7 +362,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto text-left">
-            
             <div class="bg-brandDark border border-white/10 p-8 rounded-3xl hover:border-brandOrange transition relative overflow-hidden group">
                 <h3 class="text-xl font-bold mb-6 text-brandOrange">Fundamental I</h3>
                 <div class="flex items-baseline gap-1 mb-2">
@@ -308,7 +369,6 @@
                     <span id="preco-fund1" class="text-4xl font-extrabold text-white tracking-tight">--</span>
                 </div>
                 <p class="text-zinc-500 text-xs mb-8 uppercase tracking-wider">valor único por turma</p>
-
                 <div id="pix-fund1" class="bg-green-900/20 p-4 rounded-2xl mb-8 border border-green-500/20 hidden">
                     <p class="text-green-500 font-bold text-[10px] uppercase tracking-tight">Pagamento via PIX</p>
                     <p id="desc-fund1" class="text-white text-lg font-extrabold">--% de desconto</p>
@@ -324,7 +384,6 @@
                     <span id="preco-fund2" class="text-4xl font-extrabold text-white tracking-tight">--</span>
                 </div>
                 <p class="text-zinc-500 text-xs mb-8 uppercase tracking-wider">valor único por turma</p>
-
                 <div id="pix-fund2" class="bg-green-900/20 p-4 rounded-2xl mb-8 border border-green-500/20 hidden">
                     <p class="text-green-500 font-bold text-[10px] uppercase tracking-tight">Pagamento via PIX</p>
                     <p id="desc-fund2" class="text-white text-lg font-extrabold">--% de desconto</p>
@@ -332,7 +391,6 @@
                 </div>
                 <a href="https://sites.google.com/view/zurche-cadastro/cadastro" class="block text-center bg-brandOrange hover:bg-brandOrangeHover text-white py-4 rounded-xl font-bold transition shadow-lg shadow-orange-900/20">Começar Fund II</a>
             </div>
-
         </div>
     </div>
 </section>
@@ -342,14 +400,37 @@
     </footer>
 
     <script>
+        // FUNÇÃO COMBINADA: Abre o modal explicativo e rola para a seção dos 6 passos em segundo plano
+        function handleHowItWorks() {
+            // 1. Abre o modal
+            openHowModal();
+            
+            // 2. Faz o scroll suave em segundo plano até a seção dos passos
+            const secao = document.getElementById('secao-passos');
+            if (secao) {
+                secao.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // DETECÇÃO DE CELULAR
             if (window.innerWidth < 768) {
                 const warning = document.getElementById('mobile-warning');
                 if (warning) warning.classList.remove('hidden');
             }
 
-            // ANIMAÇÃO DE PROGRESSO E SHUFFLE DOS BLOCOS
+            // CONTROLE DO POPUP 1: Entrada automática
+            if (!localStorage.getItem('zurche_popup_visto')) {
+                const modal = document.getElementById('welcome-modal');
+                const content = document.getElementById('modal-content');
+                
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 50);
+            }
+
+            // Animação de shuffle dos blocos
             const gridContainer = document.getElementById('animated-grid');
             const progressFill = document.getElementById('progress-fill');
             const percentText = document.getElementById('percent-text');
@@ -358,14 +439,12 @@
             let progress = 0;
 
             function updateAnimation() {
-                // Progresso
                 if (progress >= 100) progress = 0;
                 progress += Math.floor(Math.random() * 8) + 2;
                 if (progress > 100) progress = 100;
                 if(progressFill) progressFill.style.width = progress + '%';
                 if(percentText) percentText.innerText = progress + '%';
 
-                // Shuffle (Troca de posições)
                 let idx1 = Math.floor(Math.random() * items.length);
                 let idx2 = Math.floor(Math.random() * items.length);
                 while (idx1 === idx2) idx2 = Math.floor(Math.random() * items.length);
@@ -373,7 +452,6 @@
                 const item1 = items[idx1];
                 const item2 = items[idx2];
 
-                // Efeito visual de troca
                 item1.style.opacity = '0.5';
                 item1.style.transform = 'scale(0.9)';
                 item2.style.opacity = '0.5';
@@ -398,50 +476,77 @@
             }
 
             setInterval(updateAnimation, 2000);
+            carregarPrecos();
         });
 
-async function carregarPrecos() {
-    const URL_GAS = "https://script.google.com/macros/s/AKfycbxNeWVb1pG3ORSYtYN4lbaxieXBXdLhkTpmFdUAkVtLH8x8itP7SotfsJEosM8aEkRr/exec?getPrecos=true";
-
-    try {
-        const response = await fetch(URL_GAS);
-        const precos = await response.json();
-
-        if (!precos) return;
-
-        // --- ATUALIZA FUNDAMENTAL I (Dados que vêm da Linha 3 da planilha) ---
-        if (precos.fund1) {
-            const f1 = precos.fund1;
-            document.getElementById('preco-fund1').innerText = Number(f1.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        function closeWelcomeModal() {
+            const modal = document.getElementById('welcome-modal');
+            const content = document.getElementById('modal-content');
             
-            if (f1.pix === 'S') {
-                const totalF1 = f1.valor * (1 - (f1.desconto / 100));
-                document.getElementById('pix-fund1').classList.remove('hidden');
-                document.getElementById('desc-fund1').innerText = f1.desconto + '% de desconto';
-                document.getElementById('total-fund1').innerText = 'Apenas R$ ' + totalF1.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' no PIX';
-            }
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                localStorage.setItem('zurche_popup_visto', 'true');
+            }, 300);
         }
 
-        // --- ATUALIZA FUNDAMENTAL II (Dados que vêm da Linha 2 da planilha) ---
-        if (precos.fund2) {
-            const f2 = precos.fund2;
-            document.getElementById('preco-fund2').innerText = Number(f2.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        function openHowModal() {
+            const modal = document.getElementById('how-it-works-modal');
+            const content = document.getElementById('how-content');
             
-            if (f2.pix === 'S') {
-                const totalF2 = f2.valor * (1 - (f2.desconto / 100));
-                document.getElementById('pix-fund2').classList.remove('hidden');
-                document.getElementById('desc-fund2').innerText = f2.desconto + '% de desconto';
-                document.getElementById('total-fund2').innerText = 'Apenas R$ ' + totalF2.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' no PIX';
-            }
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 50);
         }
 
-    } catch (error) {
-        console.error("Erro ao carregar preços do Google:", error);
-    }
-}
+        function closeHowModal() {
+            const modal = document.getElementById('how-it-works-modal');
+            const content = document.getElementById('how-content');
+            
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
 
-// Inicia a chamada
-carregarPrecos();
+        async function carregarPrecos() {
+            const URL_GAS = "https://script.google.com/macros/s/AKfycbxNeWVb1pG3ORSYtYN4lbaxieXBXdLhkTpmFdUAkVtLH8x8itP7SotfsJEosM8aEkRr/exec?getPrecos=true";
+            try {
+                const response = await fetch(URL_GAS);
+                const precos = await response.json();
+                if (!precos) return;
+
+                if (precos.fund1) {
+                    const f1 = precos.fund1;
+                    document.getElementById('preco-fund1').innerText = Number(f1.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    if (f1.pix === 'S') {
+                        const totalF1 = f1.valor * (1 - (f1.desconto / 100));
+                        document.getElementById('pix-fund1').classList.remove('hidden');
+                        document.getElementById('desc-fund1').innerText = f1.desconto + '% de desconto';
+                        document.getElementById('total-fund1').innerText = 'Apenas R$ ' + totalF1.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' no PIX';
+                    }
+                }
+
+                if (precos.fund2) {
+                    const f2 = precos.fund2;
+                    document.getElementById('preco-fund2').innerText = Number(f2.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    if (f2.pix === 'S') {
+                        const totalF2 = f2.valor * (1 - (f2.desconto / 100));
+                        document.getElementById('pix-fund2').classList.remove('hidden');
+                        document.getElementById('desc-fund2').innerText = f2.desconto + '% de desconto';
+                        document.getElementById('total-fund2').innerText = 'Apenas R$ ' + totalF2.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' no PIX';
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao carregar preços do Google:", error);
+            }
+        }
     </script>
 </body>
 </html>
