@@ -54,8 +54,12 @@
       border-radius: 15px; background: #fff;
       box-shadow: 0 8px 28px rgba(0, 0, 0, .2);
     }
-    .top-link { color: var(--muted); font-size: 13px; text-decoration: none; }
+    .top-actions { display: flex; align-items: center; justify-content: flex-end; gap: 20px; }
+    .top-link { color: var(--muted); font-size: 12px; text-decoration: none; white-space: nowrap; }
     .top-link:hover { color: var(--text); }
+    .contact-link { display: inline-flex; align-items: center; gap: 7px; }
+    .contact-link svg { width: 16px; height: 16px; color: var(--cyan); }
+    .top-link.whatsapp svg { color: var(--green); }
     main { padding: 76px 0 88px; }
     .hero { max-width: 760px; margin-bottom: 46px; }
     .eyebrow {
@@ -134,7 +138,11 @@
     @media (max-width: 700px) {
       .shell { width: min(100% - 28px, 560px); }
       .topbar { min-height: 70px; }
-      .top-link { font-size: 12px; }
+      .topbar { gap: 10px; }
+      .top-actions { gap: 11px; }
+      .top-link { font-size: 11px; }
+      .email-link span { display: none; }
+      .contact-link svg { width: 18px; height: 18px; }
       main { padding: 55px 0 62px; }
       .hero { margin-bottom: 36px; }
       .hero-copy { font-size: 15px; }
@@ -153,7 +161,17 @@
     <a class="brand" href="./index.html" aria-label="Zurche Help Escolar — início">
       <img class="brand-logo" src="./assets/logo-zurche-help-escolar.png" alt="Zurche Help Escolar">
     </a>
-    <a class="top-link" href="#aplicacoes">Aplicações</a>
+    <nav class="top-actions" aria-label="Contato e navegação">
+      <a class="top-link contact-link email-link" href="mailto:contato@zurche.com.br">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        <span>contato@zurche.com.br</span>
+      </a>
+      <a class="top-link contact-link whatsapp" href="https://wa.me/5511912708066" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a8.4 8.4 0 0 1-12.5 7.3L4 20l1.2-3.4A8.4 8.4 0 1 1 20 11.5Z"/><path d="M9 8.5c.4 2.2 2.2 4 4.5 4.5l1-1 2 1c-.2 1.4-1.2 2.2-2.6 2.1-3.7-.3-6.7-3.3-7-7-.1-1.4.7-2.4 2.1-2.6l1 2-1 1Z"/></svg>
+        <span>11 91270-8066</span>
+      </a>
+      <a class="top-link" href="#aplicacoes">Aplicações</a>
+    </nav>
   </header>
   <main class="shell">
     <section class="hero" aria-labelledby="hero-title">
