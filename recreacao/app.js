@@ -64,3 +64,5 @@ $('gameModal').addEventListener('close',pauseOnClose);
 $('resumeGame').addEventListener('click',()=>{if(cfg)$('gameModal').showModal();});
 document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'⛶ Sair da tela cheia':'⛶ Tela cheia';});
 try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved&&typeof saved.names==='string'){Tabuada.config(saved.min,saved.max,saved.seconds);$('names').value=saved.names;$('min').value=saved.min;$('max').value=saved.max;$('seconds').value=saved.seconds;$('remember').checked=true;notice('Lista recuperada. Salve para preparar a turma.');}}catch{}
+
+SessionReport.init({activity:'Desafio da tabuada',getRows:()=>rows,describe:row=>`${row.a} × ${row.b} = ${row.a*row.b}`});

@@ -64,3 +64,5 @@ $('gameModal').addEventListener('close',pauseOnClose);
 $('resumeGame').addEventListener('click',()=>{if(cfg)$('gameModal').showModal();});
 document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'⛶ Sair da tela cheia':'⛶ Tela cheia';});
 try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved&&typeof saved.names==='string'){Equacoes.config(saved.min,saved.max,saved.seconds,saved.levels);for(const level of [1,2,3])$('level'+level).checked=saved.levels.includes(level);$('names').value=saved.names;$('min').value=saved.min;$('max').value=saved.max;$('seconds').value=saved.seconds;$('remember').checked=true;notice('Lista recuperada. Clique em Iniciar game quando estiver pronto.');}}catch{}
+
+SessionReport.init({activity:'Desafio das equações',getRows:()=>rows,describe:row=>`${row.question} · x = ${Equacoes.number(row.x)}`});

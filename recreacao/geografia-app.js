@@ -103,3 +103,5 @@ async function loadFlag(){
  }
 }
 $('retryFlag').addEventListener('click',()=>{enableAudio();loadFlag();});
+
+SessionReport.init({activity:'Estados brasileiros',getRows:()=>rows,describe:row=>`${row.summary} · Resposta: ${row.answer}`});
