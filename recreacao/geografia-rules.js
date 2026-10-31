@@ -81,7 +81,7 @@ function questions(cfg){
    }else if(topic==='sigla'){
     prompt=direction==='inverso'?'Esta é a sigla de qual UF?':'Qual é a sigla desta UF?';question=direction==='inverso'?state.uf:state.name;answer=direction==='inverso'?state.name:state.uf;
    }else if(topic==='bandeira'){prompt='A qual UF pertence esta bandeira?';question='Que UF é esta?';answer=state.name;
-   }else{prompt='Qual é a bandeira desta UF?';question=state.uf+' · '+state.name;answer=state.name;}
+   }else{prompt='Qual é a bandeira desta UF?';question=state.uf;answer=state.name;}
    result.push({key:state.uf+':'+topic+':'+direction,state,topic,direction,prompt,question,answer,summary:(prompt+' '+(topic==='bandeira'?'':question)).trim()});
   }
  }
