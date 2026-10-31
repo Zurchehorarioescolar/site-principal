@@ -134,6 +134,10 @@
     .note strong { color: var(--text); }
     footer { border-top: 1px solid var(--line); color: #7f8da4; font-size: 12px; }
     .footer-inner { display: flex; justify-content: space-between; gap: 16px; padding: 22px 0; }
+    .footer-email { display: inline-flex; align-items: center; min-height: 44px; color: var(--cyan); font-size: 14px; overflow-wrap: anywhere; text-decoration: none; }
+    .footer-email:hover { text-decoration: underline; }
+    .footer-inner { align-items: center; flex-wrap: wrap; }
+    @media (max-width: 700px) { .footer-inner { align-items: flex-start; } }
     :focus-visible { outline: 3px solid #8ce8ff; outline-offset: 4px; }
     @media (min-width: 701px) and (max-width: 1000px) { .apps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 700px) {
@@ -241,6 +245,7 @@
   <footer>
     <div class="shell footer-inner">
       <span>© 2026 Zurche Help Escolar</span>
+      <a class="footer-email" href="mailto:contato@zurche.com.br">contato@zurche.com.br</a>
       <span>Tecnologia a serviço da educação.</span>
     </div>
   </footer>
