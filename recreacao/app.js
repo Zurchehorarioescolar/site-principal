@@ -2,9 +2,28 @@
 const $=id=>document.getElementById(id),KEY='zurche.recreacao.tabuada.v1';
 let roster=[],queue=[],cfg=null,current=null,rows=[],ticker=null,deadline=0,remaining=0,running=false;
 const notice=text=>$('notice').textContent=text;
-function stop(){clearInterval(ticker);ticker=null;running=false;}
+let audio=null,voice=null,alerted=new Set();
+function enableAudio(){
+ try{const Audio=globalThis.AudioContext||globalThis.webkitAudioContext;if(!Audio)return;
+ if(!audio)audio=new Audio();if(audio.state==='suspended')audio.resume().catch(()=>{});
+ }catch{/* A atividade continua mesmo sem áudio disponível. */}
+}
+function beep(){
+ if(!audio||audio.state!=='running')return;
+ try{const oscillator=audio.createOscillator(),gain=audio.createGain(),t=audio.currentTime;
+ oscillator.type='sine';oscillator.frequency.setValueAtTime(880,t);
+ gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(.18,t+.015);gain.gain.exponentialRampToValueAtTime(.001,t+.18);
+ oscillator.connect(gain);gain.connect(audio.destination);voice=oscillator;
+ oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();if(voice===oscillator)voice=null;};
+ oscillator.start(t);oscillator.stop(t+.2);
+ }catch{}
+}
+function stop(){clearInterval(ticker);ticker=null;running=false;$('stage').classList.remove('urgent');if(voice){try{voice.stop();}catch{}voice=null;}}
 function displayTime(){const s=Math.max(0,Math.ceil(remaining/1000));$('clock').textContent=s;$('bar').style.width=`${cfg?Math.max(0,remaining/(cfg.seconds*1000)*100):100}%`;}
-function tick(){remaining=Math.max(0,deadline-performance.now());displayTime();if(remaining<=0){stop();$('stage').classList.add('expired');$('pause').disabled=true;$('status').textContent='Tempo esgotado! Revele a resposta ou marque o resultado.';}}
+function tick(){remaining=Math.max(0,deadline-performance.now());displayTime();
+ const second=Math.ceil(remaining/1000);
+ if(second>=1&&second<=5){$('stage').classList.add('urgent');if(!alerted.has(second)){alerted.add(second);beep();} }
+ if(remaining<=0){stop();$('stage').classList.add('expired');$('pause').disabled=true;$('status').textContent='Tempo esgotado! Revele a resposta ou marque o resultado.';}}
 function startTimer(){stop();running=true;deadline=performance.now()+remaining;$('pause').textContent='Pausar';ticker=setInterval(tick,100);tick();}
 function save(){try{if($('remember').checked)localStorage.setItem(KEY,JSON.stringify({names:$('names').value,...cfg}));else localStorage.removeItem(KEY);}catch{notice('Turma pronta. Não foi possível salvar neste navegador.');}}
 function updateHistory(){
@@ -24,13 +43,13 @@ $('settings').addEventListener('submit',e=>{e.preventDefault();try{
  const names=Tabuada.parseNames($('names').value);if(!names.length)throw Error('Inclua pelo menos um aluno.');
  if(current&&!current.recorded)record('Sem avaliação');cfg=next;roster=names;queue=Tabuada.shuffle(roster);resetRound();notice(`Turma pronta: ${names.length} alunos. Vamos começar!`);save();
 }catch(err){notice(err.message);}});
-$('draw').addEventListener('click',()=>{if(!cfg||!queue.length)return;stop();record('Sem avaliação');
+$('draw').addEventListener('click',()=>{if(!cfg||!queue.length)return;enableAudio();stop();alerted=new Set();record('Sem avaliação');
  current={name:queue.pop(),a:Tabuada.factor(cfg.min,cfg.max),b:Tabuada.factor(cfg.min,cfg.max),recorded:false};
- $('student').textContent=current.name;$('prompt').textContent='Quanto é? Responda antes que o tempo acabe.';$('question').textContent=`${current.a} × ${current.b}`;$('answer').hidden=true;$('stage').classList.remove('expired');
+ $('student').textContent=current.name;$('prompt').textContent='Quanto é? Responda antes que o tempo acabe.';$('question').textContent=`${current.a} × ${current.b}`;$('stage').style.setProperty('--urgent-size',`${Math.min(16,130/$('question').textContent.length)}vw`);$('answer').hidden=true;$('stage').classList.remove('expired');
  for(const id of ['pause','reveal','correct','wrong'])$(id).disabled=false;
  $('draw').textContent='Próximo aluno →';$('draw').disabled=!queue.length;$('restart').hidden=!!queue.length;progress();remaining=cfg.seconds*1000;$('status').textContent='Valendo!';startTimer();
 });
-$('pause').addEventListener('click',()=>{if(!current)return;if(running){remaining=Math.max(0,deadline-performance.now());stop();displayTime();$('pause').textContent='Continuar';$('status').textContent='Cronômetro pausado.';}else{startTimer();$('status').textContent='Valendo!';}});
+$('pause').addEventListener('click',()=>{if(!current)return;if(running){remaining=Math.max(0,deadline-performance.now());stop();displayTime();$('pause').textContent='Continuar';$('status').textContent='Cronômetro pausado.';}else{enableAudio();startTimer();$('status').textContent='Valendo!';}});
 $('reveal').addEventListener('click',()=>{if(running)remaining=Math.max(0,deadline-performance.now());stop();displayTime();reveal();$('pause').disabled=true;$('status').textContent='Resposta revelada. Marque o resultado ou passe ao próximo aluno.';});
 for(const [id,result] of [['correct','Acertou'],['wrong','Errou']])$(id).addEventListener('click',()=>{if(!current||current.recorded)return;if(running)remaining=Math.max(0,deadline-performance.now());stop();displayTime();reveal();record(result);for(const key of ['correct','wrong','pause'])$(key).disabled=true;$('status').textContent=queue.length?'Resultado registrado. Vamos ao próximo aluno?':'Todos participaram! Reinicie a turma para uma nova sequência.';});
 $('restart').addEventListener('click',()=>{record('Sem avaliação');queue=Tabuada.shuffle(roster);resetRound();notice('Nova sequência pronta. O histórico da sessão foi mantido.');});
