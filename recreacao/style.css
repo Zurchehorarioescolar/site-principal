@@ -13,3 +13,18 @@
 @keyframes urgent-pulse{0%,100%{transform:scale(.9)}45%{transform:scale(1.08)}}
 @media(max-height:600px){.stage.urgent{justify-content:flex-start;padding:12px 3vw}.stage.urgent .student{margin:8px 0;font-size:24px}.stage.urgent .equation{font-size:clamp(36px,17vh,100px);margin:10px 0}.stage.urgent .clock{font-size:30px}.stage.urgent .stage-note{margin:4px 0}.stage.urgent .stage-actions button{padding:8px 12px}}
 @media(prefers-reduced-motion:reduce){.stage.urgent #question{animation:none}}
+
+/* Configuração em duas colunas e jogo em modal de tela inteira. */
+.setup-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;padding:0;margin-bottom:24px;align-items:stretch}
+.setup-grid h2{font-size:25px}.setup-grid .step{margin-top:0}.setup-grid .roster-panel textarea{min-height:330px}.start-game{min-height:56px;font-size:17px;margin-top:22px}
+#gameModal{padding:0;margin:0;border:0;max-width:none;max-height:none;width:100vw;height:100dvh;background:var(--bg);color:var(--text);overflow:auto}
+#gameModal::backdrop{background:#0b1020}
+#gameModal .stage{border:0;border-radius:0;min-height:100dvh;width:100%;padding:24px 4vw;justify-content:center}
+#gameModal .stage-top{flex-wrap:wrap;justify-content:center}#gameModal .stage-top .live-dot{margin-right:auto}
+#gameModal .student{font-size:clamp(28px,4vw,60px)}
+#gameModal .equation{font-size:clamp(48px,10vw,150px)}
+#gameModal .stage-actions{margin-top:12px}
+#gameModal .stage.urgent .equation{font-size:clamp(38px,var(--urgent-size,14vw),180px)}
+body:has(#gameModal[open]){overflow:hidden}
+@media(max-width:740px){.setup-grid{grid-template-columns:1fr}.setup-grid .roster-panel textarea{min-height:220px}#gameModal .stage{padding:16px}#gameModal .stage-top button{font-size:12px;padding:8px}#gameModal .equation{font-size:clamp(34px,10vw,90px)}#gameModal .stage.urgent .equation{font-size:clamp(34px,var(--urgent-size,14vw),120px)}}
+@media(max-height:600px){#gameModal .stage{padding:12px 3vw;justify-content:flex-start}#gameModal .student{font-size:24px;margin:8px 0}#gameModal .equation,#gameModal .stage.urgent .equation{font-size:clamp(34px,15vh,90px);margin:10px 0}}
