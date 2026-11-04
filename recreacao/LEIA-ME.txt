@@ -1,0 +1,4 @@
+pdfmake 0.2.20 (MIT) e fontes Roboto distribuídas pelo projeto.
+Origem: https://cdn.jsdelivr.net/npm/pdfmake@0.2.20/
+Documentação: https://pdfmake.github.io/docs/0.1/
+Os relatórios são gerados no dispositivo, sem enviar os dados a um servidor.
