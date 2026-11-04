@@ -1,48 +1,43 @@
-ZURCHE — ATIVIDADES: ORGANIZAÇÃO E FLUÊNCIA LEITORA
+ATUALIZAÇÃO — ESCUTA, VISUAL, RELATÓRIO PDF E NAVEGAÇÃO FINAL
 
-Este pacote é uma atualização do portal, não contém a aplicação Horário Escolar.
-Faça uma cópia de segurança antes de substituir arquivos.
+Na RAIZ do GitHub: substitua index.html pelo index.html da raiz deste pacote.
+Essa mudança apenas reduz os ícones do portal.
 
-NO GITHUB
-1. Na RAIZ do repositório, substitua index.html pelo index.html da RAIZ deste pacote.
-   Esse arquivo mantém Horário Escolar e Corrige Provas e renomeia o terceiro
-   cartão para Zurche — Atividades.
-2. ENTRE na pasta recreacao e envie o CONTEÚDO da pasta recreacao deste pacote.
-   O index.html de DENTRO de recreacao é o menu das três disciplinas.
-3. Mantenha assets, horarios e CNAME existentes. Aguarde publicar e use Ctrl+F5.
-O caminho recreacao foi preservado para que os links anteriores continuem válidos;
-o nome mostrado nas telas agora é Atividades. Não é necessário renomear essa pasta.
+DEPOIS, ENTRE NA PASTA recreacao e envie:
+fluencia.html
+fluencia.js
+fluencia.css
+fluencia-relatorio.js (novo)
+vendor/ (nova pasta, incluindo pdfmake.min.js e vfs_fonts.js)
 
-FLUÊNCIA LEITORA
-Identificação: professor, estudante, turma e data.
-Material: texto (até 600 palavras), tempo, três perguntas em campos separados,
-lista de até 100 palavras e tempo TOTAL da lista.
-Microfone: aviso, autorização, seleção e teste de volume. O reconhecimento usa
-o microfone padrão do navegador: escolha o mesmo dispositivo nas configurações.
-Revisão: botão Iniciar teste. Sequência: Texto -> 3 perguntas -> Palavras -> Relatório.
+Se o GitHub colocar arquivos soltos na raiz, mova-os para dentro de recreacao.
+Os arquivos da biblioteca devem ficar em recreacao/vendor/.
+Não substitua o index.html que está dentro de recreacao com o da raiz.
+Não precisa alterar fluencia-core.js nem as atividades de Matemática/Geografia.
+Aguarde publicar e atualize com Ctrl+F5 ou teste em aba anônima.
 
-O cronômetro do texto inicia quando o serviço de voz começa a escutar.
-Ele para no fim do tempo e preserva somente as transcrições finais recebidas
-antes do prazo. O serviço pode atrasar ou omitir palavras: últimos trechos podem
-não aparecer mesmo que tenham sido lidos. Não há gravação de áudio.
-O professor também pode encerrar antes do prazo, se a leitura terminar.
-Perguntas: o professor lê oralmente e marca Correta, Incorreta ou Sem resposta.
-Palavras: correspondência de uma palavra avança. Na primeira tentativa sem
-correspondência, o professor pode confirmar a leitura ou liberar a segunda.
-Na segunda sem correspondência, o sistema registra e avança. O tempo vale
-para toda a lista; pode ser pausado pelo professor. Silêncio/rede não são tentativas.
-No modo sem microfone, o professor confirma palavras ou registra as tentativas.
+ESCUTA DAS PALAVRAS
+Mostra se o microfone está ativo e mostra as falas provisórias em Ouvindo.
+Uma fala exata que permaneça estável por 550 ms pode avançar a palavra sem
+esperar o serviço fechar a frase. Ela é identificada no registro como
+provisória para revisão do professor. Falas provisórias diferentes não
+contam como erro: só a transcrição final conta como tentativa sem correspondência.
+Após a primeira tentativa sem correspondência, uma nova fala é aceita
+automaticamente como segunda tentativa; o professor ainda pode corrigir.
+Nenhuma transcrição do serviço de voz prova que a leitura foi correta.
 
-RELATÓRIO
-Comparação ESTIMADA do texto com transcrição, palavras diferentes/ausentes,
-trecho final sem registro e palavras extras. Permite editar a transcrição,
-revisar as três respostas e classificar cada palavra como Certa/Errada/Não avaliada.
-Baixe TXT ou imprima/salve PDF. O TXT preserva a transcrição original e a revista.
-Os registros são mantidos SOMENTE na página aberta. Não há banco, envio automático
-de dados ou persistência ao recarregar. Baixe o relatório antes de sair.
-Reconhecimento de voz não é uma avaliação validada de pronúncia/fluência. A
-comparação automática pode errar e deve ser revisada pelo professor.
-O serviço de voz do navegador pode enviar áudio para processamento externo.
+VISUAL
+Ícones dos menus e do portal, títulos, cartões e palavra em destaque
+ocupam menos espaço. O texto de leitura continua cabendo na tela.
 
-O teste inicial pode ser feito sem microfone, preenchendo o exemplo e usando
-as marcações do professor. Use o portal HTTPS para testar a voz em navegador compatível.
+PDF
+Gerar relatório PDF baixa um documento próprio (não um print da tela),
+com fontes incluídas, identificação, resumo do texto, transcrições,
+perguntas, tabela de palavras, revisões, observações e páginas numeradas.
+O PDF é montado no dispositivo; dados do estudante não são enviados a
+um serviço de geração de PDF. A pasta vendor precisa estar no site.
+
+FINAL DO TESTE
+Botões Voltar à Alfabetização e Novo teste. No novo teste, professor,
+turma, materiais e tempos são mantidos; o nome do próximo aluno é informado.
+Baixe o relatório antes de sair. Os dados permanecem apenas na página aberta.

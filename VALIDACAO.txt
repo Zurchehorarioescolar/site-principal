@@ -1,15 +1,22 @@
-Verificados:
-- Menu principal com as três aplicações e terceiro cartão renomeado.
-- Menus separados para Matemática, Geografia e Alfabetização.
-- Caminhos de todos os HTMLs do pacote e arquivos necessários existentes.
-- Fluxo da fluência no navegador (modo professor), do cadastro ao relatório.
-- Encerramento do texto pelo tempo; três perguntas; revisão da primeira
-  tentativa; avanço após a segunda; tempo total das palavras e relatório.
-- Revisão da transcrição no navegador, com recalculo correto do trecho final.
-- Voz simulada: transcrições após o prazo descartadas, uma escuta por lista,
-  duas tentativas, correção do professor e preservação da transcrição original.
-- Comparação com troca, omissão, repetição, extras e texto incompleto.
+ESCUTA
+Testes simulados de resultados provisórios/finais, correspondência estável,
+segunda tentativa sem clique obrigatório, final atrasado sem dupla contagem,
+alteração entre provisório/final preservada para revisão, pausa cancelando
+avanço pendente e preservação do prazo do cronômetro passaram.
+A captura de voz real não foi executada nesta verificação. É necessário
+testar a precisão no microfone e navegador de destino.
 
-A precisão real do reconhecimento com crianças e o comportamento das
-permissões dependem do navegador, do microfone e do serviço de voz.
-O áudio real não foi capturado nesses testes.
+INTERFACE
+Conferida no navegador a tela de palavras compacta, o relatório,
+os botões finais, a manutenção de professor/turma e a limpeza do nome
+do estudante ao preparar um novo teste.
+
+PDF
+Download executado no navegador e arquivo de demonstração com 2 páginas A4
+gerado pelo mesmo código. Páginas renderizadas e inspecionadas visualmente.
+Extração de texto confirmou identificação, seções e caracteres portugueses.
+As fontes são incluídas no pacote. Dados não são enviados a serviço de PDF.
+
+NAVEGAÇÃO
+Os links e dependências da página, a sintaxe JS e os três cartões do portal
+foram conferidos. Um novo arquivo de relatório e a pasta vendor são necessários.
