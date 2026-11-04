@@ -1,0 +1,15 @@
+Verificados:
+- Menu principal com as três aplicações e terceiro cartão renomeado.
+- Menus separados para Matemática, Geografia e Alfabetização.
+- Caminhos de todos os HTMLs do pacote e arquivos necessários existentes.
+- Fluxo da fluência no navegador (modo professor), do cadastro ao relatório.
+- Encerramento do texto pelo tempo; três perguntas; revisão da primeira
+  tentativa; avanço após a segunda; tempo total das palavras e relatório.
+- Revisão da transcrição no navegador, com recalculo correto do trecho final.
+- Voz simulada: transcrições após o prazo descartadas, uma escuta por lista,
+  duas tentativas, correção do professor e preservação da transcrição original.
+- Comparação com troca, omissão, repetição, extras e texto incompleto.
+
+A precisão real do reconhecimento com crianças e o comportamento das
+permissões dependem do navegador, do microfone e do serviço de voz.
+O áudio real não foi capturado nesses testes.
