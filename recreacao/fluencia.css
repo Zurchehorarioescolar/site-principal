@@ -16,3 +16,14 @@ body.text-focus #testControls button{font-size:12px;padding:8px 12px;min-height:
 body.text-focus #status{flex:0 0 auto;font-size:12px;line-height:1.3;max-height:2.6em;overflow:hidden;margin:0}
 body.text-focus #heard,body.text-focus #transcriptDetails{display:none!important}
 @media(max-width:600px){body.text-focus #test{padding:8px;gap:6px}body.text-focus #testStage{font-size:10px}body.text-focus .test-clock{font-size:25px}}
+
+/* Avisos do próprio aplicativo, com ações explícitas e foco acessível. */
+.decision-dialog{width:min(500px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:28px;border:1px solid #3c4d68;border-radius:24px;background:linear-gradient(145deg,#18263d,#101b2d);color:#f4f7fc;box-shadow:0 28px 100px #0009;overflow:auto}
+.decision-dialog::backdrop{background:#050b19b8;backdrop-filter:blur(5px)}
+.decision-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}.decision-icon{display:grid;place-items:center;width:48px;height:48px;background:#493b2b;border:1px solid #80603c;border-radius:14px;color:#ffbd77;font:800 26px Manrope,Arial,sans-serif}
+.decision-dialog .decision-close{display:grid;place-items:center;min-height:36px;width:36px;padding:0;background:transparent;border:1px solid #34445e;color:#b9c8dc;border-radius:10px;font:400 24px Arial,sans-serif}
+.decision-context{text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:700;color:#83edc2}.decision-dialog h2{font:800 28px/1.2 Manrope,Arial,sans-serif;margin:10px 0 14px;letter-spacing:-.035em}.decision-dialog p{font-size:14px;line-height:1.65;color:#bac8db;margin:0 0 16px}.decision-dialog .decision-hint{padding:12px 14px;border:1px solid #3a485d;border-radius:12px;background:#10192b;font-size:12px;color:#aebed4}
+.decision-time{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#aebed4;margin:16px 0}.decision-time strong{font:800 22px Manrope,Arial,sans-serif;color:#ffbd77;font-variant-numeric:tabular-nums}
+.decision-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}.decision-actions button{font-size:13px;min-height:46px;padding:12px 16px}.decision-actions .decision-primary{background:#ffbd77;border-color:#ffbd77;color:#2c1c0d}.decision-actions .quiet{background:#1b2940;border-color:#3b4d67}
+body:has(.decision-dialog[open]){overflow:hidden}
+@media(max-width:520px){.decision-dialog{padding:22px}.decision-dialog h2{font-size:25px}.decision-actions{flex-direction:column-reverse}.decision-actions button{width:100%}}
