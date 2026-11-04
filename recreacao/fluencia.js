@@ -1,6 +1,6 @@
 'use strict';
 const $=id=>document.getElementById(id),F=Fluencia,Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
-let step=0,config=null,phase='setup',clock=null,ticker=null,rec=null,voiceVersion=0,paused=false,locked=false,transitionTimer=null,fallback=false,transcript='',originalTranscript='',revision=false,wordTest=null,questionIndex=0,questionAnswers=['','',''],resultAlignment=null;
+let step=0,config=null,phase='setup',clock=null,ticker=null,rec=null,voiceVersion=0,paused=false,locked=false,transitionTimer=null,fallback=false,transcript='',originalTranscript='',revision=false,wordTest=null,questionIndex=0,questionAnswers=['','',''],resultAlignment=null,voiceRetryTimer=null,voiceRetries=0;
 const active=()=>['text','words'].includes(phase),say=message=>$('status').textContent=message;
 function showStep(n){step=n;for(const el of document.querySelectorAll('[data-panel]'))el.hidden=Number(el.dataset.panel)!==n;for(const el of document.querySelectorAll('[data-step]'))el.classList.toggle('active',Number(el.dataset.step)===n);$('previous').hidden=n===0;$('next').hidden=n===3;$('setupMessage').textContent='';if(n===3)reviewSetup();}
 function validateStep(n){
@@ -11,39 +11,39 @@ function validateStep(n){
 }
 function reviewSetup(){const list=document.createElement('dl');for(const [label,value] of [['Professor',$('teacher').value],['Estudante',$('student').value],['Turma / data',$('className').value+' · '+$('date').value],['Texto',F.tokens($('passage').value).length+' palavras · '+$('textSeconds').value+' s'],['Compreensão','3 perguntas avaliadas pelo professor'],['Lista',F.parseWords($('words').value).length+' palavras · '+$('wordSeconds').value+' s no total'],['Modo',$('mode').selectedOptions[0].textContent]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;list.append(dt,dd);}$('reviewSetup').replaceChildren(list);}
 $('next').addEventListener('click',()=>{try{validateStep(step);showStep(step+1);}catch(e){$('setupMessage').textContent=e.message;}});$('previous').addEventListener('click',()=>showStep(step-1));
-function stopVoice(){voiceVersion++;if(rec){const old=rec;rec=null;old.onstart=old.onresult=old.onerror=old.onend=null;try{old.abort();}catch{}}}
+function stopVoice(){clearTimeout(voiceRetryTimer);voiceRetryTimer=null;voiceVersion++;if(rec){const old=rec;rec=null;old.onstart=old.onresult=old.onerror=old.onend=null;try{old.abort();}catch{}}}
 function stopTimers(){clearInterval(ticker);ticker=null;clearTimeout(transitionTimer);transitionTimer=null;}
-function controls(){const live=active();$('testControls').hidden=!live;$('pause').textContent=paused?'Continuar':'Pausar';$('resumeVoice').hidden=!live||config.mode!=='auto'||fallback||!!rec||locked;$('withoutVoice').hidden=!live||config.mode!=='auto'||fallback||!!rec;$('teacherCorrect').hidden=phase!=='words';$('retry').hidden=phase!=='words'||!wordTest.waiting;$('teacherWrong').hidden=phase!=='words'||config.mode!=='manual'&&!fallback;for(const id of ['teacherCorrect','retry','teacherWrong'])$(id).disabled=paused||locked;}
+function controls(){const live=active();$('testControls').hidden=!live;$('pause').textContent=paused?'Continuar':'Pausar';$('pause').hidden=phase==='text';$('resumeVoice').hidden=!live||config.mode!=='auto'||fallback||!!rec||locked;$('withoutVoice').hidden=!live||config.mode!=='auto'||fallback||!!rec;$('teacherCorrect').hidden=phase!=='words';$('retry').hidden=phase!=='words'||!wordTest.waiting;$('teacherWrong').hidden=phase!=='words'||config.mode!=='manual'&&!fallback;for(const id of ['teacherCorrect','retry','teacherWrong'])$(id).disabled=paused||locked;}
 function displayClock(){if(!clock||!active()){$('clock').textContent='';return;}const seconds=Math.ceil(clock.left(performance.now())/1000);$('clock').textContent=seconds+' s';$('clock').classList.toggle('warning',seconds<=5);}
 function tick(){if(!active()||paused)return;displayClock();if(clock.expired(performance.now()))finishSegment('tempo');}
 function runClock(){clock.start(performance.now());clearInterval(ticker);ticker=setInterval(tick,100);displayClock();}
 function pauseSegment(message='Etapa pausada. Clique em Continuar para retomar.'){
- if(!active())return;if(clock.expired(performance.now())){finishSegment('tempo');return;}clock.pause(performance.now());paused=true;stopVoice();stopTimers();locked=false;controls();displayClock();say(message);
+ if(!active())return;if(clock.expired(performance.now())){finishSegment('tempo');return;}clock.pause(performance.now());paused=true;$('textScreen').setAttribute('aria-pressed','true');stopVoice();stopTimers();locked=false;controls();displayClock();say(message);
 }
 function listen(){
  if(!active()||locked||rec||config.mode!=='auto'||fallback)return;
- if(!Speech){pauseSegment('Reconhecimento indisponível. Você pode continuar sem microfone.');return;}
+ if(!Speech){voiceInterrupted('Reconhecimento indisponível. A contagem continua; o professor pode encerrar a etapa.',false);return;}
  const token=++voiceVersion,instance=new Speech();rec=instance;let processed=0;
- instance.lang='pt-BR';instance.continuous=true;instance.interimResults=false;instance.maxAlternatives=1;say('Ativando o microfone. A contagem inicia quando a escuta estiver pronta.');controls();
- instance.onstart=()=>{if(token!==voiceVersion)return;paused=false;runClock();say('Microfone ativo. Pode começar a leitura.');controls();};
+ instance.lang='pt-BR';instance.continuous=true;instance.interimResults=false;instance.maxAlternatives=1;say('Ativando o microfone. A contagem já está em andamento.');controls();
+ instance.onstart=()=>{if(token!==voiceVersion||paused)return;runClock();say('Microfone ativo. Pode começar a leitura.');controls();};
  instance.onresult=event=>{
   if(token!==voiceVersion)return;const chunks=[];
   for(let i=Math.max(processed,event.resultIndex||0);i<event.results.length;i++){const r=event.results[i];if(!r?.isFinal)break;processed=i+1;chunks.push(r[0].transcript);}
-  if(!active()||paused||locked||!chunks.length)return;
+  if(!active()||paused||locked||!chunks.length)return;voiceRetries=0;
   if(clock.expired(performance.now())){finishSegment('tempo');return;}
-  if(phase==='text'){const next=(transcript+' '+chunks.join(' ')).trim();if(F.tokens(next).length>1200){pauseSegment('A transcrição atingiu o limite de 1.200 palavras. Encerre a etapa para revisar.');return;}transcript=next;$('liveTranscript').textContent=transcript;say('Leitura em andamento.');}
+  if(phase==='text'){const next=(transcript+' '+chunks.join(' ')).trim();if(F.tokens(next).length>1200){stopVoice();fallback=true;controls();say('A transcrição atingiu o limite de 1.200 palavras. O tempo continua; encerre quando desejar.');return;}transcript=next;$('liveTranscript').textContent=transcript;say('Leitura em andamento.');}
   else if(phase==='words')processWord(chunks[0]);
  };
- instance.onerror=event=>{if(token!==voiceVersion)return;const messages={'not-allowed':'Microfone não autorizado. Confira a permissão do navegador.','service-not-allowed':'Serviço de reconhecimento bloqueado.','audio-capture':'Microfone indisponível.','network':'Falha de rede no serviço de voz.','no-speech':'Nenhuma fala detectada. Isso não conta como tentativa.','language-not-supported':'Português indisponível no serviço de voz.'};pauseSegment((messages[event.error]||'Escuta interrompida.')+' Clique em Retomar escuta ou continue sem microfone.');};
- instance.onend=()=>{if(token!==voiceVersion)return;pauseSegment('O navegador encerrou a escuta. O tempo foi pausado. Clique em Retomar escuta para continuar.');};
- try{instance.start();}catch{pauseSegment('Não foi possível abrir o microfone. Retome a escuta ou continue sem microfone.');}
+ instance.onerror=event=>{if(token!==voiceVersion)return;const messages={'not-allowed':'Microfone não autorizado. Confira a permissão do navegador.','service-not-allowed':'Serviço de reconhecimento bloqueado.','audio-capture':'Microfone indisponível.','network':'Falha de rede no serviço de voz.','no-speech':'Nenhuma fala detectada. Isso não conta como tentativa.','language-not-supported':'Português indisponível no serviço de voz.'};voiceInterrupted((messages[event.error]||'Escuta interrompida.')+' O tempo continua correndo.',!['not-allowed','service-not-allowed','audio-capture','language-not-supported'].includes(event.error));};
+ instance.onend=()=>{if(token!==voiceVersion)return;voiceInterrupted('O serviço de voz interrompeu a escuta. O tempo continua correndo.',true);};
+ try{instance.start();}catch{voiceInterrupted('Não foi possível abrir o microfone. O tempo continua; tente Retomar escuta.',false);}
 }
-function resumeSegment(){if(!active())return;paused=false;if(phase==='words')renderWord();controls();if(config.mode==='auto'&&!fallback)listen();else{runClock();say('Etapa em andamento, com acompanhamento do professor.');}}
-function hideScreens(){for(const id of ['textScreen','questionScreen','wordScreen','transition'])$(id).hidden=true;$('transcriptDetails').hidden=true;$('heard').textContent='';}
-function beginSegment(type){stopVoice();stopTimers();hideScreens();phase=type;fallback=false;paused=false;locked=false;clock=new F.Clock(type==='text'?config.textSeconds:config.wordSeconds);$('testStage').textContent=type==='text'?'1 · Leitura do texto':'3 · Leitura das palavras';
- if(type==='text'){$('textScreen').hidden=false;$('passageDisplay').textContent=config.passage;$('transcriptDetails').hidden=config.mode!=='auto';}
+function resumeSegment(){if(!active())return;paused=false;$('textScreen').setAttribute('aria-pressed','false');runClock();if(phase==='words')renderWord();controls();if(config.mode==='auto'&&!fallback)listen();else{runClock();say('Etapa em andamento, com acompanhamento do professor.');}}
+function hideScreens(){document.body.classList.remove('text-focus');for(const id of ['textScreen','questionScreen','wordScreen','transition'])$(id).hidden=true;$('transcriptDetails').hidden=true;$('heard').textContent='';}
+function beginSegment(type){stopVoice();stopTimers();hideScreens();phase=type;voiceRetries=0;fallback=false;paused=false;locked=false;clock=new F.Clock(type==='text'?config.textSeconds:config.wordSeconds);$('testStage').textContent=type==='text'?'1 · Leitura do texto':'3 · Leitura das palavras';
+ if(type==='text'){$('textScreen').hidden=false;$('passageDisplay').textContent=config.passage.replace(/\n{3,}/g,'\n\n');document.body.classList.add('text-focus');$('textScreen').setAttribute('aria-pressed','false');scheduleTextFit();$('transcriptDetails').hidden=config.mode!=='auto';}
  else{$('wordScreen').hidden=false;wordTest=new F.WordTest(config.words);renderWord();}
- displayClock();controls();resumeSegment();
+ displayClock();controls();resumeSegment();scheduleTextFit();
 }
 function renderWord(){if(!wordTest.word)return;$('wordProgress').textContent=`Palavra ${wordTest.index+1} de ${wordTest.words.length}`;$('wordDisplay').textContent=config.letterCase==='upper'?wordTest.word.toLocaleUpperCase('pt-BR'):wordTest.word.toLocaleLowerCase('pt-BR');$('attemptInfo').textContent=wordTest.waiting?'Primeira tentativa sem correspondência. O professor pode confirmar ou liberar a segunda tentativa.':'Leia a palavra. Até duas tentativas de reconhecimento.';controls();}
 function processWord(text){
@@ -64,7 +64,7 @@ $('transitionNext').addEventListener('click',()=>{if(phase==='textDone'){phase='
 function showQuestion(){hideScreens();$('questionScreen').hidden=false;$('testStage').textContent='2 · Compreensão do texto';$('clock').textContent='';$('questionNumber').textContent=`Pergunta ${questionIndex+1} de 3`;$('questionText').textContent=config.questions[questionIndex];$('questionStatus').textContent=questionAnswers[questionIndex]?'Registro: '+questionAnswers[questionIndex]:'';$('questionNext').disabled=!questionAnswers[questionIndex];$('questionNext').textContent=questionIndex===2?'Avançar para palavras →':'Próxima pergunta →';for(const button of document.querySelectorAll('[data-question-answer]'))button.classList.toggle('selected',button.dataset.questionAnswer===questionAnswers[questionIndex]);controls();}
 for(const button of document.querySelectorAll('[data-question-answer]'))button.addEventListener('click',()=>{questionAnswers[questionIndex]=button.dataset.questionAnswer;showQuestion();});
 $('questionNext').addEventListener('click',()=>{if(!questionAnswers[questionIndex])return;if(questionIndex<2){questionIndex++;showQuestion();}else{phase='questionsDone';showTransition('Perguntas registradas','A próxima etapa apresenta uma palavra por vez. O tempo vale para toda a lista. Na primeira tentativa sem correspondência, o professor pode corrigir ou liberar a segunda.','Iniciar leitura das palavras →');}});
-$('pause').addEventListener('click',()=>paused?resumeSegment():pauseSegment());$('resumeVoice').addEventListener('click',resumeSegment);
+$('pause').addEventListener('click',()=>paused?resumeSegment():pauseSegment());$('resumeVoice').addEventListener('click',()=>{voiceRetries=0;resumeSegment();});
 $('withoutVoice').addEventListener('click',()=>{stopVoice();fallback=true;paused=false;runClock();say('Modo sem microfone. O professor acompanha e poderá revisar os registros no relatório.');controls();});
 $('retry').addEventListener('click',()=>{if(phase!=='words'||paused||locked)return;wordTest.retry();renderWord();say('Segunda tentativa liberada. Leia novamente.');if(!rec&&config.mode==='auto'&&!fallback)listen();});
 $('teacherCorrect').addEventListener('click',()=>{if(phase!=='words'||paused||locked||clock.expired(performance.now())){tick();return;}wordTest.record('Confirmada pelo professor');afterWord('Leitura confirmada pelo professor.');});
@@ -79,7 +79,29 @@ $('applyTranscript').addEventListener('click',()=>{try{const revised=$('editTran
 function reportText(){const c=resultAlignment.counts;return `ZURCHE — ATIVIDADES / FLUÊNCIA LEITORA\nProfessor: ${config.teacher}\nEstudante: ${config.student}\nTurma: ${config.className}\nData: ${config.date}\nModo inicial: ${config.mode==='auto'?'Voz + professor':'Sem microfone'}\nTempos configurados: texto ${config.textSeconds}s; lista de palavras ${config.wordSeconds}s\n\nCOMPARAÇÃO DO TEXTO (${revision?'REVISTA PELO PROFESSOR':'ESTIMATIVA AUTOMÁTICA'})\nCorrespondências: ${c.match}\nDiferentes: ${c.different}\nAusentes no meio: ${c.missing}\nFinal sem registro: ${c.notRead}\nExtras: ${c.extra}\nTexto completo na transcrição: ${resultAlignment.incomplete?'Não':'Sim, segundo a comparação'}\nSem transcrição não significa que o estudante não leu.\n\nTEXTO PROPOSTO\n${config.passage}\n\nTRANSCRIÇÃO ORIGINAL RECEBIDA\n${originalTranscript||'[Nenhuma transcrição]'}\n\nTRANSCRIÇÃO USADA NA COMPARAÇÃO\n${transcript||'[Nenhuma transcrição]'}\n\nDETALHES\n${resultAlignment.ops.map(op=>`${op.expected||'[extra]'} | transcrito: ${op.heard||'—'} | ${op.type}`).join('\n')}\n\nCOMPREENSÃO\n${config.questions.map((q,i)=>`${i+1}. ${q}\n${questionAnswers[i]}`).join('\n\n')}\n\nPALAVRAS\n${wordTest.rows.map((r,i)=>`${i+1}. ${r.word}\nRegistro: ${r.result}\nTranscrições: ${r.attempts.join(' | ')||'Nenhuma'}\nRevisão do professor: ${r.review||'Sem revisão'}`).join('\n\n')}\n\nOBSERVAÇÕES\n${$('notes').value}\n\nEste é um registro pedagógico assistido por reconhecimento de voz, não uma avaliação validada de fluência ou pronúncia. Os registros de ausência/correspondência podem refletir falhas do reconhecedor.`;}
 $('downloadReport').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob(['\uFEFF'+reportText()],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='zurche-fluencia-relatorio.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);});$('printReport').addEventListener('click',()=>window.print());
 $('newSession').addEventListener('click',()=>{if(!confirm('Você já baixou o relatório que deseja guardar? Preparar outra sessão mantém os campos, mas o próximo teste substituirá os registros.'))return;stopVoice();stopTimers();phase='setup';$('report').hidden=true;$('setup').hidden=false;showStep(0);});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&active())pauseSegment('A atividade foi pausada ao sair da aba. Clique em Continuar para retomar.');});window.addEventListener('pagehide',()=>{stopVoice();stopTimers();});$('voiceConsent').addEventListener('change',()=>{if(!$('voiceConsent').checked&&active())pauseSegment('Reconhecimento pausado: autorização desmarcada.');});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active()){tick();if(active()&&!paused&&!rec)queueVoiceRetry();scheduleTextFit();}});window.addEventListener('pagehide',()=>{stopVoice();stopTimers();});$('voiceConsent').addEventListener('change',()=>{if(!$('voiceConsent').checked&&active())pauseSegment('Reconhecimento pausado: autorização desmarcada.');});
 function updateSupport(){$('voiceInfo').hidden=$('mode').value!=='auto';$('compatibility').textContent=Speech&&window.isSecureContext?'Reconhecimento disponível neste navegador. O microfone só será ativado ao iniciar o teste.':'Reconhecimento indisponível neste contexto. Você pode usar o modo sem microfone e revisar os registros.';}$('mode').addEventListener('change',updateSupport);
 $('example').addEventListener('click',()=>{if(($('passage').value||$('words').value)&&!confirm('Substituir o material preenchido pelo exemplo?'))return;$('passage').value='Lia tem um gato. O gato se chama Tico. De manhã, Lia coloca água para Tico. Depois, os dois brincam com uma bola no quintal.';$('q1').value='Como se chama o gato de Lia?';$('q2').value='O que Lia coloca para Tico de manhã?';$('q3').value='Onde Lia e Tico brincam?';$('words').value='gato\nbola\ncasa\npato\njanela\nmenina\nágua\nmanhã';});
 const dateParts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());$('date').value=['year','month','day'].map(t=>dateParts.find(p=>p.type===t).value).join('-');showStep(0);updateSupport();
+
+// Speech availability never controls the assessment clock.
+function voiceInterrupted(message,retry){
+ stopVoice();if(!active()||paused)return;if(clock.expired(performance.now())){finishSegment('tempo');return;}
+ say(message);controls();scheduleTextFit();if(retry)queueVoiceRetry();
+}
+function queueVoiceRetry(){
+ if(!active()||paused||fallback||config.mode!=='auto'||rec||document.hidden||voiceRetryTimer!==null||voiceRetries>=3)return;
+ const expectedPhase=phase;voiceRetries++;
+ voiceRetryTimer=setTimeout(()=>{voiceRetryTimer=null;if(phase===expectedPhase&&active()&&!paused&&!rec){if(clock.expired(performance.now()))finishSegment('tempo');else listen();}},500);
+}
+function fitReadingText(){
+ if(phase!=='text')return;const el=$('passageDisplay');if(!el.clientWidth||!el.clientHeight)return;
+ let low=.5,high=40,best=.5;
+ for(let i=0;i<12;i++){const size=(low+high)/2;el.style.fontSize=size+'px';if(el.scrollHeight<=el.clientHeight&&el.scrollWidth<=el.clientWidth){best=size;low=size;}else high=size;}
+ el.style.fontSize=(Math.floor(best*10)/10)+'px';
+}
+function scheduleTextFit(){if(typeof requestAnimationFrame==='function')requestAnimationFrame(fitReadingText);}
+$('textScreen').addEventListener('click',()=>{if(phase==='text'){paused?resumeSegment():pauseSegment('Leitura pausada. Clique novamente no texto para continuar.');scheduleTextFit();}});
+$('textScreen').addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&phase==='text'){event.preventDefault();$('textScreen').click();}});
+window.addEventListener('resize',scheduleTextFit);window.visualViewport?.addEventListener('resize',scheduleTextFit);
+if(typeof ResizeObserver!=='undefined')new ResizeObserver(scheduleTextFit).observe($('passageDisplay'));
