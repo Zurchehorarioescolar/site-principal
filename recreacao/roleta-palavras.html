@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roleta de Palavras — Zurche Atividades</title>
+<link rel="icon" href="../assets/logo-zurche-help-escolar.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="roleta-palavras.css?v=1">
+<script src="roleta-palavras.js?v=1" defer></script>
+</head>
+<body><div class="shell">
+<header><a class="brand" href="../index.html"><img src="../assets/logo-zurche-help-escolar.png" alt="Zurche"><span>Zurche — Atividades</span></a><a class="back" href="alfabetizacao.html">← Alfabetização</a></header>
+<main>
+<section class="intro roulette-intro"><span class="eyebrow">Alfabetização</span><h1>Roleta de <span>Palavras</span></h1><p>Uma dica, três palavras e até três participantes.</p></section>
+<form id="rouletteSetup" class="panel roulette-setup">
+<p class="help">Gire a roleta e escolha uma letra. Cada aparição vale o número de pontos sorteado. Se acertar, gire novamente. Se errar, a vez passa.</p>
+<div class="roulette-fields">
+<label>Ano/série<select id="rouletteYear" required><option value="">Selecione o ano</option></select></label>
+<label>Nome do participante 1<input id="rouletteName1" required maxlength="30" autocomplete="off"></label>
+<label>Nome do participante 2 <small>(opcional)</small><input id="rouletteName2" maxlength="30" autocomplete="off"></label>
+<label>Nome do participante 3 <small>(opcional)</small><input id="rouletteName3" maxlength="30" autocomplete="off"></label>
+</div>
+<button type="submit" class="primary">Iniciar partida →</button>
+<p id="rouletteSetupStatus" role="status"></p>
+</form>
+<section id="rouletteGame" hidden aria-label="Partida">
+<div class="roulette-heading"><span id="rouletteGrade" class="badge"></span><button type="button" id="rouletteSettings">Alterar participantes</button></div>
+<div id="rouletteScores" class="roulette-scores" aria-label="Placar"></div>
+<div class="roulette-layout">
+<section class="panel roulette-spin" aria-label="Roleta">
+<div class="roulette-mechanism" aria-hidden="true"><span class="roulette-pointer"></span><div id="rouletteWheel" class="roulette-wheel"></div><div class="roulette-hub">Z</div></div>
+<p id="rouletteValue">Pronta para girar</p>
+<button id="rouletteSpin" type="button" class="primary">Girar roleta</button>
+</section>
+<section class="panel roulette-puzzle" aria-label="Painel de palavras">
+<p class="roulette-clue"><span>Dica</span> <strong id="rouletteClue"></strong></p>
+<div id="rouletteWords" class="roulette-words"></div>
+<p id="rouletteTurn" class="roulette-turn"></p>
+<p id="rouletteStatus" class="roulette-status" role="status"></p>
+<div id="rouletteKeyboard" class="roulette-keyboard" role="group" aria-label="Escolha uma letra"></div>
+<button id="rouletteReplay" type="button" class="primary" hidden>Jogar outra partida →</button>
+</section>
+</div>
+</section>
+</main>
+<footer>Zurche — Atividades · <a href="mailto:contato@zurche.com.br">contato@zurche.com.br</a></footer>
+</div></body></html>
