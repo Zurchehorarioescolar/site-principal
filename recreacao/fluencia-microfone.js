@@ -1,12 +1,32 @@
 (function(){
 'use strict';
 const box=document.createElement('section');box.className='voice-info';box.setAttribute('aria-labelledby','micTitle');
-box.innerHTML=`<h3 id="micTitle">1. Confira o microfone</h3><p>Primeiro marque a autorização de voz acima. Depois liste os dispositivos e fale para conferir o volume.</p><button type="button" id="micList">Listar microfones</button><label for="micDevice">Microfone para testar o volume</label><select id="micDevice"><option value="">Padrão do navegador</option></select><div class="mic-actions"><button type="button" id="micTest">Testar por 20 segundos</button><button type="button" id="micStop" disabled>Parar teste</button></div><label for="micMeter">Sinal de áudio recebido</label><meter id="micMeter" min="0" max="100" value="0">0</meter><p id="micStatus" role="status" aria-live="polite">Microfone desligado.</p><h3>2. Configure o mesmo microfone no navegador</h3><p><strong>A seleção acima vale para o teste de volume.</strong> O reconhecimento de palavras usa o microfone padrão do navegador. Para usar o dispositivo que funcionou no teste, selecione-o também nas configurações:</p><p><strong>Chrome:</strong> Configurações → Privacidade e segurança → Configurações do site → Microfone. Escolha o dispositivo. Você também pode copiar este endereço para a barra do Chrome:</p><code class="mic-address">chrome://settings/content/microphone</code><p><strong>Edge:</strong> Configurações → Permissões do site → Microfone. Procure “Microfone” na busca das configurações, se necessário.</p><p>Confira também o ícone de permissões ao lado do endereço da atividade e permita o microfone. Volte à atividade e inicie a leitura; não é preciso recarregar e perder os registros.</p><p><strong>O medidor se mexe, mas as palavras não aparecem?</strong> Se o mesmo microfone estiver selecionado no navegador, pode ser uma falha do serviço de voz ou da internet. O teste de volume não depende desse serviço; o reconhecimento de palavras pode depender.</p>`;
+box.innerHTML=`
+ <h3 id="micTitle">Confira a transcrição</h3>
+ <p>Marque a autorização de voz acima. Clique em testar e diga uma frase curta, por exemplo: “Hoje eu vou ler um texto”.</p>
+ <p>Este teste e a avaliação usam o microfone padrão do navegador. Confira se as palavras que você falou aparecem abaixo.</p>
+ <div class="mic-actions"><button type="button" id="speechTest">Testar transcrição</button><button type="button" id="speechStop" disabled>Parar transcrição</button></div>
+ <p id="speechTestStatus" role="status">Aguardando o teste de transcrição.</p>
+ <details>
+  <summary>Volume e configurações do microfone</summary>
+  <p>Use o medidor para conferir o sinal de um dispositivo. Para usá-lo na avaliação, selecione o mesmo microfone nas configurações do navegador.</p>
+  <button type="button" id="micList">Listar microfones</button>
+  <label for="micDevice">Microfone para testar o volume</label>
+  <select id="micDevice"><option value="">Padrão do navegador</option></select>
+  <div class="mic-actions"><button type="button" id="micTest">Testar volume por 20 segundos</button><button type="button" id="micStop" disabled>Parar teste de volume</button></div>
+  <label for="micMeter">Sinal de áudio recebido</label><meter id="micMeter" min="0" max="100" value="0">0</meter>
+  <p id="micStatus" role="status">Microfone desligado.</p>
+  <p><strong>Chrome</strong> → Configurações → Privacidade e segurança → Configurações do site → Microfone.</p>
+  <code class="mic-address">chrome://settings/content/microphone</code>
+  <p><strong>Edge</strong> → Configurações → pesquise por “Microfone” e abra as permissões do site.</p>
+  <p>Confira a permissão do site no ícone ao lado do endereço da atividade. Ao voltar, teste a transcrição com o dispositivo padrão do navegador.</p>
+ </details>`;
 const voiceInfo=document.getElementById('voiceInfo');voiceInfo.after(box);
 const style=document.createElement('style');style.textContent='.mic-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}#micMeter{display:block;width:100%;height:26px}.mic-address{display:block;padding:10px;border-radius:8px;background:#0c1424;overflow-wrap:anywhere;color:#83edc2;font-size:12px}#micTitle{font-size:19px;letter-spacing:0;margin:0 0 12px}';document.head.append(style);
 const $=id=>document.getElementById(id);
 let stream=null,ctx=null,source=null,analyser=null,frame=null,timer=null,token=0,heard=false,lastAnnounce=0;
-function stop(message){
+let speechTest=null,speechTimer=null,speechPreview='';
+function stopVolume(message){
  token++;if(frame!==null)cancelAnimationFrame(frame);frame=null;clearTimeout(timer);timer=null;
  if(stream)for(const track of stream.getTracks())track.stop();stream=null;
  try{source?.disconnect();analyser?.disconnect();}catch{}source=null;analyser=null;
@@ -14,13 +34,56 @@ function stop(message){
  $('micMeter').value=0;$('micStop').disabled=true;$('micTest').disabled=false;$('micList').disabled=false;
  if(message)$('micStatus').textContent=message;
 }
-function validate(){
- if(!$('voiceConsent').checked)throw Error('Marque a autorização de voz antes de testar o microfone.');
- if(!navigator.mediaDevices?.getUserMedia)throw Error('Teste de áudio indisponível. Abra a atividade pelo INICIAR-TESTE.bat, em um navegador com suporte.');
+function stopRecognition(message){
+ if(!speechTest)return;
+ const instance=speechTest;speechTest=null;
+ clearTimeout(speechTimer);speechTimer=null;
+ instance.onstart=instance.onresult=instance.onerror=instance.onend=null;
+ try{instance.abort();}catch{}
+ $('speechTest').disabled=false;$('speechStop').disabled=true;
+ $('speechTestStatus').textContent=message||(speechPreview?`Transcrição de teste: “${speechPreview}”`:'Teste de transcrição encerrado.');
 }
+function stop(){
+ stopVolume(stream||$('micList').disabled||!$('micStop').disabled?'Teste de volume encerrado.':'');
+ stopRecognition();
+}
+function requireConsent(){
+ if(!$('voiceConsent').checked)throw Error('Marque a autorização de voz antes de testar o microfone.');
+}
+function validateVolume(){
+ requireConsent();
+ if(!navigator.mediaDevices?.getUserMedia)throw Error('Teste de áudio indisponível. Abra a atividade pelo endereço HTTPS do portal, em um navegador compatível.');
+}
+$('speechTest').addEventListener('click',()=>{
+ stop();
+ try{
+  requireConsent();
+  const instance=createVoiceRecognition();speechTest=instance;speechPreview='';
+  $('speechTest').disabled=true;$('speechStop').disabled=false;
+  $('speechTestStatus').textContent='Ativando o reconhecimento de voz…';
+  instance.onstart=()=>{if(speechTest===instance)$('speechTestStatus').textContent='Escuta ativa. Diga a frase de teste.';};
+  instance.onresult=event=>{
+   if(speechTest!==instance)return;
+   const results=Array.from(event.results);
+   speechPreview=results.map(result=>result[0].transcript.trim()).join(' ').trim();
+   if(!speechPreview)return;
+   $('speechTestStatus').textContent=`Transcrição de teste: “${speechPreview}”`;
+   if(results.some(result=>result.isFinal))stopRecognition();
+  };
+  instance.onerror=event=>{if(speechTest===instance)stopRecognition(voiceErrorMessage(event.error));};
+  instance.onend=()=>{if(speechTest===instance)stopRecognition(speechPreview?'':'O navegador encerrou o teste sem transcrever. Confira o dispositivo padrão e tente novamente.');};
+  speechTimer=setTimeout(()=>stopRecognition(speechPreview?'':'O navegador ainda não transcreveu a fala. Confira o dispositivo padrão e a conexão e tente novamente.'),15000);
+  instance.start();
+ }catch(error){
+  stopRecognition(error.message);
+  $('speechTestStatus').textContent=error.message;
+ }
+});
+$('speechStop').addEventListener('click',()=>stopRecognition());
 function explain(error){return ({NotAllowedError:'O microfone não foi autorizado. Confira as permissões do navegador e do Windows.',NotFoundError:'Nenhum microfone foi encontrado. Conecte um dispositivo e tente novamente.',NotReadableError:'O microfone está indisponível ou em uso por outro programa. Feche o programa e tente novamente.',OverconstrainedError:'O dispositivo selecionado não está disponível. Liste novamente os microfones.'})[error.name]||error.message||'Não foi possível testar o microfone.';}
-async function devices(){
+async function devices(run){
  const items=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput'),selected=$('micDevice').value;
+ if(run!==token)return [];
  $('micDevice').replaceChildren();const standard=document.createElement('option');standard.value='';standard.textContent='Padrão do navegador';$('micDevice').append(standard);
  for(const [i,d] of items.entries()){const option=document.createElement('option');option.value=d.deviceId;option.textContent=d.label||`Microfone ${i+1}`;$('micDevice').append(option);}
  if(items.some(d=>d.deviceId===selected))$('micDevice').value=selected;
@@ -28,16 +91,16 @@ async function devices(){
 }
 $('micList').addEventListener('click',async()=>{
  stop();const run=token;let probe=null;
- try{validate();$('micList').disabled=true;$('micStatus').textContent='Solicitando permissão para identificar os microfones…';
+ try{validateVolume();$('micList').disabled=true;$('micStatus').textContent='Solicitando permissão para identificar os microfones…';
   probe=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-  if(run!==token)return;const items=await devices();if(run!==token)return;
+  if(run!==token)return;stream=probe;const items=await devices(run);if(run!==token)return;
   $('micStatus').textContent=items.length?`${items.length} dispositivo(s) de entrada encontrado(s). Escolha um e clique em Testar.`:'Nenhum microfone listado.';
  }catch(error){if(run===token)$('micStatus').textContent=explain(error);}
- finally{if(probe)for(const track of probe.getTracks())track.stop();if(run===token)$('micList').disabled=false;}
+ finally{if(probe)for(const track of probe.getTracks())track.stop();if(stream===probe)stream=null;if(run===token)$('micList').disabled=false;}
 });
 $('micTest').addEventListener('click',async()=>{
  stop();const run=token;heard=false;lastAnnounce=0;
- try{validate();$('micTest').disabled=true;$('micList').disabled=true;$('micStop').disabled=false;$('micStatus').textContent='Abrindo o microfone selecionado…';
+ try{validateVolume();$('micTest').disabled=true;$('micList').disabled=true;$('micStop').disabled=false;$('micStatus').textContent='Abrindo o microfone selecionado…';
   const chosen=$('micDevice').value;
   const captured=await navigator.mediaDevices.getUserMedia({audio:chosen?{deviceId:{exact:chosen}}:true,video:false});
   if(run!==token){captured.getTracks().forEach(t=>t.stop());return;}stream=captured;
@@ -54,12 +117,19 @@ $('micTest').addEventListener('click',async()=>{
    frame=requestAnimationFrame(draw);
   }
   frame=requestAnimationFrame(draw);
-  timer=setTimeout(()=>stop(heard?'Teste encerrado: foi detectado sinal de áudio. Configure o mesmo dispositivo no navegador para a leitura.':'Teste encerrado sem sinal perceptível. Confira o mute, o volume e tente outro microfone.'),20000);
- }catch(error){if(run===token)stop(explain(error));}
+  timer=setTimeout(()=>stopVolume(heard?'Teste encerrado: sinal de áudio detectado. Use o teste de transcrição para conferir a leitura.':'Teste encerrado sem sinal perceptível. Confira o volume e tente outro microfone.'),20000);
+ }catch(error){if(run===token)stopVolume(explain(error));}
 });
-$('micStop').addEventListener('click',()=>stop(heard?'Teste encerrado: sinal detectado.':'Teste interrompido.'));
-$('micDevice').addEventListener('change',()=>stop('Dispositivo alterado. Clique em Testar para conferir.'));
-$('voiceConsent').addEventListener('change',()=>{if(!$('voiceConsent').checked)stop('Teste interrompido: autorização desmarcada.');});
-document.getElementById('setup').addEventListener('submit',()=>stop('Teste encerrado para iniciar a leitura.'),true);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stop('Teste interrompido ao sair da aba.');});window.addEventListener('pagehide',()=>stop());
+$('micStop').addEventListener('click',()=>stopVolume(heard?'Teste encerrado: sinal detectado.':'Teste interrompido.'));
+$('micDevice').addEventListener('change',()=>stopVolume('Dispositivo alterado. Clique em Testar volume para conferir.'));
+$('voiceConsent').addEventListener('change',()=>{if(!$('voiceConsent').checked)stop();});
+$('mode').addEventListener('change',()=>{
+ box.hidden=$('mode').value!=='auto';
+ if(box.hidden)stop();
+});
+box.hidden=$('mode').value!=='auto';
+$('setup').addEventListener('submit',stop,true);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+window.addEventListener('pagehide',stop);
+window.FluenciaMicrofone={stop};
 })();

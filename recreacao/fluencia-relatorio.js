@@ -4,7 +4,7 @@ const colors={ink:'#173248',muted:'#627587',accent:'#147C67',line:'#DBE4EB',pale
 const dateBR=value=>/^\d{4}-\d{2}-\d{2}$/.test(value)?value.split('-').reverse().join('/'):value;
 const statusLabels={match:'Correspondência',different:'Diferente',missing:'Ausente',notRead:'Final sem registro',extra:'Extra'};
 function definition(data){
- const {config:c,alignment:a,questions,rows,transcript,originalTranscript,revision,notes}=data;
+ const {config:c,alignment:a,questions,rows,transcript,originalTranscript,textUsedProvisional,revision,notes}=data;
  const meta=(label,value)=>({stack:[{text:label,style:'label'},{text:String(value||'Não informado'),style:'metaValue'}],margin:[0,2,12,9]});
  const heading=(n,title)=>({text:n+'. '+title,style:'section',headlineLevel:1,...(n===2?{pageBreak:'before'}:{}),margin:[0,20,0,10]});
  const headerCell=text=>({text,style:'tableHeader'});
@@ -25,6 +25,7 @@ function definition(data){
   {text:a.ops.flatMap(op=>[{text:(op.expected||'['+op.heard+']')+' ',color:op.type==='match'?colors.accent:op.type==='different'?'#AA334B':op.type==='extra'?'#695395':op.type==='missing'?colors.warn:colors.muted,bold:op.type==='different',decoration:op.type==='missing'?'underline':undefined}]),style:'body',margin:[0,4,0,6]},
   {text:'Verde: correspondência • Vermelho: palavra diferente • Sublinhado: ausente no meio • Cinza: final sem registro • Roxo: palavra extra',style:'tiny',margin:[0,0,0,12]},
   {text:'Transcrição recebida pelo navegador',style:'subheading'},
+  ...(textUsedProvisional?[{text:'Inclui trechos provisórios recebidos pelo navegador. Revise a transcrição com o estudante.',style:'notice',margin:[0,4,0,0]}]:[]),
   {text:originalTranscript||'Nenhuma transcrição recebida. Isso não significa que o estudante não realizou a leitura.',style:'body',margin:[0,4,0,10]},
  ];
  if(revision)content.push({text:'Transcrição revisada pelo professor',style:'subheading'},{text:transcript||'Transcrição vazia após a revisão.',style:'body',margin:[0,4,0,10]});
