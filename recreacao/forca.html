@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jogo da Forca — Zurche Atividades</title>
+<link rel="icon" href="../assets/logo-zurche-help-escolar.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="forca.css?v=1">
+<script src="fluencia-materiais.js?v=1" defer></script>
+<script src="forca.js?v=1" defer></script>
+</head>
+<body><div class="shell">
+<header><a class="brand" href="../index.html"><img src="../assets/logo-zurche-help-escolar.png" alt="Zurche"><span>Zurche — Atividades</span></a><a class="back" href="alfabetizacao.html">← Alfabetização</a></header>
+<main>
+<section class="intro"><span class="eyebrow">Alfabetização</span><h1>Jogo da <span>Forca</span></h1><p>Descubra a palavra antes de acabar as tentativas.</p></section>
+<form class="panel forca-setup" id="forcaSetup">
+<label for="forcaYear">Em que ano você está?</label>
+<select id="forcaYear" required><option value="">Selecione seu ano</option></select>
+<button class="primary" type="submit">Começar a jogar →</button>
+<p id="setupHint" role="status"></p>
+</form>
+<section class="panel forca-game" id="forcaGame" aria-label="Rodada da forca" hidden>
+<div class="forca-header"><span class="badge" id="forcaGrade"></span><button type="button" id="changeYear">Trocar ano</button></div>
+<div class="forca-board">
+<svg class="forca-drawing" viewBox="0 0 170 175" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" aria-hidden="true">
+<path d="M16 157h90M45 157V18h77v23M45 48l29-30"/>
+<circle data-error="1" cx="122" cy="58" r="15" hidden/>
+<path data-error="2" d="M122 73v40" hidden/><path data-error="3" d="M122 83l-21 17" hidden/>
+<path data-error="4" d="M122 83l21 17" hidden/><path data-error="5" d="M122 113l-18 24" hidden/><path data-error="6" d="M122 113l18 24" hidden/>
+</svg>
+<div>
+<p class="forca-counter" id="forcaLeft"></p>
+<h2 id="forcaWord" class="forca-word" tabindex="-1"></h2>
+<p id="forcaStatus" role="status"></p>
+</div>
+</div>
+<div id="forcaKeyboard" class="forca-keyboard" role="group" aria-label="Letras"></div>
+<form id="guessForm">
+<label for="guessWord">Já sabe a palavra?</label>
+<div class="forca-guess">
+<input type="text" id="guessWord" placeholder="Digite a palavra inteira" autocomplete="off" maxlength="60" required>
+<button type="button" id="voiceGuess" hidden>Falar palavra</button>
+<button type="submit" class="primary">Conferir</button>
+</div>
+<p id="voiceGuessStatus" role="status"></p>
+</form>
+<button type="button" id="nextWord" class="primary" hidden>Próxima palavra →</button>
+</section>
+</main>
+<footer>Zurche — Atividades · <a href="mailto:contato@zurche.com.br">contato@zurche.com.br</a></footer>
+</div></body></html>
