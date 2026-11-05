@@ -41,3 +41,6 @@ body:has(.decision-dialog[open]){overflow:hidden}
 #materialStatus{color:var(--mint)}
 #materialStatus:empty{margin:0}
 @media(max-width:560px){.material-choice-row{grid-template-columns:1fr}.material-choice-row button{justify-self:start}}
+
+.reading-ready{text-align:center;padding:clamp(24px,8vw,72px)}
+#readyNumber{display:block;color:#ffda56;font:800 clamp(80px,24vw,180px)/1.2 Manrope,Arial,sans-serif}

@@ -4,7 +4,7 @@ const colors={ink:'#173248',muted:'#627587',accent:'#147C67',line:'#DBE4EB',pale
 const dateBR=value=>/^\d{4}-\d{2}-\d{2}$/.test(value)?value.split('-').reverse().join('/'):value;
 const statusLabels={match:'Correspondência',different:'Diferente',missing:'Ausente',notRead:'Final sem registro',extra:'Extra'};
 function definition(data){
- const {config:c,alignment:a,questions,rows,transcript,originalTranscript,textUsedProvisional,revision,notes}=data;
+ const {config:c,alignment:a,questions,rows,transcript,originalTranscript,textUsedProvisional,revision,readingLevel,notes}=data;
  const meta=(label,value)=>({stack:[{text:label,style:'label'},{text:String(value||'Não informado'),style:'metaValue'}],margin:[0,2,12,9]});
  const heading=(n,title)=>({text:n+'. '+title,style:'section',headlineLevel:1,...(n===2?{pageBreak:'before'}:{}),margin:[0,20,0,10]});
  const headerCell=text=>({text,style:'tableHeader'});
@@ -15,6 +15,8 @@ function definition(data){
   {canvas:[{type:'rect',x:0,y:0,w:515,h:3,color:colors.accent}],margin:[0,0,0,18]},
   {table:{widths:['*','*'],body:[[meta('ESTUDANTE',c.student),meta('PROFESSOR',c.teacher)],[meta('ANO/SÉRIE',c.className),meta('DATA DA SESSÃO',dateBR(c.date))]]},layout:'noBorders'},
   {text:'Registro assistido por reconhecimento de voz, com revisão do professor. Correspondências e ausências na transcrição não comprovam, sozinhas, acertos ou erros de leitura. Não é uma avaliação padronizada de fluência ou diagnóstico.',style:'notice',margin:[0,6,0,0]},
+  {text:'Nível de leitura observado pelo professor',style:'subheading',margin:[0,10,0,3]},
+  {text:readingLevel||'Não informado',style:'body'},
   heading(1,'Leitura do texto'),
   {text:`Tempo disponível: ${c.textSeconds} segundos  •  Texto proposto: ${a.total} palavras`,style:'small',margin:[0,0,0,8]},
   {table:{widths:['*','*','*','*','*'],body:[['Correspondências','Diferentes','Ausentes no meio','Final sem registro','Extras'].map(headerCell),[a.counts.match,a.counts.different,a.counts.missing,a.counts.notRead,a.counts.extra].map(v=>({text:String(v),fontSize:18,bold:true,color:colors.ink,margin:[0,6,0,4]}))]},layout:'lightHorizontalLines'},

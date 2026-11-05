@@ -1,6 +1,7 @@
 'use strict';
 const $=id=>document.getElementById(id),F=Fluencia,Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
 let step=0,config=null,phase='setup',clock=null,ticker=null,rec=null,voiceVersion=0,paused=false,locked=false,transitionTimer=null,fallback=false,transcript='',originalTranscript='',revision=false,wordTest=null,questionIndex=0,questionAnswers=['','',''],resultAlignment=null,voiceRetryTimer=null,voiceRetries=0,decisionResolve=null,wordCandidate=null,voiceReady=false;
+let readingReadyTimer=null;
 let textPreview='', textUsedProvisional=false, voiceStartTimer=null;
 const active=()=>['text','words'].includes(phase),say=message=>$('status').textContent=message;
 function showStep(n){if(step===2&&n!==2)window.FluenciaMicrofone?.stop();step=n;for(const el of document.querySelectorAll('[data-panel]'))el.hidden=Number(el.dataset.panel)!==n;for(const el of document.querySelectorAll('[data-step]'))el.classList.toggle('active',Number(el.dataset.step)===n);$('previous').hidden=n===0;$('next').hidden=n===3;$('setupMessage').textContent='';if(n===1)updateMaterialChoices();if(n===3)reviewSetup();}
@@ -18,7 +19,7 @@ function stopVoice(){
  clearTimeout(voiceStartTimer);voiceStartTimer=null;voiceVersion++;
  if(rec){const old=rec;rec=null;old.onstart=old.onresult=old.onerror=old.onspeechstart=old.onend=null;try{old.abort();}catch{}}
 }
-function stopTimers(){clearInterval(ticker);ticker=null;clearTimeout(transitionTimer);transitionTimer=null;}
+function stopTimers(){clearTimeout(readingReadyTimer);readingReadyTimer=null;clearInterval(ticker);ticker=null;clearTimeout(transitionTimer);transitionTimer=null;}
 function controls(){
  const live=active(),canUseVoiceControls=live&&config.mode==='auto'&&!fallback&&!paused&&!locked;
  $('testControls').hidden=!live;$('pause').textContent=paused?'Continuar':'Pausar';$('pause').hidden=phase==='text';
@@ -83,6 +84,7 @@ function listen(){
   if(F.tokens(received).length>1200){stopVoice();fallback=true;controls();say('A transcrição atingiu o limite de 1.200 palavras. O tempo continua correndo.');return;}
   transcript=next;textPreview=preview;$('liveTranscript').textContent=received;
   if(finals.length||preview){voiceRetries=0;say('Leitura recebida pelo reconhecimento de voz.');}
+  if(finals.length&&textEndRecognized())finishSegment('concluido');
  };
  instance.onerror=event=>{if(token!==voiceVersion)return;voiceInterrupted(voiceErrorMessage(event.error)+' O tempo continua correndo.',!['not-allowed','service-not-allowed','language-not-supported'].includes(event.error));};
  instance.onspeechstart=()=>{if(token!==voiceVersion||paused)return;if(phase==='words')$('wordVoiceState').textContent='Recebendo voz…';else say('Voz detectada. Aguardando transcrição…');};
@@ -91,7 +93,29 @@ function listen(){
  try{instance.start();}catch{voiceInterrupted('Não foi possível abrir o microfone. O tempo continua; tente Retomar escuta.',true);}
 }
 function resumeSegment(){if(!active())return;paused=false;$('textScreen').setAttribute('aria-pressed','false');runClock();if(phase==='words')renderWord();controls();if(config.mode==='auto'&&!fallback)listen();else say('Etapa em andamento, com acompanhamento do professor.');}
-function hideScreens(){document.body.classList.remove('text-focus');for(const id of ['textScreen','questionScreen','wordScreen','transition'])$(id).hidden=true;$('transcriptDetails').hidden=true;$('heard').textContent='';}
+function hideScreens(){document.body.classList.remove('text-focus');for(const id of ['textScreen','questionScreen','wordScreen','transition','readingReady'])$(id).hidden=true;$('transcriptDetails').hidden=true;$('heard').textContent='';}
+function prepareReading(type){
+ stopVoice();stopTimers();hideScreens();phase='ready';controls();say('');
+ $('testStage').textContent='Preparação para a leitura';$('clock').textContent='';
+ $('readingReady').hidden=false;
+ const deadline=performance.now()+3000;
+ function count(){
+  const remaining=deadline-performance.now();
+  if(remaining<=0){beginSegment(type);return;}
+  const digit=Math.ceil(remaining/1000);
+  $('readyNumber').textContent=digit;
+  readingReadyTimer=setTimeout(count,remaining-(digit-1)*1000);
+ }
+ count();
+}
+function textEndRecognized(){
+ const expected=F.tokens(config.passage),heard=F.tokens(transcript);
+ const tail=expected.slice(-3);
+ if(heard.length<tail.length||!tail.every((word,index)=>F.norm(word)===F.norm(heard[heard.length-tail.length+index])))return false;
+ const {ops,counts}=F.align(config.passage,transcript);
+ const ending=ops.filter(op=>op.index!==null).slice(-tail.length);
+ return counts.match>=Math.ceil(expected.length*.7)&&ending.every(op=>op.type==='match');
+}
 function beginSegment(type){stopVoice();stopTimers();hideScreens();phase=type;voiceRetries=0;fallback=false;paused=false;locked=false;clock=new F.Clock(type==='text'?config.textSeconds:config.wordSeconds);$('testStage').textContent=type==='text'?'1 · Leitura do texto':'3 · Leitura das palavras';
  if(type==='text'){
   $('textScreen').hidden=false;
@@ -118,6 +142,7 @@ function finishSegment(reason){
  if(!active())return;closeDecision(false);const previous=phase;clock.pause(performance.now());stopTimers();stopVoice();paused=false;locked=false;
  if(previous==='text'){
   originalTranscript=transcript;resultAlignment=F.align(config.passage,transcript);phase='textDone';
+  if(reason==='concluido'){startQuestions();say('Fim do texto identificado. Transcrição registrada.');return;}
   const ending=reason==='tempo'?'O tempo terminou.':'A etapa foi encerrada pelo professor.';
   let capture='';
   if(config.mode==='auto')capture=transcript
@@ -128,7 +153,8 @@ function finishSegment(reason){
  else{wordTest.finish();phase='wordsDone';showTransition('Leitura das palavras encerrada','Os registros foram preservados, incluindo a palavra interrompida e as não apresentadas. Agora revise o relatório.','Ver relatório →');}
 }
 function showTransition(title,info,button){hideScreens();$('transition').hidden=false;$('transitionTitle').textContent=title;$('transitionInfo').textContent=info;$('transitionNext').textContent=button;$('clock').textContent='';$('heard').textContent='';say('');controls();}
-$('transitionNext').addEventListener('click',()=>{if(phase==='textDone'){phase='questions';questionIndex=0;showQuestion();}else if(phase==='questionsDone')beginSegment('words');else if(phase==='wordsDone')showReport();});
+$('transitionNext').addEventListener('click',()=>{if(phase==='textDone')startQuestions();else if(phase==='questionsDone')prepareReading('words');else if(phase==='wordsDone')showReport();});
+function startQuestions(){phase='questions';questionIndex=0;showQuestion();}
 function showQuestion(){hideScreens();$('questionScreen').hidden=false;$('testStage').textContent='2 · Compreensão do texto';$('clock').textContent='';$('questionNumber').textContent=`Pergunta ${questionIndex+1} de 3`;$('questionText').textContent=config.questions[questionIndex];$('questionStatus').textContent=questionAnswers[questionIndex]?'Registro: '+questionAnswers[questionIndex]:'';$('questionNext').disabled=!questionAnswers[questionIndex];$('questionNext').textContent=questionIndex===2?'Avançar para palavras →':'Próxima pergunta →';for(const button of document.querySelectorAll('[data-question-answer]'))button.classList.toggle('selected',button.dataset.questionAnswer===questionAnswers[questionIndex]);controls();}
 for(const button of document.querySelectorAll('[data-question-answer]'))button.addEventListener('click',()=>{questionAnswers[questionIndex]=button.dataset.questionAnswer;showQuestion();});
 $('questionNext').addEventListener('click',()=>{if(!questionAnswers[questionIndex])return;if(questionIndex<2){questionIndex++;showQuestion();}else{phase='questionsDone';showTransition('Perguntas registradas','A próxima etapa apresenta uma palavra por vez. O tempo vale para toda a lista. Na primeira tentativa sem correspondência, o professor pode corrigir ou o estudante pode ler novamente.','Iniciar leitura das palavras →');}});
@@ -147,13 +173,13 @@ $('endStage').addEventListener('click',async()=>{
  const accepted=await askDecision({title:'Encerrar esta etapa?',context:phase==='text'?'Leitura do texto':'Leitura das palavras',message:'Tudo o que já foi registrado será preservado. '+(phase==='text'?'Em seguida, você poderá fazer as três perguntas de compreensão.':'Em seguida, você poderá revisar o relatório da sessão.'),confirm:'Encerrar etapa',cancel:phase==='text'?'Continuar leitura':'Voltar à atividade',timed:true});
  if(accepted&&phase===expectedPhase&&active())finishSegment('professor');
 });
-$('setup').addEventListener('submit',event=>{event.preventDefault();try{for(let n=0;n<3;n++)validateStep(n);stopVoice();stopTimers();config={teacher:$('teacher').value.trim(),student:$('student').value.trim(),className:$('className').value.trim(),date:$('date').value,passage:$('passage').value.trim(),questions:['q1','q2','q3'].map(id=>$(id).value.trim()),words:F.parseWords($('words').value),textSeconds:Number($('textSeconds').value),wordSeconds:Number($('wordSeconds').value),mode:$('mode').value,letterCase:$('letterCase').value};transcript='';originalTranscript='';textUsedProvisional=false;revision=false;questionAnswers=['','',''];$('notes').value='';$('setup').hidden=true;$('report').hidden=true;$('test').hidden=false;beginSegment('text');}catch(e){$('setupMessage').textContent=e.message;}});
+$('setup').addEventListener('submit',event=>{event.preventDefault();try{for(let n=0;n<3;n++)validateStep(n);stopVoice();stopTimers();config={teacher:$('teacher').value.trim(),student:$('student').value.trim(),className:$('className').value.trim(),date:$('date').value,passage:$('passage').value.trim(),questions:['q1','q2','q3'].map(id=>$(id).value.trim()),words:F.parseWords($('words').value),textSeconds:Number($('textSeconds').value),wordSeconds:Number($('wordSeconds').value),mode:$('mode').value,letterCase:$('letterCase').value};transcript='';originalTranscript='';textUsedProvisional=false;revision=false;questionAnswers=['','',''];$('notes').value='';$('readingLevel').value='';$('setup').hidden=true;$('report').hidden=true;$('test').hidden=false;prepareReading('text');}catch(e){$('setupMessage').textContent=e.message;}});
 function metric(value,label){const div=document.createElement('div');div.className='metric';const strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=value;span.textContent=label;div.append(strong,span);return div;}
 function drawAlignment(){const {counts,ops}=resultAlignment;$('metrics').replaceChildren(metric(counts.match,'Correspondências no texto'),metric(counts.different,'Palavras diferentes'),metric(counts.missing,'Ausentes no meio do texto'),metric(counts.notRead,'Palavras finais sem registro'),metric(counts.extra,'Palavras extras na transcrição'));$('aligned').replaceChildren();for(const op of ops){const span=document.createElement('span');span.className='mark-'+op.type;span.textContent=op.expected||'['+op.heard+']';span.title=op.type==='different'?`Transcrito: ${op.heard}`:op.type==='extra'?'Palavra extra na transcrição':op.type==='match'?'Correspondência na transcrição':'Não consta na transcrição';$('aligned').append(span);}}
 function select(options,value,onChange){const select=document.createElement('select');for(const [v,label] of options){const option=document.createElement('option');option.value=v;option.textContent=label;select.append(option);}select.value=value;select.addEventListener('change',()=>onChange(select.value));return select;}
 function showReport(){stopVoice();stopTimers();phase='report';$('test').hidden=true;$('report').hidden=false;$('reportStudent').textContent=`Professor: ${config.teacher} · Estudante: ${config.student} · Ano/série: ${config.className} · Data: ${config.date}`;$('editTranscript').value=transcript;$('revisionMessage').textContent=revision?'Comparação baseada na revisão do professor.':textUsedProvisional?'A transcrição inclui trechos provisórios do navegador. Revise o texto antes de concluir a avaliação.':'Comparação automática da transcrição recebida. O professor pode corrigir o texto abaixo.';drawAlignment();$('questionReport').replaceChildren();config.questions.forEach((q,i)=>{const div=document.createElement('div');div.className='question-review';const p=document.createElement('p');p.textContent=`${i+1}. ${q}`;const chooser=select(['Correta','Incorreta','Sem resposta'].map(s=>[s,s]),questionAnswers[i],value=>questionAnswers[i]=value);chooser.setAttribute('aria-label','Revisão da pergunta '+(i+1));div.append(p,chooser);$('questionReport').append(div);});$('wordReport').replaceChildren();for(const row of wordTest.rows){const tr=document.createElement('tr');for(const text of [row.word,row.result+(row.source?' — '+row.source:''),row.attempts.join(' | ')||'—']){const td=document.createElement('td');td.textContent=text;tr.append(td);}const td=document.createElement('td'),chooser=select([['','Sem revisão'],['Certa','Certa'],['Errada','Errada'],['Não avaliada','Não avaliada']],row.review,value=>row.review=value);chooser.setAttribute('aria-label','Revisão da palavra '+row.word);td.append(chooser);tr.append(td);$('wordReport').append(tr);}window.scrollTo({top:0,behavior:'smooth'});}
 $('applyTranscript').addEventListener('click',()=>{try{const revised=$('editTranscript').value;const result=F.align(config.passage,revised);transcript=revised;resultAlignment=result;revision=true;drawAlignment();$('revisionMessage').textContent='Revisão aplicada pelo professor. A transcrição original continua preservada no relatório TXT.';}catch(e){$('revisionMessage').textContent=e.message;}});
-function reportText(){const c=resultAlignment.counts;return `ZURCHE — ATIVIDADES / FLUÊNCIA LEITORA\nProfessor: ${config.teacher}\nEstudante: ${config.student}\nAno/série: ${config.className}\nData: ${config.date}\nModo inicial: ${config.mode==='auto'?'Voz + professor':'Sem microfone'}\nTempos configurados: texto ${config.textSeconds}s; lista de palavras ${config.wordSeconds}s\n\nCOMPARAÇÃO DO TEXTO (${revision?'REVISTA PELO PROFESSOR':'ESTIMATIVA AUTOMÁTICA'})\nCorrespondências: ${c.match}\nDiferentes: ${c.different}\nAusentes no meio: ${c.missing}\nFinal sem registro: ${c.notRead}\nExtras: ${c.extra}\nTexto completo na transcrição: ${resultAlignment.incomplete?'Não':'Sim, segundo a comparação'}\nSem transcrição não significa que o estudante não leu.\n\nTEXTO PROPOSTO\n${config.passage}\n\nTRANSCRIÇÃO ORIGINAL RECEBIDA\n${textUsedProvisional?'Inclui trechos provisórios recebidos pelo navegador. Confira a leitura com o estudante.\n':''}${originalTranscript||'[Nenhuma transcrição]'}\n\nTRANSCRIÇÃO USADA NA COMPARAÇÃO\n${transcript||'[Nenhuma transcrição]'}\n\nDETALHES\n${resultAlignment.ops.map(op=>`${op.expected||'[extra]'} | transcrito: ${op.heard||'—'} | ${op.type}`).join('\n')}\n\nCOMPREENSÃO\n${config.questions.map((q,i)=>`${i+1}. ${q}\n${questionAnswers[i]}`).join('\n\n')}\n\nPALAVRAS\n${wordTest.rows.map((r,i)=>`${i+1}. ${r.word}\nRegistro: ${r.result}\nOrigem: ${r.source||'Transcrição final ou confirmação do professor'}\nTranscrições: ${r.attempts.join(' | ')||'Nenhuma'}\nRevisão do professor: ${r.review||'Sem revisão'}`).join('\n\n')}\n\nOBSERVAÇÕES\n${$('notes').value}\n\nEste é um registro pedagógico assistido por reconhecimento de voz, não uma avaliação validada de fluência ou pronúncia. Os registros de ausência/correspondência podem refletir falhas do reconhecedor.`;}
+function reportText(){const c=resultAlignment.counts;return `ZURCHE — ATIVIDADES / FLUÊNCIA LEITORA\nProfessor: ${config.teacher}\nEstudante: ${config.student}\nAno/série: ${config.className}\nData: ${config.date}\nModo inicial: ${config.mode==='auto'?'Voz + professor':'Sem microfone'}\nTempos configurados: texto ${config.textSeconds}s; lista de palavras ${config.wordSeconds}s\n\nCOMPARAÇÃO DO TEXTO (${revision?'REVISTA PELO PROFESSOR':'ESTIMATIVA AUTOMÁTICA'})\nCorrespondências: ${c.match}\nDiferentes: ${c.different}\nAusentes no meio: ${c.missing}\nFinal sem registro: ${c.notRead}\nExtras: ${c.extra}\nTexto completo na transcrição: ${resultAlignment.incomplete?'Não':'Sim, segundo a comparação'}\nSem transcrição não significa que o estudante não leu.\n\nTEXTO PROPOSTO\n${config.passage}\n\nTRANSCRIÇÃO ORIGINAL RECEBIDA\n${textUsedProvisional?'Inclui trechos provisórios recebidos pelo navegador. Confira a leitura com o estudante.\n':''}${originalTranscript||'[Nenhuma transcrição]'}\n\nTRANSCRIÇÃO USADA NA COMPARAÇÃO\n${transcript||'[Nenhuma transcrição]'}\n\nDETALHES\n${resultAlignment.ops.map(op=>`${op.expected||'[extra]'} | transcrito: ${op.heard||'—'} | ${op.type}`).join('\n')}\n\nCOMPREENSÃO\n${config.questions.map((q,i)=>`${i+1}. ${q}\n${questionAnswers[i]}`).join('\n\n')}\n\nPALAVRAS\n${wordTest.rows.map((r,i)=>`${i+1}. ${r.word}\nRegistro: ${r.result}\nOrigem: ${r.source||'Transcrição final ou confirmação do professor'}\nTranscrições: ${r.attempts.join(' | ')||'Nenhuma'}\nRevisão do professor: ${r.review||'Sem revisão'}`).join('\n\n')}\n\nNÍVEL DE LEITURA (PROFESSOR)\n${$('readingLevel').value||'Não informado'}\n\nOBSERVAÇÕES\n${$('notes').value}\n\nEste é um registro pedagógico assistido por reconhecimento de voz, não uma avaliação validada de fluência ou pronúncia. Os registros de ausência/correspondência podem refletir falhas do reconhecedor.`;}
 $('downloadReport').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob(['\uFEFF'+reportText()],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='zurche-fluencia-relatorio.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);});$('printReport').addEventListener('click',async()=>{
  const button=$('printReport'),label=button.textContent;button.disabled=true;button.textContent='Gerando PDF…';$('pdfStatus').textContent='Preparando o relatório, com as revisões atuais.';
  try{await FluenciaReport.download(reportData());$('pdfStatus').textContent='PDF gerado. Confira o arquivo baixado.';}catch(error){$('pdfStatus').textContent=error.message||'Não foi possível gerar o PDF. Confira os arquivos da pasta vendor.';}finally{button.disabled=false;button.textContent=label;}
@@ -265,7 +291,7 @@ $('decisionClose').addEventListener('click',()=>closeDecision(false));
 $('decisionDialog').addEventListener('cancel',event=>{event.preventDefault();closeDecision(false);});
 $('decisionDialog').addEventListener('close',()=>{if(decisionResolve)closeDecision(false);});
 
-function reportData(){return {config,alignment:resultAlignment,questions:[...questionAnswers],rows:wordTest.rows,transcript,originalTranscript,textUsedProvisional,revision,notes:$('notes').value};}
+function reportData(){return {config,alignment:resultAlignment,questions:[...questionAnswers],rows:wordTest.rows,transcript,originalTranscript,textUsedProvisional,revision,readingLevel:$('readingLevel').value,notes:$('notes').value};}
 function clearWordCandidate(){if(wordCandidate){clearTimeout(wordCandidate.timer);wordCandidate=null;}}
 function updateWordVoiceState(){
  const el=$('wordVoiceState');
