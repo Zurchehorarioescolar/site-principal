@@ -215,7 +215,7 @@ $('applyMaterial').addEventListener('click', async () => {
   title: 'Substituir o material preenchido?',
   context: 'Preparação do material',
   message: 'A sugestão preenche o texto, as três perguntas e a lista de palavras. Os tempos configurados serão mantidos.',
-  confirm: 'Inserir sugestão',
+  confirm: 'Usar sugestão',
   cancel: 'Manter meu material'
  }))) return;
 
