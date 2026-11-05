@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const box=document.createElement('section');box.className='voice-info';box.setAttribute('aria-labelledby','micTitle');
+const box=document.createElement('section');box.className='voice-info mic-check';box.setAttribute('aria-labelledby','micTitle');
 box.innerHTML=`
  <h3 id="micTitle">Confira a transcrição</h3>
  <p>Marque a autorização de voz acima. Clique em testar e diga uma frase curta, por exemplo: “Hoje eu vou ler um texto”.</p>
@@ -22,7 +22,11 @@ box.innerHTML=`
   <p>Confira a permissão do site no ícone ao lado do endereço da atividade. Ao voltar, teste a transcrição com o dispositivo padrão do navegador.</p>
  </details>`;
 const voiceInfo=document.getElementById('voiceInfo');voiceInfo.after(box);
-const style=document.createElement('style');style.textContent='.mic-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}#micMeter{display:block;width:100%;height:26px}.mic-address{display:block;padding:10px;border-radius:8px;background:#0c1424;overflow-wrap:anywhere;color:#83edc2;font-size:12px}#micTitle{font-size:19px;letter-spacing:0;margin:0 0 12px}';document.head.append(style);
+const style=document.createElement('style');style.textContent=`
+.mic-check button{background:#ffda56;color:#24200d;border-color:#ffda56}
+.mic-check button:focus-visible{outline:2px solid #fff3b0;outline-offset:3px}
+.mic-check button:disabled{background:#413b27;color:#e0d3a5;border-color:#807047;opacity:1;filter:none}
+.mic-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}#micMeter{display:block;width:100%;height:26px}.mic-address{display:block;padding:10px;border-radius:8px;background:#0c1424;overflow-wrap:anywhere;color:#83edc2;font-size:12px}#micTitle{font-size:19px;letter-spacing:0;margin:0 0 12px}`;document.head.append(style);
 const $=id=>document.getElementById(id);
 let stream=null,ctx=null,source=null,analyser=null,frame=null,timer=null,token=0,heard=false,lastAnnounce=0;
 let speechTest=null,speechTimer=null,speechPreview='';
