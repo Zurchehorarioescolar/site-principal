@@ -31,3 +31,13 @@ body:has(.decision-dialog[open]){overflow:hidden}
 /* Ritmo visual mais compacto, sem reduzir a legibilidade do material. */
 .category-symbol{font-size:30px;line-height:1.2}.card{min-height:245px;padding:22px}.card h2{font-size:23px;margin-top:18px}.intro{padding:40px 0 26px}.intro h1{font-size:clamp(34px,5vw,50px)}.step{padding:22px}.wizard span{font-size:11px;padding:6px 11px}.page-title{padding:22px 0 18px}.page-title h1{font-size:30px}.page-title .badge{font-size:10px;padding:4px 8px}.paper{padding:24px}.test-clock{font-size:28px}.big-word{font-size:clamp(40px,7vw,88px);line-height:1.4;letter-spacing:.02em}.word-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.word-meta p{margin:0;font-size:13px}.voice-badge{padding:6px 10px;border:1px solid #bbcfc8;border-radius:999px;background:#e5eee9;color:#35564a;font-size:12px}.voice-badge[data-listening=true]{background:#dcf3e4;color:#1b694e;border-color:#94c7ac}.decision-icon{width:36px;height:36px;border-radius:10px;font-size:21px}.decision-dialog h2{font-size:24px}.decision-dialog{padding:23px}.decision-header{margin-bottom:14px}.test-controls button{font-size:13px;padding:10px 14px}.metrics .metric{padding:12px}.metric strong{font-size:25px}
 @media(max-width:600px){.card{min-height:215px;padding:20px}.paper{padding:20px}.big-word{font-size:clamp(36px,10vw,65px)}.word-meta{gap:8px}.test-controls{gap:8px}.test-controls button{font-size:12px;padding:10px}.voice-badge{font-size:11px}.decision-dialog h2{font-size:22px}}
+
+.material-suggestions{margin:18px 0 10px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:#142438}
+.material-suggestions label{margin:0 0 6px}
+.material-choice-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:stretch}
+.material-choice-row select{min-width:0}
+.material-choice-row button:disabled{opacity:.55;cursor:default}
+.material-suggestions .help{margin:10px 0 0}
+#materialStatus{color:var(--mint)}
+#materialStatus:empty{margin:0}
+@media(max-width:560px){.material-choice-row{grid-template-columns:1fr}.material-choice-row button{justify-self:start}}

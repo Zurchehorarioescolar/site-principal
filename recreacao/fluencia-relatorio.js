@@ -13,7 +13,7 @@ function definition(data){
   {text:'Relatório de\nfluência leitora',style:'title',margin:[0,10,0,8]},
   {text:'Acompanhamento individual • Texto, compreensão e palavras',style:'subtitle',margin:[0,0,0,14]},
   {canvas:[{type:'rect',x:0,y:0,w:515,h:3,color:colors.accent}],margin:[0,0,0,18]},
-  {table:{widths:['*','*'],body:[[meta('ESTUDANTE',c.student),meta('PROFESSOR',c.teacher)],[meta('TURMA',c.className),meta('DATA DA SESSÃO',dateBR(c.date))]]},layout:'noBorders'},
+  {table:{widths:['*','*'],body:[[meta('ESTUDANTE',c.student),meta('PROFESSOR',c.teacher)],[meta('ANO/SÉRIE',c.className),meta('DATA DA SESSÃO',dateBR(c.date))]]},layout:'noBorders'},
   {text:'Registro assistido por reconhecimento de voz, com revisão do professor. Correspondências e ausências na transcrição não comprovam, sozinhas, acertos ou erros de leitura. Não é uma avaliação padronizada de fluência ou diagnóstico.',style:'notice',margin:[0,6,0,0]},
   heading(1,'Leitura do texto'),
   {text:`Tempo disponível: ${c.textSeconds} segundos  •  Texto proposto: ${a.total} palavras`,style:'small',margin:[0,0,0,8]},

@@ -2,14 +2,14 @@
 const $=id=>document.getElementById(id),F=Fluencia,Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
 let step=0,config=null,phase='setup',clock=null,ticker=null,rec=null,voiceVersion=0,paused=false,locked=false,transitionTimer=null,fallback=false,transcript='',originalTranscript='',revision=false,wordTest=null,questionIndex=0,questionAnswers=['','',''],resultAlignment=null,voiceRetryTimer=null,voiceRetries=0,decisionResolve=null,wordCandidate=null,voiceReady=false;
 const active=()=>['text','words'].includes(phase),say=message=>$('status').textContent=message;
-function showStep(n){step=n;for(const el of document.querySelectorAll('[data-panel]'))el.hidden=Number(el.dataset.panel)!==n;for(const el of document.querySelectorAll('[data-step]'))el.classList.toggle('active',Number(el.dataset.step)===n);$('previous').hidden=n===0;$('next').hidden=n===3;$('setupMessage').textContent='';if(n===3)reviewSetup();}
+function showStep(n){step=n;for(const el of document.querySelectorAll('[data-panel]'))el.hidden=Number(el.dataset.panel)!==n;for(const el of document.querySelectorAll('[data-step]'))el.classList.toggle('active',Number(el.dataset.step)===n);$('previous').hidden=n===0;$('next').hidden=n===3;$('setupMessage').textContent='';if(n===1)updateMaterialChoices();if(n===3)reviewSetup();}
 function validateStep(n){
  const ids=n===0?['teacher','student','className','date']:n===1?['passage','textSeconds','q1','q2','q3','words','wordSeconds']:[];
  for(const id of ids){const el=$(id);if(!el.value.trim()||!el.reportValidity()){el.focus();throw Error('Preencha os campos desta etapa.');}}
  if(n===1){const count=F.tokens($('passage').value).length;if(!count||count>600)throw Error('O texto deve ter de 1 a 600 palavras.');F.parseWords($('words').value);new F.Clock(Number($('textSeconds').value));new F.Clock(Number($('wordSeconds').value));}
  if(n===2&&$('mode').value==='auto'){if(!$('voiceConsent').checked)throw Error('Marque a autorização de voz ou escolha o modo sem microfone.');if(!Speech||!window.isSecureContext)throw Error('Reconhecimento indisponível. Use o modo sem microfone ou abra pelo portal HTTPS / iniciador local em navegador compatível.');}
 }
-function reviewSetup(){const list=document.createElement('dl');for(const [label,value] of [['Professor',$('teacher').value],['Estudante',$('student').value],['Turma / data',$('className').value+' · '+$('date').value],['Texto',F.tokens($('passage').value).length+' palavras · '+$('textSeconds').value+' s'],['Compreensão','3 perguntas avaliadas pelo professor'],['Lista',F.parseWords($('words').value).length+' palavras · '+$('wordSeconds').value+' s no total'],['Modo',$('mode').selectedOptions[0].textContent]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;list.append(dt,dd);}$('reviewSetup').replaceChildren(list);}
+function reviewSetup(){const list=document.createElement('dl');for(const [label,value] of [['Professor',$('teacher').value],['Estudante',$('student').value],['Ano/série / data',$('className').value+' · '+$('date').value],['Texto',F.tokens($('passage').value).length+' palavras · '+$('textSeconds').value+' s'],['Compreensão','3 perguntas avaliadas pelo professor'],['Lista',F.parseWords($('words').value).length+' palavras · '+$('wordSeconds').value+' s no total'],['Modo',$('mode').selectedOptions[0].textContent]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;list.append(dt,dd);}$('reviewSetup').replaceChildren(list);}
 $('next').addEventListener('click',()=>{try{validateStep(step);showStep(step+1);}catch(e){$('setupMessage').textContent=e.message;}});$('previous').addEventListener('click',()=>showStep(step-1));
 function stopVoice(){clearWordCandidate();voiceReady=false;clearTimeout(voiceRetryTimer);voiceRetryTimer=null;voiceVersion++;if(rec){const old=rec;rec=null;old.onstart=old.onresult=old.onerror=old.onend=null;try{old.abort();}catch{}}}
 function stopTimers(){clearInterval(ticker);ticker=null;clearTimeout(transitionTimer);transitionTimer=null;}
@@ -80,17 +80,77 @@ $('setup').addEventListener('submit',event=>{event.preventDefault();try{for(let 
 function metric(value,label){const div=document.createElement('div');div.className='metric';const strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=value;span.textContent=label;div.append(strong,span);return div;}
 function drawAlignment(){const {counts,ops}=resultAlignment;$('metrics').replaceChildren(metric(counts.match,'Correspondências no texto'),metric(counts.different,'Palavras diferentes'),metric(counts.missing,'Ausentes no meio do texto'),metric(counts.notRead,'Palavras finais sem registro'),metric(counts.extra,'Palavras extras na transcrição'));$('aligned').replaceChildren();for(const op of ops){const span=document.createElement('span');span.className='mark-'+op.type;span.textContent=op.expected||'['+op.heard+']';span.title=op.type==='different'?`Transcrito: ${op.heard}`:op.type==='extra'?'Palavra extra na transcrição':op.type==='match'?'Correspondência na transcrição':'Não consta na transcrição';$('aligned').append(span);}}
 function select(options,value,onChange){const select=document.createElement('select');for(const [v,label] of options){const option=document.createElement('option');option.value=v;option.textContent=label;select.append(option);}select.value=value;select.addEventListener('change',()=>onChange(select.value));return select;}
-function showReport(){stopVoice();stopTimers();phase='report';$('test').hidden=true;$('report').hidden=false;$('reportStudent').textContent=`Professor: ${config.teacher} · Estudante: ${config.student} · Turma: ${config.className} · Data: ${config.date}`;$('editTranscript').value=transcript;$('revisionMessage').textContent=revision?'Comparação baseada na revisão do professor.':'Comparação automática da transcrição recebida. O professor pode corrigir o texto abaixo.';drawAlignment();$('questionReport').replaceChildren();config.questions.forEach((q,i)=>{const div=document.createElement('div');div.className='question-review';const p=document.createElement('p');p.textContent=`${i+1}. ${q}`;const chooser=select(['Correta','Incorreta','Sem resposta'].map(s=>[s,s]),questionAnswers[i],value=>questionAnswers[i]=value);chooser.setAttribute('aria-label','Revisão da pergunta '+(i+1));div.append(p,chooser);$('questionReport').append(div);});$('wordReport').replaceChildren();for(const row of wordTest.rows){const tr=document.createElement('tr');for(const text of [row.word,row.result+(row.source?' — '+row.source:''),row.attempts.join(' | ')||'—']){const td=document.createElement('td');td.textContent=text;tr.append(td);}const td=document.createElement('td'),chooser=select([['','Sem revisão'],['Certa','Certa'],['Errada','Errada'],['Não avaliada','Não avaliada']],row.review,value=>row.review=value);chooser.setAttribute('aria-label','Revisão da palavra '+row.word);td.append(chooser);tr.append(td);$('wordReport').append(tr);}window.scrollTo({top:0,behavior:'smooth'});}
+function showReport(){stopVoice();stopTimers();phase='report';$('test').hidden=true;$('report').hidden=false;$('reportStudent').textContent=`Professor: ${config.teacher} · Estudante: ${config.student} · Ano/série: ${config.className} · Data: ${config.date}`;$('editTranscript').value=transcript;$('revisionMessage').textContent=revision?'Comparação baseada na revisão do professor.':'Comparação automática da transcrição recebida. O professor pode corrigir o texto abaixo.';drawAlignment();$('questionReport').replaceChildren();config.questions.forEach((q,i)=>{const div=document.createElement('div');div.className='question-review';const p=document.createElement('p');p.textContent=`${i+1}. ${q}`;const chooser=select(['Correta','Incorreta','Sem resposta'].map(s=>[s,s]),questionAnswers[i],value=>questionAnswers[i]=value);chooser.setAttribute('aria-label','Revisão da pergunta '+(i+1));div.append(p,chooser);$('questionReport').append(div);});$('wordReport').replaceChildren();for(const row of wordTest.rows){const tr=document.createElement('tr');for(const text of [row.word,row.result+(row.source?' — '+row.source:''),row.attempts.join(' | ')||'—']){const td=document.createElement('td');td.textContent=text;tr.append(td);}const td=document.createElement('td'),chooser=select([['','Sem revisão'],['Certa','Certa'],['Errada','Errada'],['Não avaliada','Não avaliada']],row.review,value=>row.review=value);chooser.setAttribute('aria-label','Revisão da palavra '+row.word);td.append(chooser);tr.append(td);$('wordReport').append(tr);}window.scrollTo({top:0,behavior:'smooth'});}
 $('applyTranscript').addEventListener('click',()=>{try{const revised=$('editTranscript').value;const result=F.align(config.passage,revised);transcript=revised;resultAlignment=result;revision=true;drawAlignment();$('revisionMessage').textContent='Revisão aplicada pelo professor. A transcrição original continua preservada no relatório TXT.';}catch(e){$('revisionMessage').textContent=e.message;}});
-function reportText(){const c=resultAlignment.counts;return `ZURCHE — ATIVIDADES / FLUÊNCIA LEITORA\nProfessor: ${config.teacher}\nEstudante: ${config.student}\nTurma: ${config.className}\nData: ${config.date}\nModo inicial: ${config.mode==='auto'?'Voz + professor':'Sem microfone'}\nTempos configurados: texto ${config.textSeconds}s; lista de palavras ${config.wordSeconds}s\n\nCOMPARAÇÃO DO TEXTO (${revision?'REVISTA PELO PROFESSOR':'ESTIMATIVA AUTOMÁTICA'})\nCorrespondências: ${c.match}\nDiferentes: ${c.different}\nAusentes no meio: ${c.missing}\nFinal sem registro: ${c.notRead}\nExtras: ${c.extra}\nTexto completo na transcrição: ${resultAlignment.incomplete?'Não':'Sim, segundo a comparação'}\nSem transcrição não significa que o estudante não leu.\n\nTEXTO PROPOSTO\n${config.passage}\n\nTRANSCRIÇÃO ORIGINAL RECEBIDA\n${originalTranscript||'[Nenhuma transcrição]'}\n\nTRANSCRIÇÃO USADA NA COMPARAÇÃO\n${transcript||'[Nenhuma transcrição]'}\n\nDETALHES\n${resultAlignment.ops.map(op=>`${op.expected||'[extra]'} | transcrito: ${op.heard||'—'} | ${op.type}`).join('\n')}\n\nCOMPREENSÃO\n${config.questions.map((q,i)=>`${i+1}. ${q}\n${questionAnswers[i]}`).join('\n\n')}\n\nPALAVRAS\n${wordTest.rows.map((r,i)=>`${i+1}. ${r.word}\nRegistro: ${r.result}\nOrigem: ${r.source||'Transcrição final ou confirmação do professor'}\nTranscrições: ${r.attempts.join(' | ')||'Nenhuma'}\nRevisão do professor: ${r.review||'Sem revisão'}`).join('\n\n')}\n\nOBSERVAÇÕES\n${$('notes').value}\n\nEste é um registro pedagógico assistido por reconhecimento de voz, não uma avaliação validada de fluência ou pronúncia. Os registros de ausência/correspondência podem refletir falhas do reconhecedor.`;}
+function reportText(){const c=resultAlignment.counts;return `ZURCHE — ATIVIDADES / FLUÊNCIA LEITORA\nProfessor: ${config.teacher}\nEstudante: ${config.student}\nAno/série: ${config.className}\nData: ${config.date}\nModo inicial: ${config.mode==='auto'?'Voz + professor':'Sem microfone'}\nTempos configurados: texto ${config.textSeconds}s; lista de palavras ${config.wordSeconds}s\n\nCOMPARAÇÃO DO TEXTO (${revision?'REVISTA PELO PROFESSOR':'ESTIMATIVA AUTOMÁTICA'})\nCorrespondências: ${c.match}\nDiferentes: ${c.different}\nAusentes no meio: ${c.missing}\nFinal sem registro: ${c.notRead}\nExtras: ${c.extra}\nTexto completo na transcrição: ${resultAlignment.incomplete?'Não':'Sim, segundo a comparação'}\nSem transcrição não significa que o estudante não leu.\n\nTEXTO PROPOSTO\n${config.passage}\n\nTRANSCRIÇÃO ORIGINAL RECEBIDA\n${originalTranscript||'[Nenhuma transcrição]'}\n\nTRANSCRIÇÃO USADA NA COMPARAÇÃO\n${transcript||'[Nenhuma transcrição]'}\n\nDETALHES\n${resultAlignment.ops.map(op=>`${op.expected||'[extra]'} | transcrito: ${op.heard||'—'} | ${op.type}`).join('\n')}\n\nCOMPREENSÃO\n${config.questions.map((q,i)=>`${i+1}. ${q}\n${questionAnswers[i]}`).join('\n\n')}\n\nPALAVRAS\n${wordTest.rows.map((r,i)=>`${i+1}. ${r.word}\nRegistro: ${r.result}\nOrigem: ${r.source||'Transcrição final ou confirmação do professor'}\nTranscrições: ${r.attempts.join(' | ')||'Nenhuma'}\nRevisão do professor: ${r.review||'Sem revisão'}`).join('\n\n')}\n\nOBSERVAÇÕES\n${$('notes').value}\n\nEste é um registro pedagógico assistido por reconhecimento de voz, não uma avaliação validada de fluência ou pronúncia. Os registros de ausência/correspondência podem refletir falhas do reconhecedor.`;}
 $('downloadReport').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob(['\uFEFF'+reportText()],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='zurche-fluencia-relatorio.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);});$('printReport').addEventListener('click',async()=>{
  const button=$('printReport'),label=button.textContent;button.disabled=true;button.textContent='Gerando PDF…';$('pdfStatus').textContent='Preparando o relatório, com as revisões atuais.';
  try{await FluenciaReport.download(reportData());$('pdfStatus').textContent='PDF gerado. Confira o arquivo baixado.';}catch(error){$('pdfStatus').textContent=error.message||'Não foi possível gerar o PDF. Confira os arquivos da pasta vendor.';}finally{button.disabled=false;button.textContent=label;}
 });
-$('newSession').addEventListener('click',async()=>{if(!(await askDecision({title:'Preparar um novo teste?',context:'Relatório da sessão',message:'Baixe o relatório antes de começar outro teste. Professor, turma, materiais e tempos serão mantidos. Você informará o nome do próximo estudante.',confirm:'Preparar novo teste',cancel:'Voltar ao relatório'})))return;stopVoice();stopTimers();phase='setup';$('student').value='';$('voiceConsent').checked=false;$('report').hidden=true;$('setup').hidden=false;showStep(0);$('student').focus();});
+$('newSession').addEventListener('click',async()=>{if(!(await askDecision({title:'Preparar um novo teste?',context:'Relatório da sessão',message:'Baixe o relatório antes de começar outro teste. Professor, ano/série, materiais e tempos serão mantidos. Você informará o nome do próximo estudante.',confirm:'Preparar novo teste',cancel:'Voltar ao relatório'})))return;stopVoice();stopTimers();phase='setup';$('student').value='';$('voiceConsent').checked=false;$('report').hidden=true;$('setup').hidden=false;showStep(0);$('student').focus();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active()){tick();if(active()&&!paused&&!rec)queueVoiceRetry();scheduleTextFit();}});window.addEventListener('pagehide',()=>{stopVoice();stopTimers();});$('voiceConsent').addEventListener('change',()=>{if(!$('voiceConsent').checked&&active())pauseSegment('Reconhecimento pausado: autorização desmarcada.');});
 function updateSupport(){$('voiceInfo').hidden=$('mode').value!=='auto';$('compatibility').textContent=Speech&&window.isSecureContext?'Reconhecimento disponível neste navegador. O microfone só será ativado ao iniciar o teste.':'Reconhecimento indisponível neste contexto. Você pode usar o modo sem microfone e revisar os registros.';}$('mode').addEventListener('change',updateSupport);
-$('example').addEventListener('click',async()=>{if(($('passage').value||$('words').value)&&!(await askDecision({title:'Usar o material de exemplo?',context:'Preparação do material',message:'O texto, as três perguntas e a lista de palavras que você preencheu serão substituídos pelo exemplo. Os dados do professor e do estudante serão mantidos.',confirm:'Usar exemplo',cancel:'Manter meu material'})))return;$('passage').value='Lia tem um gato. O gato se chama Tico. De manhã, Lia coloca água para Tico. Depois, os dois brincam com uma bola no quintal.';$('q1').value='Como se chama o gato de Lia?';$('q2').value='O que Lia coloca para Tico de manhã?';$('q3').value='Onde Lia e Tico brincam?';$('words').value='gato\nbola\ncasa\npato\njanela\nmenina\nágua\nmanhã';});
+const materialFieldIds = ['passage', 'q1', 'q2', 'q3', 'words'];
+
+function materialsForYear() {
+ const year = Number.parseInt($('className').value, 10);
+ return typeof fluenciaMateriais === 'undefined' ? [] : fluenciaMateriais[year] || [];
+}
+
+function updateMaterialChoices() {
+ const year = $('className').value;
+ const chooser = $('materialChoice');
+ if (chooser.dataset.year === year) return;
+
+ const materials = materialsForYear();
+ const placeholder = document.createElement('option');
+ placeholder.value = '';
+ placeholder.textContent = materials.length ? 'Selecione uma sugestão' : 'Nenhuma sugestão disponível';
+ const options = materials.map((material, index) => {
+  const option = document.createElement('option');
+  option.value = String(index);
+  option.textContent = material.title;
+  return option;
+ });
+
+ chooser.replaceChildren(placeholder, ...options);
+ chooser.dataset.year = year;
+ chooser.value = '';
+ chooser.disabled = !materials.length;
+ $('applyMaterial').disabled = true;
+ $('materialStatus').textContent = '';
+ $('materialSource').textContent = !materials.length
+  ? 'Você pode preencher os campos com seu próprio material.'
+  : Number.parseInt(year, 10) <= 5
+   ? `${year} · Exemplos originais inspirados nos critérios do Protocolo Pedagógico do Programa Educar pra Valer.`
+   : `${year} · Exemplos originais complementares do Zurche.`;
+}
+
+$('className').addEventListener('change', updateMaterialChoices);
+$('materialChoice').addEventListener('change', () => {
+ $('applyMaterial').disabled = !$('materialChoice').value;
+ $('materialStatus').textContent = '';
+});
+$('applyMaterial').addEventListener('click', async () => {
+ const choice = $('materialChoice').value;
+ if (!choice) return;
+ const material = materialsForYear()[Number(choice)];
+ if (!material) return;
+
+ const values = [material.passage, ...material.questions, material.words.join('\n')];
+ const fields = materialFieldIds.map($);
+ const replacesContent = fields.some((field, index) => field.value.trim() && field.value.trim() !== values[index]);
+ if (replacesContent && !(await askDecision({
+  title: 'Substituir o material preenchido?',
+  context: 'Preparação do material',
+  message: 'A sugestão preenche o texto, as três perguntas e a lista de palavras. Os tempos configurados serão mantidos.',
+  confirm: 'Inserir sugestão',
+  cancel: 'Manter meu material'
+ }))) return;
+
+ fields.forEach((field, index) => { field.value = values[index]; });
+ $('materialStatus').textContent = 'Sugestão inserida. Você pode revisar e editar o material abaixo.';
+});
 const dateParts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());$('date').value=['year','month','day'].map(t=>dateParts.find(p=>p.type===t).value).join('-');showStep(0);updateSupport();
 
 // Speech availability never controls the assessment clock.
