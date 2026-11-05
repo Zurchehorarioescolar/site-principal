@@ -2,7 +2,10 @@
 
 const $ = id => document.getElementById(id);
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const values = [50, 100, 150, 200, 250, 300, 400, 500];
+const regularValues = [50, 100, 150, 200, 250, 300, 400, 500];
+const wheelColors = ['#276c75', '#3a527f', '#78506b', '#8a5c29', '#3d6d58', '#684e8d', '#9b5249', '#315979'];
+const passSector = 'Passe a vez';
+const resetSector = 'Perde tudo';
 const normalize = text => text.toLocaleUpperCase('pt-BR').normalize('NFD').replace(/\p{M}/gu, '');
 const panels = {
   1: [
@@ -58,16 +61,9 @@ const buttons = new Map();
 let players = [], words = [], previousPanel = -1, year = '', active = 0;
 let rotation = 0, stake = 0, phase = 'setup', spinTimer = null;
 let guessed = new Set();
+let outcomes = [], manualScoring = false, mixedOperations = false, pending = null;
 
 for (const grade of Object.keys(panels)) $('rouletteYear').add(new Option(grade + 'º ano', grade));
-for (const [index, value] of values.entries()) {
-  const angle = index * Math.PI / 4;
-  const label = document.createElement('span');
-  label.textContent = value;
-  label.style.left = (50 + 34 * Math.sin(angle)) + '%';
-  label.style.top = (50 - 34 * Math.cos(angle)) + '%';
-  $('rouletteWheel').append(label);
-}
 for (const letter of alphabet) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -118,10 +114,53 @@ function setPhase(next) {
   phase = next;
   $('rouletteSpin').disabled = phase !== 'ready';
   $('rouletteReplay').hidden = phase !== 'over';
+  $('rouletteMath').hidden = phase !== 'math';
+  $('rouletteKeyboard').hidden = phase === 'math';
   for (const [letter, button] of buttons) {
     button.disabled = phase !== 'letter' || guessed.has(letter);
     button.dataset.hit = String(guessed.has(letter) && words.some(word => normalize(word).includes(letter)));
   }
+}
+
+function updateScoringOptions() {
+  const selected = Number($('rouletteYear').value);
+  const manual = $('rouletteManual');
+  manual.disabled = selected < 1 || selected > 5;
+  if (manual.disabled) manual.checked = false;
+  const showMixed = manual.checked && selected >= 3;
+  $('rouletteMixedOption').hidden = !showMixed;
+  $('rouletteMixed').disabled = !showMixed;
+  if (!showMixed) $('rouletteMixed').checked = false;
+  $('rouletteMathHint').textContent = manual.disabled
+    ? 'Pontuação manual disponível do 1º ao 5º ano.'
+    : selected <= 2
+      ? 'Na pontuação manual, some os valores em unidades para confirmar os pontos.'
+      : 'Na pontuação manual, use dezenas. Com a segunda opção, o jogo sorteia entre adição e multiplicação.';
+}
+
+function configureWheel() {
+  const unit = Number(year) <= 2 ? 1 : 10;
+  const points = manualScoring ? Array.from({length: 6}, (_, index) => (index + 1) * unit) : regularValues;
+  outcomes = [...points.slice(0, 3), passSector, ...points.slice(3), resetSector];
+  const degrees = 360 / outcomes.length;
+  const wheel = $('rouletteWheel');
+  const sectors = outcomes.map((value, index) => {
+    const color = value === passSector ? '#67502d' : value === resetSector ? '#982f44' : wheelColors[index % wheelColors.length];
+    return color + ' ' + index * degrees + 'deg ' + (index + 1) * degrees + 'deg';
+  });
+  wheel.style.background = 'conic-gradient(from ' + (-degrees / 2) + 'deg, ' + sectors.join(', ') + ')';
+  wheel.replaceChildren(...outcomes.map((value, index) => {
+    const angle = index * 2 * Math.PI / outcomes.length;
+    const label = document.createElement('span');
+    if (typeof value === 'number') label.textContent = value;
+    else {
+      label.className = 'roulette-special';
+      label.textContent = value === passSector ? 'Passe\na vez' : 'Perde\ntudo';
+    }
+    label.style.left = (50 + 34 * Math.sin(angle)) + '%';
+    label.style.top = (50 - 34 * Math.cos(angle)) + '%';
+    return label;
+  }));
 }
 
 function newGame() {
@@ -134,6 +173,7 @@ function newGame() {
   for (const player of players) player.score = 0;
   active = 0;
   stake = 0;
+  pending = null;
   $('rouletteClue').textContent = clue;
   $('rouletteGrade').textContent = year + 'º ano';
   $('rouletteValue').textContent = 'Pronta para girar';
@@ -146,8 +186,8 @@ function newGame() {
 
 function spin() {
   if (phase !== 'ready') return;
-  const index = Math.floor(Math.random() * values.length);
-  const destination = (360 - index * 45) % 360;
+  const index = Math.floor(Math.random() * outcomes.length);
+  const destination = (360 - index * (360 / outcomes.length)) % 360;
   const advance = (destination - rotation % 360 + 360) % 360;
   rotation += 4 * 360 + advance;
   setPhase('spinning');
@@ -155,7 +195,20 @@ function spin() {
   $('rouletteWheel').style.transform = 'rotate(' + rotation + 'deg)';
   spinTimer = setTimeout(() => {
     spinTimer = null;
-    stake = values[index];
+    const outcome = outcomes[index];
+    if (outcome === passSector) {
+      $('rouletteValue').textContent = passSector;
+      passTurn('Passe a vez.');
+      return;
+    }
+    if (outcome === resetSector) {
+      const player = players[active];
+      player.score = 0;
+      $('rouletteValue').textContent = resetSector;
+      passTurn(player.name + ' perdeu todos os pontos.');
+      return;
+    }
+    stake = outcome;
     $('rouletteValue').textContent = stake + ' pontos por letra';
     $('rouletteStatus').textContent = 'A roleta parou em ' + stake + '. Escolha uma letra.';
     setPhase('letter');
@@ -165,22 +218,47 @@ function spin() {
   }, reducedMotion.matches ? 0 : 1320);
 }
 
+function passTurn(message) {
+  stake = 0;
+  pending = null;
+  active = (active + 1) % players.length;
+  setPhase('ready');
+  renderScores();
+  $('rouletteStatus').textContent = message + ' Vez de ' + players[active].name + '.';
+  $('rouletteSpin').focus();
+}
+
 function guess(letter) {
   if (phase !== 'letter' || guessed.has(letter)) return;
-  guessed.add(letter);
   const occurrences = words.reduce((total, word) => total + [...normalize(word)].filter(char => char === letter).length, 0);
+  if (!occurrences) {
+    guessed.add(letter);
+    passTurn('O painel não tem a letra ' + letter + '.');
+    return;
+  }
+  const count = letter + ' aparece ' + occurrences + (occurrences === 1 ? ' vez' : ' vezes') + '. ';
+  const multiplication = occurrences + ' × ' + stake;
+  const equation = !manualScoring || (mixedOperations && Math.random() < .5)
+    ? multiplication : Array(occurrences).fill(stake).join(' + ');
+  const play = {letter, count, equation, earned: occurrences * stake};
+  if (!manualScoring) {
+    awardPoints(play);
+    return;
+  }
+  pending = play;
+  $('rouletteEquation').textContent = equation + ' = ?';
+  $('rouletteAnswer').value = '';
+  $('rouletteStatus').textContent = count + 'Resolva a conta para confirmar os pontos.';
+  setPhase('math');
+  $('rouletteAnswer').focus();
+}
+
+function awardPoints({letter, count, equation, earned}) {
+  guessed.add(letter);
   const player = players[active];
-  const earned = occurrences * stake;
   player.score += earned;
   const done = words.every(word => [...normalize(word)].every(char => guessed.has(char)));
-  let message;
-  if (occurrences) {
-    message = letter + ' aparece ' + occurrences + (occurrences === 1 ? ' vez' : ' vezes') + '. ' +
-      occurrences + ' × ' + stake + ' = ' + formatter.format(earned) + ' pontos para ' + player.name + '.';
-  } else {
-    active = (active + 1) % players.length;
-    message = 'O painel não tem a letra ' + letter + '. Vez de ' + players[active].name + '.';
-  }
+  let message = count + equation + ' = ' + formatter.format(earned) + ' pontos para ' + player.name + '.';
   setPhase(done ? 'over' : 'ready');
   renderWords();
   renderScores();
@@ -196,6 +274,22 @@ function guess(letter) {
   $('rouletteStatus').textContent = message;
 }
 
+$('rouletteMath').addEventListener('submit', event => {
+  event.preventDefault();
+  if (phase !== 'math' || !pending) return;
+  const answer = $('rouletteAnswer').valueAsNumber;
+  if (answer === pending.earned) {
+    const play = pending;
+    pending = null;
+    awardPoints(play);
+  } else if (Number.isInteger(answer) && answer >= 0) {
+    passTurn('A conta não confere.');
+  }
+});
+
+$('rouletteYear').addEventListener('change', updateScoringOptions);
+$('rouletteManual').addEventListener('change', updateScoringOptions);
+updateScoringOptions();
 $('rouletteSetup').addEventListener('submit', event => {
   event.preventDefault();
   const next = $('rouletteYear').value;
@@ -206,6 +300,10 @@ $('rouletteSetup').addEventListener('submit', event => {
   }
   if (year !== next) previousPanel = -1;
   year = next;
+  updateScoringOptions();
+  manualScoring = $('rouletteManual').checked;
+  mixedOperations = $('rouletteMixed').checked;
+  configureWheel();
   players = names.filter(Boolean).map(name => ({name, score: 0}));
   $('rouletteSetupStatus').textContent = '';
   $('rouletteSetup').hidden = true;
@@ -217,6 +315,7 @@ $('rouletteReplay').addEventListener('click', newGame);
 $('rouletteSettings').addEventListener('click', () => {
   clearTimeout(spinTimer);
   spinTimer = null;
+  pending = null;
   setPhase('setup');
   $('rouletteGame').hidden = true;
   $('rouletteSetup').hidden = false;
