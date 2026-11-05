@@ -1,16 +1,17 @@
 'use strict';
 const $=id=>document.getElementById(id),F=Fluencia,Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
 let step=0,config=null,phase='setup',clock=null,ticker=null,rec=null,voiceVersion=0,paused=false,locked=false,transitionTimer=null,fallback=false,transcript='',originalTranscript='',revision=false,wordTest=null,questionIndex=0,questionAnswers=['','',''],resultAlignment=null,voiceRetryTimer=null,voiceRetries=0,decisionResolve=null,wordCandidate=null,voiceReady=false;
+let profile=null, countdownTimer=null;
 let textPreview='', textUsedProvisional=false, voiceStartTimer=null;
 const active=()=>['text','words'].includes(phase),say=message=>$('status').textContent=message;
 function showStep(n){if(step===2&&n!==2)window.FluenciaMicrofone?.stop();step=n;for(const el of document.querySelectorAll('[data-panel]'))el.hidden=Number(el.dataset.panel)!==n;for(const el of document.querySelectorAll('[data-step]'))el.classList.toggle('active',Number(el.dataset.step)===n);$('previous').hidden=n===0;$('next').hidden=n===3;$('setupMessage').textContent='';if(n===1)updateMaterialChoices();if(n===3)reviewSetup();}
 function validateStep(n){
- const ids=n===0?['teacher','student','className','date']:n===1?['passage','textSeconds','q1','q2','q3','words','wordSeconds']:[];
+ const ids=n===0?['teacher','student','className','date']:n===1?['passage','q1','q2','q3','words',...(protocolSelected()?[]:['textSeconds','wordSeconds'])]:[];
  for(const id of ids){const el=$(id);if(!el.value.trim()||!el.reportValidity()){el.focus();throw Error('Preencha os campos desta etapa.');}}
- if(n===1){const count=F.tokens($('passage').value).length;if(!count||count>600)throw Error('O texto deve ter de 1 a 600 palavras.');F.parseWords($('words').value);new F.Clock(Number($('textSeconds').value));new F.Clock(Number($('wordSeconds').value));}
+ if(n===1){const count=F.tokens($('passage').value).length;if(!count||count>600)throw Error('O texto deve ter de 1 a 600 palavras.');const words=F.parseWords($('words').value);if(protocolSelected()){if(words.length!==12)throw Error('O percurso do protocolo precisa de exatamente 12 palavras.');return;}new F.Clock(Number($('textSeconds').value));new F.Clock(Number($('wordSeconds').value));}
  if(n===2&&$('mode').value==='auto'){if(!$('voiceConsent').checked)throw Error('Marque a autorização de voz ou escolha o modo sem microfone.');if(!Speech||!window.isSecureContext)throw Error('Reconhecimento indisponível. Use o modo sem microfone ou abra pelo portal HTTPS / iniciador local em navegador compatível.');}
 }
-function reviewSetup(){const list=document.createElement('dl');for(const [label,value] of [['Professor',$('teacher').value],['Estudante',$('student').value],['Ano/série / data',$('className').value+' · '+$('date').value],['Texto',F.tokens($('passage').value).length+' palavras · '+$('textSeconds').value+' s'],['Compreensão','3 perguntas avaliadas pelo professor'],['Lista',F.parseWords($('words').value).length+' palavras · '+$('wordSeconds').value+' s no total'],['Modo',$('mode').selectedOptions[0].textContent]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;list.append(dt,dd);}$('reviewSetup').replaceChildren(list);}
+function reviewSetup(){const list=document.createElement('dl');for(const [label,value] of [['Professor',$('teacher').value],['Estudante',$('student').value],['Ano/série / data',$('className').value+' · '+$('date').value],['Aplicação',protocolSelected()?'Cartela → encaminhamento pelo professor → perfil':'Texto → perguntas → palavras'],['Texto',F.tokens($('passage').value).length+' palavras · '+(protocolSelected()?'tempo medido':$('textSeconds').value+' s')],['Compreensão','3 perguntas avaliadas pelo professor'],['Lista',F.parseWords($('words').value).length+' palavras · '+(protocolSelected()?'cartela sem tempo limite':$('wordSeconds').value+' s no total')],['Modo',$('mode').selectedOptions[0].textContent]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;list.append(dt,dd);}$('reviewSetup').replaceChildren(list);}
 $('next').addEventListener('click',()=>{try{validateStep(step);showStep(step+1);}catch(e){$('setupMessage').textContent=e.message;}});$('previous').addEventListener('click',()=>showStep(step-1));
 function stopVoice(){
  if(textPreview){transcript=joinTranscript(transcript,textPreview);textUsedProvisional=true;textPreview='';}
@@ -18,10 +19,10 @@ function stopVoice(){
  clearTimeout(voiceStartTimer);voiceStartTimer=null;voiceVersion++;
  if(rec){const old=rec;rec=null;old.onstart=old.onresult=old.onerror=old.onspeechstart=old.onend=null;try{old.abort();}catch{}}
 }
-function stopTimers(){clearInterval(ticker);ticker=null;clearTimeout(transitionTimer);transitionTimer=null;}
+function stopTimers(){clearTimeout(countdownTimer);countdownTimer=null;clearInterval(ticker);ticker=null;clearTimeout(transitionTimer);transitionTimer=null;}
 function controls(){
  const live=active(),canUseVoiceControls=live&&config.mode==='auto'&&!fallback&&!paused&&!locked;
- $('testControls').hidden=!live;$('pause').textContent=paused?'Continuar':'Pausar';$('pause').hidden=phase==='text';
+ $('testControls').hidden=!live;$('markReadingStart').hidden=phase!=='text'||!profile||clock.started||paused;$('pause').textContent=paused?'Continuar':'Pausar';$('pause').hidden=phase==='text';
  $('resumeVoice').hidden=!canUseVoiceControls;$('resumeVoice').textContent=rec?'Reiniciar escuta':'Retomar escuta';
  $('withoutVoice').hidden=!canUseVoiceControls||!!rec;
  $('teacherCorrect').hidden=phase!=='words';$('retry').hidden=phase!=='words'||!wordTest.waiting;
@@ -29,9 +30,9 @@ function controls(){
  for(const id of ['teacherCorrect','retry','teacherWrong'])$(id).disabled=paused||locked;
  if(phase==='words')updateWordVoiceState();
 }
-function displayClock(){if(!clock||!active()){$('clock').textContent='';return;}const seconds=Math.ceil(clock.left(performance.now())/1000);$('clock').textContent=seconds+' s';if($('decisionDialog').open)$('decisionClock').textContent=seconds+' s';$('clock').classList.toggle('warning',seconds<=5);}
+function displayClock(){if(!clock||!active()){$('clock').textContent='';return;}const elapsed=phase==='text'&&profile;const seconds=elapsed?Math.floor(clock.elapsed(performance.now())/1000):Math.ceil(clock.left(performance.now())/1000);$('clock').textContent=seconds+' s';if($('decisionDialog').open)$('decisionClock').textContent=seconds+' s';$('clock').classList.toggle('warning',!elapsed&&seconds<=5);}
 function tick(){if(!active()||paused)return;displayClock();if(clock.expired(performance.now()))finishSegment('tempo');}
-function runClock(){clock.start(performance.now());clearInterval(ticker);ticker=setInterval(tick,100);displayClock();}
+function runClock(){if(!profile||clock.started)clock.start(performance.now());clearInterval(ticker);ticker=setInterval(tick,100);displayClock();}
 function pauseSegment(message='Etapa pausada. Clique em Continuar para retomar.'){
  if(!active())return;if(clock.expired(performance.now())){finishSegment('tempo');return;}clock.pause(performance.now());paused=true;$('textScreen').setAttribute('aria-pressed','true');stopVoice();stopTimers();locked=false;controls();displayClock();say(message);
 }
@@ -65,12 +66,13 @@ function listen(){
  instance.onstart=()=>{
   if(token!==voiceVersion||paused)return;
   clearTimeout(voiceStartTimer);voiceStartTimer=null;voiceReady=true;
-  say('Escuta ativa. Pode começar a leitura.');controls();
+  say(profile?'Escuta ativa. O cronômetro começa quando a leitura for detectada ou marcada pelo professor.':'Escuta ativa. Pode começar a leitura.');controls();
  };
  instance.onresult=event=>{
   if(token!==voiceVersion||!active()||paused)return;
   if(clock.expired(performance.now())){finishSegment('tempo');return;}
   if(phase==='words'){handleWordSpeech(event,token,consumed,provisionalRows);return;}
+  if(profile&&event.results.length)markReadingStart();
   const finals=[],provisional=[];
   for(let i=processed;i<event.results.length;i++){
    const result=event.results[i],chunk=result[0].transcript.trim();
@@ -85,14 +87,14 @@ function listen(){
   if(finals.length||preview){voiceRetries=0;say('Leitura recebida pelo reconhecimento de voz.');}
  };
  instance.onerror=event=>{if(token!==voiceVersion)return;voiceInterrupted(voiceErrorMessage(event.error)+' O tempo continua correndo.',!['not-allowed','service-not-allowed','language-not-supported'].includes(event.error));};
- instance.onspeechstart=()=>{if(token!==voiceVersion||paused)return;if(phase==='words')$('wordVoiceState').textContent='Recebendo voz…';else say('Voz detectada. Aguardando transcrição…');};
+ instance.onspeechstart=()=>{if(token!==voiceVersion||paused)return;if(phase==='words')$('wordVoiceState').textContent='Recebendo voz…';else{markReadingStart();say('Voz detectada. Aguardando transcrição…');}};
  instance.onend=()=>{if(token!==voiceVersion)return;voiceInterrupted('O serviço de voz interrompeu a escuta. O tempo continua correndo.',true);};
  voiceStartTimer=setTimeout(()=>{if(token===voiceVersion)voiceInterrupted('A escuta demorou para iniciar. O tempo continua correndo.',true);},8000);
  try{instance.start();}catch{voiceInterrupted('Não foi possível abrir o microfone. O tempo continua; tente Retomar escuta.',true);}
 }
-function resumeSegment(){if(!active())return;paused=false;$('textScreen').setAttribute('aria-pressed','false');runClock();if(phase==='words')renderWord();controls();if(config.mode==='auto'&&!fallback)listen();else say('Etapa em andamento, com acompanhamento do professor.');}
-function hideScreens(){document.body.classList.remove('text-focus');for(const id of ['textScreen','questionScreen','wordScreen','transition'])$(id).hidden=true;$('transcriptDetails').hidden=true;$('heard').textContent='';}
-function beginSegment(type){stopVoice();stopTimers();hideScreens();phase=type;voiceRetries=0;fallback=false;paused=false;locked=false;clock=new F.Clock(type==='text'?config.textSeconds:config.wordSeconds);$('testStage').textContent=type==='text'?'1 · Leitura do texto':'3 · Leitura das palavras';
+function resumeSegment(){if(!active())return;paused=false;$('textScreen').setAttribute('aria-pressed','false');runClock();if(phase==='words')renderWord();controls();if(config.mode==='auto'&&!fallback)listen();else say(profile&&!clock.started?'Clique em Começou a ler ao ouvir a primeira palavra.':'Etapa em andamento, com acompanhamento do professor.');}
+function hideScreens(){document.body.classList.remove('text-focus');for(const id of ['textScreen','questionScreen','wordScreen','transition','countdownScreen','protocolScreen'])$(id).hidden=true;$('transcriptDetails').hidden=true;$('heard').textContent='';}
+function beginSegment(type){stopVoice();stopTimers();hideScreens();phase=type;voiceRetries=0;fallback=false;paused=false;locked=false;clock=profile&&type==='text'?new ReadingStopwatch():new F.Clock(type==='text'?config.textSeconds:config.wordSeconds);$('testStage').textContent=type==='text'?(profile?'2 · Leitura do texto':'1 · Leitura do texto'):'3 · Leitura das palavras';
  if(type==='text'){
   $('textScreen').hidden=false;
   $('passageDisplay').textContent=formatReadingLetters(config.passage.replace(/\n{3,}/g,'\n\n'));
@@ -118,6 +120,7 @@ function finishSegment(reason){
  if(!active())return;closeDecision(false);const previous=phase;clock.pause(performance.now());stopTimers();stopVoice();paused=false;locked=false;
  if(previous==='text'){
   originalTranscript=transcript;resultAlignment=F.align(config.passage,transcript);phase='textDone';
+  if(profile){profile.textRead=true;profile.elapsed=clock.started?Math.ceil(clock.elapsed(performance.now())/1000):null;showProfileReview();return;}
   const ending=reason==='tempo'?'O tempo terminou.':'A etapa foi encerrada pelo professor.';
   let capture='';
   if(config.mode==='auto')capture=transcript
@@ -128,10 +131,10 @@ function finishSegment(reason){
  else{wordTest.finish();phase='wordsDone';showTransition('Leitura das palavras encerrada','Os registros foram preservados, incluindo a palavra interrompida e as não apresentadas. Agora revise o relatório.','Ver relatório →');}
 }
 function showTransition(title,info,button){hideScreens();$('transition').hidden=false;$('transitionTitle').textContent=title;$('transitionInfo').textContent=info;$('transitionNext').textContent=button;$('clock').textContent='';$('heard').textContent='';say('');controls();}
-$('transitionNext').addEventListener('click',()=>{if(phase==='textDone'){phase='questions';questionIndex=0;showQuestion();}else if(phase==='questionsDone')beginSegment('words');else if(phase==='wordsDone')showReport();});
-function showQuestion(){hideScreens();$('questionScreen').hidden=false;$('testStage').textContent='2 · Compreensão do texto';$('clock').textContent='';$('questionNumber').textContent=`Pergunta ${questionIndex+1} de 3`;$('questionText').textContent=config.questions[questionIndex];$('questionStatus').textContent=questionAnswers[questionIndex]?'Registro: '+questionAnswers[questionIndex]:'';$('questionNext').disabled=!questionAnswers[questionIndex];$('questionNext').textContent=questionIndex===2?'Avançar para palavras →':'Próxima pergunta →';for(const button of document.querySelectorAll('[data-question-answer]'))button.classList.toggle('selected',button.dataset.questionAnswer===questionAnswers[questionIndex]);controls();}
+$('transitionNext').addEventListener('click',()=>{if(phase==='textDone'){phase='questions';questionIndex=0;showQuestion();}else if(phase==='questionsDone')prepareReading(()=>beginSegment('words'));else if(phase==='wordsDone')showReport();});
+function showQuestion(){hideScreens();$('questionScreen').hidden=false;$('testStage').textContent=profile?'3 · Compreensão do texto':'2 · Compreensão do texto';$('clock').textContent='';$('questionNumber').textContent=`Pergunta ${questionIndex+1} de 3`;$('questionText').textContent=config.questions[questionIndex];$('questionStatus').textContent=questionAnswers[questionIndex]?'Registro: '+questionAnswers[questionIndex]:'';$('questionNext').disabled=!questionAnswers[questionIndex];$('questionNext').textContent=questionIndex===2?(profile?'Ver relatório →':'Avançar para palavras →'):'Próxima pergunta →';for(const button of document.querySelectorAll('[data-question-answer]'))button.classList.toggle('selected',button.dataset.questionAnswer===questionAnswers[questionIndex]);controls();}
 for(const button of document.querySelectorAll('[data-question-answer]'))button.addEventListener('click',()=>{questionAnswers[questionIndex]=button.dataset.questionAnswer;showQuestion();});
-$('questionNext').addEventListener('click',()=>{if(!questionAnswers[questionIndex])return;if(questionIndex<2){questionIndex++;showQuestion();}else{phase='questionsDone';showTransition('Perguntas registradas','A próxima etapa apresenta uma palavra por vez. O tempo vale para toda a lista. Na primeira tentativa sem correspondência, o professor pode corrigir ou o estudante pode ler novamente.','Iniciar leitura das palavras →');}});
+$('questionNext').addEventListener('click',()=>{if(!questionAnswers[questionIndex])return;if(questionIndex<2){questionIndex++;showQuestion();}else if(profile)showReport();else{phase='questionsDone';showTransition('Perguntas registradas','A próxima etapa apresenta uma palavra por vez. O tempo vale para toda a lista. Na primeira tentativa sem correspondência, o professor pode corrigir ou o estudante pode ler novamente.','Iniciar leitura das palavras →');}});
 $('pause').addEventListener('click',()=>paused?resumeSegment():pauseSegment());
 $('resumeVoice').addEventListener('click',()=>{
  if($('resumeVoice').hidden)return;
@@ -144,16 +147,16 @@ $('teacherCorrect').addEventListener('click',()=>{if(phase!=='words'||paused||lo
 $('teacherWrong').addEventListener('click',()=>{if(phase!=='words'||paused||locked)return;if(clock.expired(performance.now())){finishSegment('tempo');return;}wordTest.attempts.push('[Tentativa registrada pelo professor]');if(wordTest.attempts.length>=2){wordTest.record('Sem correspondência após 2 tentativas');afterWord('Segunda tentativa registrada.');}else{wordTest.waiting=true;renderWord();say('Primeira tentativa registrada. Confirme ou libere a segunda tentativa.');}});
 $('endStage').addEventListener('click',async()=>{
  if(!active())return;const expectedPhase=phase;
- const accepted=await askDecision({title:'Encerrar esta etapa?',context:phase==='text'?'Leitura do texto':'Leitura das palavras',message:'Tudo o que já foi registrado será preservado. '+(phase==='text'?'Em seguida, você poderá fazer as três perguntas de compreensão.':'Em seguida, você poderá revisar o relatório da sessão.'),confirm:'Encerrar etapa',cancel:phase==='text'?'Continuar leitura':'Voltar à atividade',timed:true});
+ const accepted=await askDecision({title:'Encerrar esta etapa?',context:phase==='text'?'Leitura do texto':'Leitura das palavras',message:'Tudo o que já foi registrado será preservado. '+(phase==='text'?'Em seguida, você poderá fazer as três perguntas de compreensão.':'Em seguida, você poderá revisar o relatório da sessão.'),confirm:'Encerrar etapa',cancel:phase==='text'?'Continuar leitura':'Voltar à atividade',timed:!profile});
  if(accepted&&phase===expectedPhase&&active())finishSegment('professor');
 });
-$('setup').addEventListener('submit',event=>{event.preventDefault();try{for(let n=0;n<3;n++)validateStep(n);stopVoice();stopTimers();config={teacher:$('teacher').value.trim(),student:$('student').value.trim(),className:$('className').value.trim(),date:$('date').value,passage:$('passage').value.trim(),questions:['q1','q2','q3'].map(id=>$(id).value.trim()),words:F.parseWords($('words').value),textSeconds:Number($('textSeconds').value),wordSeconds:Number($('wordSeconds').value),mode:$('mode').value,letterCase:$('letterCase').value};transcript='';originalTranscript='';textUsedProvisional=false;revision=false;questionAnswers=['','',''];$('notes').value='';$('setup').hidden=true;$('report').hidden=true;$('test').hidden=false;beginSegment('text');}catch(e){$('setupMessage').textContent=e.message;}});
+$('setup').addEventListener('submit',event=>{event.preventDefault();try{for(let n=0;n<3;n++)validateStep(n);stopVoice();stopTimers();config={teacher:$('teacher').value.trim(),student:$('student').value.trim(),className:$('className').value.trim(),date:$('date').value,passage:$('passage').value.trim(),questions:['q1','q2','q3'].map(id=>$(id).value.trim()),words:F.parseWords($('words').value),textSeconds:Number($('textSeconds').value),wordSeconds:Number($('wordSeconds').value),mode:$('mode').value,letterCase:$('letterCase').value};transcript='';originalTranscript='';textUsedProvisional=false;revision=false;questionAnswers=['','',''];profile=protocolSelected()?{textRead:false,correct:0,label:'Evidências insuficientes',evidence:''}:null;resultAlignment=F.align(config.passage,'');$('notes').value='';$('setup').hidden=true;$('report').hidden=true;$('test').hidden=false;if(profile)prepareReading(showWordCard);else prepareReading(()=>beginSegment('text'));}catch(e){$('setupMessage').textContent=e.message;}});
 function metric(value,label){const div=document.createElement('div');div.className='metric';const strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=value;span.textContent=label;div.append(strong,span);return div;}
 function drawAlignment(){const {counts,ops}=resultAlignment;$('metrics').replaceChildren(metric(counts.match,'Correspondências no texto'),metric(counts.different,'Palavras diferentes'),metric(counts.missing,'Ausentes no meio do texto'),metric(counts.notRead,'Palavras finais sem registro'),metric(counts.extra,'Palavras extras na transcrição'));$('aligned').replaceChildren();for(const op of ops){const span=document.createElement('span');span.className='mark-'+op.type;span.textContent=op.expected||'['+op.heard+']';span.title=op.type==='different'?`Transcrito: ${op.heard}`:op.type==='extra'?'Palavra extra na transcrição':op.type==='match'?'Correspondência na transcrição':'Não consta na transcrição';$('aligned').append(span);}}
 function select(options,value,onChange){const select=document.createElement('select');for(const [v,label] of options){const option=document.createElement('option');option.value=v;option.textContent=label;select.append(option);}select.value=value;select.addEventListener('change',()=>onChange(select.value));return select;}
-function showReport(){stopVoice();stopTimers();phase='report';$('test').hidden=true;$('report').hidden=false;$('reportStudent').textContent=`Professor: ${config.teacher} · Estudante: ${config.student} · Ano/série: ${config.className} · Data: ${config.date}`;$('editTranscript').value=transcript;$('revisionMessage').textContent=revision?'Comparação baseada na revisão do professor.':textUsedProvisional?'A transcrição inclui trechos provisórios do navegador. Revise o texto antes de concluir a avaliação.':'Comparação automática da transcrição recebida. O professor pode corrigir o texto abaixo.';drawAlignment();$('questionReport').replaceChildren();config.questions.forEach((q,i)=>{const div=document.createElement('div');div.className='question-review';const p=document.createElement('p');p.textContent=`${i+1}. ${q}`;const chooser=select(['Correta','Incorreta','Sem resposta'].map(s=>[s,s]),questionAnswers[i],value=>questionAnswers[i]=value);chooser.setAttribute('aria-label','Revisão da pergunta '+(i+1));div.append(p,chooser);$('questionReport').append(div);});$('wordReport').replaceChildren();for(const row of wordTest.rows){const tr=document.createElement('tr');for(const text of [row.word,row.result+(row.source?' — '+row.source:''),row.attempts.join(' | ')||'—']){const td=document.createElement('td');td.textContent=text;tr.append(td);}const td=document.createElement('td'),chooser=select([['','Sem revisão'],['Certa','Certa'],['Errada','Errada'],['Não avaliada','Não avaliada']],row.review,value=>row.review=value);chooser.setAttribute('aria-label','Revisão da palavra '+row.word);td.append(chooser);tr.append(td);$('wordReport').append(tr);}window.scrollTo({top:0,behavior:'smooth'});}
+function showReport(){stopVoice();stopTimers();phase='report';$('profileReport').hidden=!profile;$('profileReport').textContent=profile?profileSummary():'';$('textReport').hidden=!!profile&&!profile.textRead;$('test').hidden=true;$('report').hidden=false;$('reportStudent').textContent=`Professor: ${config.teacher} · Estudante: ${config.student} · Ano/série: ${config.className} · Data: ${config.date}`;$('editTranscript').value=transcript;$('revisionMessage').textContent=revision?'Comparação baseada na revisão do professor.':textUsedProvisional?'A transcrição inclui trechos provisórios do navegador. Revise o texto antes de concluir a avaliação.':'Comparação automática da transcrição recebida. O professor pode corrigir o texto abaixo.';drawAlignment();$('questionReport').replaceChildren();config.questions.forEach((q,i)=>{const div=document.createElement('div');div.className='question-review';const p=document.createElement('p');p.textContent=`${i+1}. ${q}`;const chooser=select(['Correta','Incorreta','Sem resposta'].map(s=>[s,s]),questionAnswers[i],value=>questionAnswers[i]=value);chooser.setAttribute('aria-label','Revisão da pergunta '+(i+1));div.append(p,chooser);$('questionReport').append(div);});$('wordReport').replaceChildren();for(const row of wordTest.rows){const tr=document.createElement('tr');for(const text of [row.word,row.result+(row.source?' — '+row.source:''),row.attempts.join(' | ')||'—']){const td=document.createElement('td');td.textContent=text;tr.append(td);}const td=document.createElement('td'),chooser=select([['','Sem revisão'],['Certa','Certa'],['Errada','Errada'],['Não avaliada','Não avaliada']],row.review,value=>row.review=value);chooser.disabled=!!profile;chooser.setAttribute('aria-label','Revisão da palavra '+row.word);td.append(chooser);tr.append(td);$('wordReport').append(tr);}window.scrollTo({top:0,behavior:'smooth'});}
 $('applyTranscript').addEventListener('click',()=>{try{const revised=$('editTranscript').value;const result=F.align(config.passage,revised);transcript=revised;resultAlignment=result;revision=true;drawAlignment();$('revisionMessage').textContent='Revisão aplicada pelo professor. A transcrição original continua preservada no relatório TXT.';}catch(e){$('revisionMessage').textContent=e.message;}});
-function reportText(){const c=resultAlignment.counts;return `ZURCHE — ATIVIDADES / FLUÊNCIA LEITORA\nProfessor: ${config.teacher}\nEstudante: ${config.student}\nAno/série: ${config.className}\nData: ${config.date}\nModo inicial: ${config.mode==='auto'?'Voz + professor':'Sem microfone'}\nTempos configurados: texto ${config.textSeconds}s; lista de palavras ${config.wordSeconds}s\n\nCOMPARAÇÃO DO TEXTO (${revision?'REVISTA PELO PROFESSOR':'ESTIMATIVA AUTOMÁTICA'})\nCorrespondências: ${c.match}\nDiferentes: ${c.different}\nAusentes no meio: ${c.missing}\nFinal sem registro: ${c.notRead}\nExtras: ${c.extra}\nTexto completo na transcrição: ${resultAlignment.incomplete?'Não':'Sim, segundo a comparação'}\nSem transcrição não significa que o estudante não leu.\n\nTEXTO PROPOSTO\n${config.passage}\n\nTRANSCRIÇÃO ORIGINAL RECEBIDA\n${textUsedProvisional?'Inclui trechos provisórios recebidos pelo navegador. Confira a leitura com o estudante.\n':''}${originalTranscript||'[Nenhuma transcrição]'}\n\nTRANSCRIÇÃO USADA NA COMPARAÇÃO\n${transcript||'[Nenhuma transcrição]'}\n\nDETALHES\n${resultAlignment.ops.map(op=>`${op.expected||'[extra]'} | transcrito: ${op.heard||'—'} | ${op.type}`).join('\n')}\n\nCOMPREENSÃO\n${config.questions.map((q,i)=>`${i+1}. ${q}\n${questionAnswers[i]}`).join('\n\n')}\n\nPALAVRAS\n${wordTest.rows.map((r,i)=>`${i+1}. ${r.word}\nRegistro: ${r.result}\nOrigem: ${r.source||'Transcrição final ou confirmação do professor'}\nTranscrições: ${r.attempts.join(' | ')||'Nenhuma'}\nRevisão do professor: ${r.review||'Sem revisão'}`).join('\n\n')}\n\nOBSERVAÇÕES\n${$('notes').value}\n\nEste é um registro pedagógico assistido por reconhecimento de voz, não uma avaliação validada de fluência ou pronúncia. Os registros de ausência/correspondência podem refletir falhas do reconhecedor.`;}
+function reportText(){const c=resultAlignment.counts;return `ZURCHE — ATIVIDADES / FLUÊNCIA LEITORA\nProfessor: ${config.teacher}\nEstudante: ${config.student}\nAno/série: ${config.className}\nData: ${config.date}${profile?'\n'+profileSummary():`\nModo inicial: ${config.mode==='auto'?'Voz + professor':'Sem microfone'}\nTempos configurados: texto ${config.textSeconds}s; lista de palavras ${config.wordSeconds}s`}${profile&&!profile.textRead?'\n\nTexto e compreensão não aplicados.':`\n\nCOMPARAÇÃO DO TEXTO (${revision?'REVISTA PELO PROFESSOR':'ESTIMATIVA AUTOMÁTICA'})\nCorrespondências: ${c.match}\nDiferentes: ${c.different}\nAusentes no meio: ${c.missing}\nFinal sem registro: ${c.notRead}\nExtras: ${c.extra}\nTexto completo na transcrição: ${resultAlignment.incomplete?'Não':'Sim, segundo a comparação'}\nSem transcrição não significa que o estudante não leu.\n\nTEXTO PROPOSTO\n${config.passage}\n\nTRANSCRIÇÃO ORIGINAL RECEBIDA\n${textUsedProvisional?'Inclui trechos provisórios recebidos pelo navegador. Confira a leitura com o estudante.\n':''}${originalTranscript||'[Nenhuma transcrição]'}\n\nTRANSCRIÇÃO USADA NA COMPARAÇÃO\n${transcript||'[Nenhuma transcrição]'}\n\nDETALHES\n${resultAlignment.ops.map(op=>`${op.expected||'[extra]'} | transcrito: ${op.heard||'—'} | ${op.type}`).join('\n')}\n\nCOMPREENSÃO\n${config.questions.map((q,i)=>`${i+1}. ${q}\n${questionAnswers[i]}`).join('\n\n')}`}\n\nPALAVRAS\n${wordTest.rows.map((r,i)=>`${i+1}. ${r.word}\nRegistro: ${r.result}\nOrigem: ${r.source||'Transcrição final ou confirmação do professor'}\nTranscrições: ${r.attempts.join(' | ')||'Nenhuma'}\nRevisão do professor: ${r.review||'Sem revisão'}`).join('\n\n')}\n\nOBSERVAÇÕES\n${$('notes').value}\n\nEste é um registro pedagógico assistido por reconhecimento de voz, não uma avaliação validada de fluência ou pronúncia. Os registros de ausência/correspondência podem refletir falhas do reconhecedor.`;}
 $('downloadReport').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob(['\uFEFF'+reportText()],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='zurche-fluencia-relatorio.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);});$('printReport').addEventListener('click',async()=>{
  const button=$('printReport'),label=button.textContent;button.disabled=true;button.textContent='Gerando PDF…';$('pdfStatus').textContent='Preparando o relatório, com as revisões atuais.';
  try{await FluenciaReport.download(reportData());$('pdfStatus').textContent='PDF gerado. Confira o arquivo baixado.';}catch(error){$('pdfStatus').textContent=error.message||'Não foi possível gerar o PDF. Confira os arquivos da pasta vendor.';}finally{button.disabled=false;button.textContent=label;}
@@ -161,6 +164,135 @@ $('downloadReport').addEventListener('click',()=>{const url=URL.createObjectURL(
 $('newSession').addEventListener('click',async()=>{if(!(await askDecision({title:'Preparar um novo teste?',context:'Relatório da sessão',message:'Baixe o relatório antes de começar outro teste. Professor, ano/série, materiais e tempos serão mantidos. Você informará o nome do próximo estudante.',confirm:'Preparar novo teste',cancel:'Voltar ao relatório'})))return;stopVoice();stopTimers();phase='setup';$('student').value='';$('voiceConsent').checked=false;$('report').hidden=true;$('setup').hidden=false;showStep(0);$('student').focus();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active()){tick();if(active()&&!paused&&!rec)queueVoiceRetry();scheduleTextFit();}});window.addEventListener('pagehide',()=>{stopVoice();stopTimers();});$('voiceConsent').addEventListener('change',()=>{if(!$('voiceConsent').checked&&active())pauseSegment('Reconhecimento pausado: autorização desmarcada.');});
 function updateSupport(){$('voiceInfo').hidden=$('mode').value!=='auto';$('compatibility').textContent=Speech&&window.isSecureContext?'O navegador oferece reconhecimento de voz. Use o teste de transcrição abaixo para conferir a escuta antes de começar.':'Reconhecimento indisponível neste contexto. Você pode usar o modo sem microfone e revisar os registros.';}$('mode').addEventListener('change',updateSupport);
+function protocolSelected(){return $('readingFlow').value==='protocol';}
+function updateReadingFlow(){
+ for(const section of document.querySelectorAll('[data-practice-time]'))section.hidden=protocolSelected();
+ $('protocolHelp').hidden=!protocolSelected();
+}
+$('readingFlow').addEventListener('change',updateReadingFlow);
+updateReadingFlow();
+
+class ReadingStopwatch {
+ started=false;
+ since=null;
+ duration=0;
+ start(now){this.started=true;this.since??=now;}
+ elapsed(now){return this.duration+(this.since===null?0:now-this.since);}
+ pause(now){this.duration=this.elapsed(now);this.since=null;}
+ expired(){return false;}
+ left(now){return this.elapsed(now);}
+}
+
+function markReadingStart(){
+ if(!profile||phase!=='text'||paused||clock.started)return;
+ clock.start(performance.now());displayClock();controls();
+}
+$('markReadingStart').addEventListener('click',markReadingStart);
+
+function prepareReading(begin){
+ // Older embeds without a mode field keep their immediate start.
+ if(!$('readingFlow').value){begin();return;}
+ stopVoice();stopTimers();hideScreens();phase='countdown';controls();say('');
+ $('clock').textContent='';$('testStage').textContent='Preparação';
+ $('countdownScreen').hidden=false;
+ const ends=performance.now()+3000;
+ const step=()=>{
+  if(phase!=='countdown')return;
+  const remaining=ends-performance.now();
+  if(remaining<=0){countdownTimer=null;begin();return;}
+  const digit=Math.ceil(remaining/1000);
+  $('readingCountdown').textContent=digit;
+  countdownTimer=setTimeout(step,remaining-(digit-1)*1000);
+ };
+ step();
+}
+
+function protocolPanel(stage,title,instructions,button){
+ hideScreens();phase=stage;controls();say('');
+ $('clock').textContent='';$('testStage').textContent='Percurso do protocolo';
+ $('protocolTitle').textContent=title;$('protocolInstructions').textContent=instructions;
+ $('protocolItems').replaceChildren();$('protocolItems').className='';
+ $('protocolMessage').textContent='';$('protocolNext').textContent=button;
+ $('protocolScreen').hidden=false;
+}
+
+function renderCard(items){
+ $('protocolItems').className='reading-card';
+ for(const item of items){const word=document.createElement('span');word.textContent=formatReadingLetters(item);$('protocolItems').append(word);}
+}
+function showWordCard(){
+ protocolPanel('wordCard','Leitura da cartela','Peça ao estudante que leia as palavras no próprio ritmo, sem dicas. Acompanhe os acertos para registrá-los ao final.','Registrar leitura →');
+ renderCard(config.words);
+}
+function showCardReview(){
+ protocolPanel('cardReview','Revisão da cartela','Marque cada palavra. Considere correta a leitura silabada quando o estudante também disser a palavra inteira.','Ver próxima etapa →');
+ $('protocolItems').className='reading-review';
+ for(const [index,word] of config.words.entries()){
+  const label=document.createElement('label');
+  label.textContent=word;
+  const input=select([['','Selecione'],['Certa','Certa'],['Errada','Errada'],['Não avaliada','Não avaliada']],'',()=>{});
+  input.id='cardResult'+index;label.append(input);$('protocolItems').append(label);
+ }
+}
+function checkWordCard(){
+ const results=config.words.map((_,index)=>$('cardResult'+index).value);
+ if(results.includes('')){$('protocolMessage').textContent='Registre cada palavra antes de avançar.';return;}
+ wordTest=new F.WordTest(config.words);
+ for(const result of results){
+  wordTest.record(result);
+  Object.assign(wordTest.rows.at(-1),{review:result,source:'Observação do professor'});
+ }
+ profile.correct=results.filter(result=>result==='Certa').length;
+ profile.evidence=profile.correct+' de 12 palavras corretas na cartela.';
+ if(results.includes('Não avaliada')){profile.evidence+=' A cartela ficou incompleta.';showReport();return;}
+ if(profile.correct<=4){
+  protocolPanel('syllableReady','Leitura de sílabas','Peça ao estudante que leia algumas sílabas simples.','Apresentar sílabas →');
+ }else if(profile.correct<=8){
+  profile.label='Leitor de palavras';showReport();
+ }else{
+  protocolPanel('textReady','Leitura do texto','Inicie quando o estudante estiver pronto. Marque o início ao ouvir a primeira palavra e encerre na última. O microfone também pode detectar o início.','Apresentar texto →');
+ }
+}
+function showSyllables(){
+ protocolPanel('syllables','Leitura de sílabas','Observe a leitura das sílabas.','Registrar observação →');
+ renderCard(['ma','pa','la','ta']);
+}
+function showSyllableReview(){
+ protocolPanel('syllableReview','Observação das sílabas','O estudante conseguiu ler sílabas?','Ver relatório →');
+ $('protocolItems').innerHTML='<label for="syllableResult">Leitura de sílabas</label><select id="syllableResult"><option value="">Selecione</option><option value="yes">Sim</option><option value="no">Não</option><option value="unknown">Evidência insuficiente</option></select>';
+}
+function showProfileReview(){
+ protocolPanel('profileReview','Observação da leitura do texto','Compare a leitura observada com os critérios da cartela usada. Registre apenas os critérios que puder confirmar.','Ir para as perguntas →');
+ $('protocolItems').innerHTML=`<p>Tempo registrado: ${profile.elapsed===null?'não medido':profile.elapsed+' s'}.</p>
+ <label for="readingProsody">Prosódia (ritmo, pausas e entonação)</label><select id="readingProsody"><option value="">Sem observação</option><option value="boa">Boa</option><option value="média">Média</option><option value="baixa">Baixa</option></select>
+ <label for="readingAccuracy">Precisão conforme o limite de erros da cartela</label><select id="readingAccuracy"><option value="">Sem referência ou observação</option><option value="sim">Dentro do limite</option><option value="não">Acima do limite de erros</option></select>
+ <label for="readingPace">Tempo conforme a referência da cartela</label><select id="readingPace"><option value="">Sem referência ou medição</option><option value="sim">Dentro da referência</option><option value="não">Acima do tempo de referência</option></select>`;
+}
+function classifyText(){
+ const prosody=$('readingProsody').value,accuracy=$('readingAccuracy').value,pace=$('readingPace').value;
+ profile.evidence+=` Tempo registrado: ${profile.elapsed===null?'não medido':profile.elapsed+' s'}. Prosódia: ${prosody||'sem observação'}. Precisão dentro do limite: ${accuracy||'sem registro'}. Tempo dentro da referência: ${pace||'sem registro'}.`;
+ if(!prosody||!accuracy||!pace)return;
+ const met=accuracy==='sim'&&pace==='sim';
+ if(prosody==='boa')profile.label=met?'Leitor de texto com fluência':'Leitor de texto sem fluência';
+ if(prosody==='média')profile.label=met?'Leitor de texto sem fluência':'Leitor de frases';
+}
+function profileSummary(){return 'Perfil de leitura — '+profile.label+'. '+profile.evidence;}
+$('protocolNext').addEventListener('click',()=>{
+ if(phase==='wordCard')showCardReview();
+ else if(phase==='cardReview')checkWordCard();
+ else if(phase==='syllableReady')prepareReading(showSyllables);
+ else if(phase==='syllables')showSyllableReview();
+ else if(phase==='syllableReview'){
+  const result=$('syllableResult').value;
+  if(!result){$('protocolMessage').textContent='Registre a observação das sílabas.';return;}
+  if(result==='yes')profile.label='Leitor de sílabas';
+  if(result==='no')profile.label='Não leitor';
+  profile.evidence+=' Leitura de sílabas: '+$('syllableResult').selectedOptions[0].textContent+'.';
+  showReport();
+ }else if(phase==='textReady')prepareReading(()=>beginSegment('text'));
+ else if(phase==='profileReview'){classifyText();phase='questions';questionIndex=0;showQuestion();}
+});
+
 const materialFieldIds = ['passage', 'q1', 'q2', 'q3', 'words'];
 
 function materialsForYear() {
@@ -265,7 +397,7 @@ $('decisionClose').addEventListener('click',()=>closeDecision(false));
 $('decisionDialog').addEventListener('cancel',event=>{event.preventDefault();closeDecision(false);});
 $('decisionDialog').addEventListener('close',()=>{if(decisionResolve)closeDecision(false);});
 
-function reportData(){return {config,alignment:resultAlignment,questions:[...questionAnswers],rows:wordTest.rows,transcript,originalTranscript,textUsedProvisional,revision,notes:$('notes').value};}
+function reportData(){return {config,alignment:resultAlignment,profile,questions:[...questionAnswers],rows:wordTest.rows,transcript,originalTranscript,textUsedProvisional,revision,notes:$('notes').value};}
 function clearWordCandidate(){if(wordCandidate){clearTimeout(wordCandidate.timer);wordCandidate=null;}}
 function updateWordVoiceState(){
  const el=$('wordVoiceState');
