@@ -6,8 +6,8 @@
 <title>Roleta de Palavras — Zurche Atividades</title>
 <link rel="icon" href="../assets/logo-zurche-help-escolar.png">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="roleta-palavras.css?v=3">
-<script src="roleta-palavras.js?v=4" defer></script>
+<link rel="stylesheet" href="roleta-palavras.css?v=4">
+<script src="roleta-palavras.js?v=5" defer></script>
 </head>
 <body><div class="shell">
 <header><a class="brand" href="../index.html"><img src="../assets/logo-zurche-help-escolar.png" alt="Zurche"><span>Zurche — Atividades</span></a><a class="back" href="jogos.html">← Jogos</a></header>
@@ -32,8 +32,10 @@
 <button type="submit" class="primary">Iniciar partida →</button>
 <p id="rouletteSetupStatus" role="status"></p>
 </form>
-<section id="rouletteGame" hidden aria-label="Partida">
-<div class="roulette-heading"><span id="rouletteGrade" class="badge"></span><button type="button" id="rouletteSettings">Alterar participantes</button></div>
+</main>
+<dialog id="rouletteGame" class="roulette-game" aria-labelledby="rouletteGameTitle">
+<div class="roulette-stage">
+<div class="roulette-heading"><div class="roulette-title"><h2 id="rouletteGameTitle">Roleta de Palavras</h2><span id="rouletteGrade" class="badge"></span></div><button type="button" id="rouletteSettings" aria-label="Voltar à configuração da partida">← Configuração</button></div>
 <div id="rouletteScores" class="roulette-scores" aria-label="Placar"></div>
 <div class="roulette-layout">
 <section class="panel roulette-spin" aria-label="Roleta">
@@ -50,8 +52,8 @@
 <button id="rouletteReplay" type="button" class="primary" hidden>Novo jogo →</button>
 </section>
 </div>
-</section>
-</main>
+</div>
+</dialog>
 <dialog id="rouletteMathDialog" class="roulette-dialog roulette-math" aria-labelledby="rouletteMathTitle" aria-describedby="rouletteMathClue">
 <p class="eyebrow">Pontuação da jogada</p>
 <h2 id="rouletteMathTitle">Confirme os pontos</h2>

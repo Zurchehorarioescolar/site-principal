@@ -63,6 +63,7 @@ const panels = {
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const formatter = new Intl.NumberFormat('pt-BR');
 const buttons = new Map();
+const gameDialog = $('rouletteGame');
 const mathDialog = $('rouletteMathDialog');
 const resultDialog = $('rouletteResult');
 let players = [], words = [], previousPanel = -1, year = '', active = 0;
@@ -99,7 +100,9 @@ function renderScores() {
 
 function renderWords() {
   tiles = [];
-  $('rouletteWords').replaceChildren(...words.map((word, index) => {
+  const panel = $('rouletteWords');
+  panel.style.setProperty('--letters', Math.max(...words.map(word => [...word].length)));
+  panel.replaceChildren(...words.map((word, index) => {
     const row = document.createElement('div');
     row.className = 'roulette-row';
     row.setAttribute('role', 'group');
@@ -124,6 +127,7 @@ function setPhase(next) {
   phase = next;
   $('rouletteSpin').disabled = phase !== 'ready';
   $('rouletteReplay').hidden = phase !== 'over';
+  $('rouletteKeyboard').hidden = phase === 'over';
   for (const [letter, button] of buttons) {
     button.disabled = phase !== 'letter' || guessed.has(letter);
     if (guessed.has(letter)) button.dataset.hit = String(tiles.some(item => item.key === letter));
@@ -440,23 +444,28 @@ $('rouletteSetup').addEventListener('submit', event => {
   players = names.filter(Boolean).map(name => ({name, score: 0}));
   $('rouletteSetupStatus').textContent = '';
   $('rouletteSetup').hidden = true;
-  $('rouletteGame').hidden = false;
+  gameDialog.showModal();
   newGame();
 });
 $('rouletteSpin').addEventListener('click', spin);
 $('rouletteReplay').addEventListener('click', newGame);
 $('rouletteResultReplay').addEventListener('click', newGame);
 resultDialog.addEventListener('close', () => { if (phase === 'over') $('rouletteReplay').focus(); });
-$('rouletteSettings').addEventListener('click', () => {
+function leaveGame() {
   clearTimeout(spinTimer);
   spinTimer = null;
   stopSpinSound();
   revealId++;
   pending = null;
   setPhase('setup');
-  $('rouletteGame').hidden = true;
   $('rouletteSetup').hidden = false;
+  gameDialog.close();
   $('rouletteYear').focus();
+}
+$('rouletteSettings').addEventListener('click', leaveGame);
+gameDialog.addEventListener('cancel', event => {
+  event.preventDefault();
+  leaveGame();
 });
 window.addEventListener('pagehide', stopSpinSound);
 document.addEventListener('keydown', event => {
