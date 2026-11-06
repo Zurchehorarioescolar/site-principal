@@ -68,6 +68,7 @@ const mathDialog = $('rouletteMathDialog');
 const solveDialog = $('rouletteSolve');
 const resultDialog = $('rouletteResult');
 const cry = $('rouletteCry');
+const turnNotice = $('rouletteTurnNotice');
 const solveInputs = [1, 2, 3].map(index => $('rouletteWord' + index));
 let players = [], words = [], previousPanel = -1, year = '', active = 0;
 let rotation = 0, stake = 0, phase = 'setup', spinTimer = null;
@@ -193,7 +194,7 @@ function configureWheel() {
 function newGame() {
   revealId++;
   if (resultDialog.open) resultDialog.close();
-  cry.hidden = true;
+  clearFeedback();
   const choices = panels[year];
   const indices = choices.map((_, index) => index).filter(index => index !== previousPanel);
   previousPanel = indices[Math.floor(Math.random() * indices.length)];
@@ -240,8 +241,8 @@ function spin() {
       const player = players[active];
       player.score = 0;
       $('rouletteValue').textContent = resetSector;
-      passTurn(player.name + ' perdeu todos os pontos.', turnSounds.reset);
-      flashCry();
+      passTurn(player.name + ' perdeu todos os pontos.', turnSounds.reset, '');
+      flashFeedback(cry);
       return;
     }
     stake = outcome;
@@ -254,22 +255,31 @@ function spin() {
   }, duration);
 }
 
-function flashCry() {
+function clearFeedback() {
   cry.hidden = true;
-  cry.getBoundingClientRect();
-  cry.hidden = false;
+  turnNotice.hidden = true;
 }
-cry.addEventListener('animationend', event => {
-  if (event.animationName === 'roulette-cry') cry.hidden = true;
-});
 
-function passTurn(message, sound = turnSounds.pass) {
+function flashFeedback(feedback) {
+  clearFeedback();
+  feedback.getBoundingClientRect();
+  feedback.hidden = false;
+}
+for (const feedback of [cry, turnNotice]) {
+  feedback.addEventListener('animationend', () => { feedback.hidden = true; });
+}
+
+function passTurn(message, sound = turnSounds.pass, notice = 'Passou a vez') {
   stake = 0;
   pending = null;
   active = (active + 1) % players.length;
   setPhase('ready');
   renderScores();
   $('rouletteStatus').textContent = message + ' Vez de ' + players[active].name + '.';
+  if (notice) {
+    turnNotice.firstElementChild.textContent = notice;
+    flashFeedback(turnNotice);
+  }
   chime(sound, .055);
   $('rouletteSpin').focus();
 }
@@ -482,7 +492,7 @@ function resolveMath(verdict) {
   pending = null;
   mathDialog.close();
   if (verdict === 'correct') awardPoints(play);
-  else if (verdict === 'wrong') passTurn('A conta não confere.', turnSounds.wrong);
+  else if (verdict === 'wrong') passTurn('A conta não confere.', turnSounds.wrong, 'Cálculo errado, passou a vez');
   else {
     $('rouletteStatus').textContent = 'Conta cancelada. Escolha uma letra para esta mesma jogada.';
     setPhase('letter');
@@ -538,7 +548,7 @@ function leaveGame() {
   stopSpinSound();
   revealId++;
   pending = null;
-  cry.hidden = true;
+  clearFeedback();
   setPhase('setup');
   $('rouletteSetup').hidden = false;
   gameDialog.close();

@@ -15,11 +15,17 @@ body:has(.roulette-game[open]){overflow:hidden}
 .roulette-game{position:fixed;inset:0;margin:0;width:100%;max-width:none;height:100dvh;max-height:none;overflow:hidden;padding:max(clamp(8px,2vw,24px),env(safe-area-inset-top)) max(clamp(8px,2vw,24px),env(safe-area-inset-right)) max(clamp(8px,2vw,24px),env(safe-area-inset-bottom)) max(clamp(8px,2vw,24px),env(safe-area-inset-left));border:0;background:radial-gradient(ellipse at top left,#143346 0,transparent 60%),#0b1020;color:var(--text)}
 .roulette-stage{display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:clamp(5px,1.25dvh,14px);height:100%;max-width:1240px;margin:auto}
 .roulette-stage :is(p,h2){margin:0}
-.roulette-cry{position:fixed;inset:0;z-index:2;display:grid;place-items:center;pointer-events:none}
+.roulette-feedback{position:fixed;inset:0;z-index:2;display:grid;place-items:center;padding:16px;pointer-events:none}
 .roulette-cry span{font-size:clamp(64px,23vmin,156px);line-height:1;filter:drop-shadow(0 7px 16px #0008);animation:roulette-cry 740ms ease-in-out both}
 @keyframes roulette-cry{
   0%,100%{opacity:0;transform:scale(var(--cry-small,.82))}
   26%,65%{opacity:1;transform:scale(1)}
+}
+.roulette-turn-notice span{max-width:min(100%,640px);padding:clamp(14px,4vw,30px);border:2px solid #ff747d;border-radius:18px;background:#35131c;color:#ff858e;box-shadow:0 10px 40px #000b;font-size:clamp(25px,6vw,56px);line-height:1.15;font-weight:800;text-align:center;animation:roulette-turn-notice 2100ms ease-in-out both}
+@keyframes roulette-turn-notice{
+  0%,100%{opacity:0}
+  10%,29%,83%{opacity:1}
+  19%{opacity:var(--notice-pulse,.62)}
 }
 .roulette-heading,.roulette-title{display:flex;align-items:center;gap:clamp(5px,1.3vw,12px)}
 .roulette-heading{justify-content:space-between}
@@ -112,4 +118,4 @@ body:has(.roulette-game[open]){overflow:hidden}
   .roulette-row span{font-size:12px}
 }
 @media(max-width:540px){.roulette-fields{grid-template-columns:1fr;gap:0}}
-@media(prefers-reduced-motion:reduce){.roulette-wheel,.roulette-row span{transition:none}#rouletteConfetti{display:none}.roulette-cry{--cry-small:1}}
+@media(prefers-reduced-motion:reduce){.roulette-wheel,.roulette-row span{transition:none}#rouletteConfetti{display:none}.roulette-cry{--cry-small:1}.roulette-turn-notice{--notice-pulse:1}}
