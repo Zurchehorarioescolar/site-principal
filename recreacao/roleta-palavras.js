@@ -58,10 +58,13 @@ const panels = {
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const formatter = new Intl.NumberFormat('pt-BR');
 const buttons = new Map();
+const mathDialog = $('rouletteMathDialog');
+const resultDialog = $('rouletteResult');
 let players = [], words = [], previousPanel = -1, year = '', active = 0;
 let rotation = 0, stake = 0, phase = 'setup', spinTimer = null;
-let guessed = new Set();
-let outcomes = [], manualScoring = false, mixedOperations = false, pending = null;
+let guessed = new Set(), tiles = [], revealId = 0;
+let outcomes = [], manualScoring = false, mixedOperations = false, tablesMode = false, pending = null;
+let audio = null;
 
 for (const grade of Object.keys(panels)) $('rouletteYear').add(new Option(grade + 'º ano', grade));
 for (const letter of alphabet) {
@@ -90,6 +93,7 @@ function renderScores() {
 }
 
 function renderWords() {
+  tiles = [];
   $('rouletteWords').replaceChildren(...words.map((word, index) => {
     const row = document.createElement('div');
     row.className = 'roulette-row';
@@ -104,6 +108,7 @@ function renderWords() {
       tile.setAttribute('aria-hidden', 'true');
       spoken.push(visible ? char : 'em branco');
       row.append(tile);
+      tiles.push({tile, char, key});
     }
     row.setAttribute('aria-label', 'Palavra ' + (index + 1) + ': ' + spoken.join(', '));
     return row;
@@ -114,25 +119,31 @@ function setPhase(next) {
   phase = next;
   $('rouletteSpin').disabled = phase !== 'ready';
   $('rouletteReplay').hidden = phase !== 'over';
-  $('rouletteMath').hidden = phase !== 'math';
-  $('rouletteKeyboard').hidden = phase === 'math';
   for (const [letter, button] of buttons) {
     button.disabled = phase !== 'letter' || guessed.has(letter);
-    button.dataset.hit = String(guessed.has(letter) && words.some(word => normalize(word).includes(letter)));
+    if (guessed.has(letter)) button.dataset.hit = String(tiles.some(item => item.key === letter));
+    else delete button.dataset.hit;
   }
 }
 
 function updateScoringOptions() {
   const selected = Number($('rouletteYear').value);
   const manual = $('rouletteManual');
+  const tables = $('rouletteTables');
+  const showTables = selected >= 6;
+  $('rouletteManualOption').hidden = showTables;
   manual.disabled = selected < 1 || selected > 5;
   if (manual.disabled) manual.checked = false;
+  $('rouletteTablesOption').hidden = !showTables;
+  tables.disabled = !showTables;
+  if (!showTables) tables.checked = false;
   const showMixed = manual.checked && selected >= 3;
   $('rouletteMixedOption').hidden = !showMixed;
   $('rouletteMixed').disabled = !showMixed;
   if (!showMixed) $('rouletteMixed').checked = false;
-  $('rouletteMathHint').textContent = manual.disabled
-    ? 'Pontuação manual disponível do 1º ao 5º ano.'
+  $('rouletteMathHint').textContent = showTables
+    ? 'Com a tabuada, resolva uma multiplicação para confirmar os pontos.'
+    : !selected ? 'Escolha o ano para ver as opções de pontuação.'
     : selected <= 2
       ? 'Na pontuação manual, some os valores em unidades para confirmar os pontos.'
       : 'Na pontuação manual, use dezenas. Com a segunda opção, o jogo sorteia entre adição e multiplicação.';
@@ -140,7 +151,8 @@ function updateScoringOptions() {
 
 function configureWheel() {
   const unit = Number(year) <= 2 ? 1 : 10;
-  const points = manualScoring ? Array.from({length: 6}, (_, index) => (index + 1) * unit) : regularValues;
+  const points = tablesMode ? [2, 3, 4, 5, 6, 7, 8, 9]
+    : manualScoring ? Array.from({length: 6}, (_, index) => (index + 1) * unit) : regularValues;
   outcomes = [...points.slice(0, 3), passSector, ...points.slice(3), resetSector];
   const degrees = 360 / outcomes.length;
   const wheel = $('rouletteWheel');
@@ -164,6 +176,8 @@ function configureWheel() {
 }
 
 function newGame() {
+  revealId++;
+  if (resultDialog.open) resultDialog.close();
   const choices = panels[year];
   const indices = choices.map((_, index) => index).filter(index => index !== previousPanel);
   previousPanel = indices[Math.floor(Math.random() * indices.length)];
@@ -178,14 +192,15 @@ function newGame() {
   $('rouletteGrade').textContent = year + 'º ano';
   $('rouletteValue').textContent = 'Pronta para girar';
   $('rouletteStatus').textContent = 'Gire a roleta para escolher uma letra.';
-  setPhase('ready');
   renderWords();
+  setPhase('ready');
   renderScores();
   $('rouletteSpin').focus();
 }
 
 function spin() {
   if (phase !== 'ready') return;
+  enableAudio();
   const index = Math.floor(Math.random() * outcomes.length);
   const destination = (360 - index * (360 / outcomes.length)) % 360;
   const advance = (destination - rotation % 360 + 360) % 360;
@@ -230,7 +245,7 @@ function passTurn(message) {
 
 function guess(letter) {
   if (phase !== 'letter' || guessed.has(letter)) return;
-  const occurrences = words.reduce((total, word) => total + [...normalize(word)].filter(char => char === letter).length, 0);
+  const occurrences = tiles.filter(item => item.key === letter).length;
   if (!occurrences) {
     guessed.add(letter);
     passTurn('O painel não tem a letra ' + letter + '.');
@@ -238,7 +253,7 @@ function guess(letter) {
   }
   const count = letter + ' aparece ' + occurrences + (occurrences === 1 ? ' vez' : ' vezes') + '. ';
   const multiplication = occurrences + ' × ' + stake;
-  const equation = !manualScoring || (mixedOperations && Math.random() < .5)
+  const equation = !manualScoring || tablesMode || (mixedOperations && Math.random() < .5)
     ? multiplication : Array(occurrences).fill(stake).join(' + ');
   const play = {letter, count, equation, earned: occurrences * stake};
   if (!manualScoring) {
@@ -246,18 +261,72 @@ function guess(letter) {
     return;
   }
   pending = play;
+  $('rouletteMathClue').textContent = count.trim();
   $('rouletteEquation').textContent = equation + ' = ?';
   $('rouletteAnswer').value = '';
   $('rouletteStatus').textContent = count + 'Resolva a conta para confirmar os pontos.';
   setPhase('math');
+  mathDialog.showModal();
   $('rouletteAnswer').focus();
 }
 
-function awardPoints({letter, count, equation, earned}) {
+function enableAudio() {
+  try {
+    const Audio = window.AudioContext || window.webkitAudioContext;
+    if (!audio && Audio) audio = new Audio();
+    if (audio?.state === 'suspended') audio.resume().catch(() => {});
+  } catch {}
+}
+
+function chime(notes) {
+  if (audio?.state !== 'running') return;
+  try {
+    const now = audio.currentTime;
+    for (const [frequency, delay, duration] of notes) {
+      const tone = audio.createOscillator();
+      const volume = audio.createGain();
+      const start = now + delay;
+      tone.frequency.value = frequency;
+      volume.gain.setValueAtTime(.001, start);
+      volume.gain.exponentialRampToValueAtTime(.07, start + .012);
+      volume.gain.exponentialRampToValueAtTime(.001, start + duration);
+      tone.connect(volume).connect(audio.destination);
+      tone.onended = () => { tone.disconnect(); volume.disconnect(); };
+      tone.start(start);
+      tone.stop(start + duration);
+    }
+  } catch {}
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function awardPoints({letter, count, equation, earned}) {
+  const run = ++revealId;
+  setPhase('revealing');
+  $('rouletteStatus').textContent = count + 'Revelando as letras…';
+  const slow = !reducedMotion.matches;
+  for (const {tile, char} of tiles.filter(item => item.key === letter)) {
+    tile.classList.add('roulette-primed');
+    await wait(slow ? 160 : 70);
+    if (run !== revealId) return;
+    if (slow) {
+      tile.classList.add('roulette-turning');
+      await wait(110);
+      if (run !== revealId) return;
+    }
+    tile.textContent = char;
+    tile.dataset.visible = 'true';
+    tile.classList.remove('roulette-primed', 'roulette-turning');
+    chime([[1480, 0, .095], [1110, .085, .13]]);
+    await wait(slow ? 150 : 110);
+    if (run !== revealId) return;
+  }
   guessed.add(letter);
   const player = players[active];
   player.score += earned;
-  const done = words.every(word => [...normalize(word)].every(char => guessed.has(char)));
+  const done = tiles.every(item => guessed.has(item.key));
   let message = count + equation + ' = ' + formatter.format(earned) + ' pontos para ' + player.name + '.';
   setPhase(done ? 'over' : 'ready');
   renderWords();
@@ -267,24 +336,58 @@ function awardPoints({letter, count, equation, earned}) {
     const winners = players.filter(entry => entry.score === highScore).map(entry => entry.name);
     message += players.length === 1 ? ' Você completou o painel!' :
       winners.length === 1 ? ' Vitória de ' + winners[0] + '!' : ' Empate entre ' + winners.join(', ') + '!';
-    $('rouletteReplay').focus();
+    celebrate(winners, highScore);
   } else {
     $('rouletteSpin').focus();
   }
   $('rouletteStatus').textContent = message;
 }
 
+function celebrate(winners, score) {
+  $('rouletteResultTitle').textContent = players.length === 1 ? 'Parabéns!' : winners.length === 1 ? 'Vitória!' : 'Empate!';
+  $('rouletteWinner').textContent = winners.join(' e ');
+  $('rouletteFinalScore').textContent = formatter.format(score) + ' pontos';
+  const colors = ['#ffda76', '#83edc2', '#7dbaff', '#ff94ac'];
+  const pieces = reducedMotion.matches ? [] : Array.from({length: 24}, (_, index) => {
+    const piece = document.createElement('span');
+    piece.style.setProperty('--left', (index * 37 % 100) + '%');
+    piece.style.setProperty('--drift', (index % 2 ? 38 : -38) + 'px');
+    piece.style.setProperty('--delay', (index % 6) * 65 + 'ms');
+    piece.style.setProperty('--color', colors[index % colors.length]);
+    return piece;
+  });
+  $('rouletteConfetti').replaceChildren(...pieces);
+  resultDialog.showModal();
+  $('rouletteResultReplay').focus();
+  chime([[523, 0, .23], [659, .16, .23], [784, .32, .24], [1047, .49, .42]]);
+}
+
+function resolveMath(verdict) {
+  if (phase !== 'math' || !pending) return;
+  const play = pending;
+  pending = null;
+  mathDialog.close();
+  if (verdict === 'correct') awardPoints(play);
+  else if (verdict === 'wrong') passTurn('A conta não confere.');
+  else {
+    $('rouletteStatus').textContent = 'Conta cancelada. Escolha uma letra para esta mesma jogada.';
+    setPhase('letter');
+    buttons.get(play.letter).focus();
+  }
+}
+
 $('rouletteMath').addEventListener('submit', event => {
   event.preventDefault();
   if (phase !== 'math' || !pending) return;
   const answer = $('rouletteAnswer').valueAsNumber;
-  if (answer === pending.earned) {
-    const play = pending;
-    pending = null;
-    awardPoints(play);
-  } else if (Number.isInteger(answer) && answer >= 0) {
-    passTurn('A conta não confere.');
-  }
+  if (Number.isInteger(answer) && answer >= 0) resolveMath(answer === pending.earned ? 'correct' : 'wrong');
+});
+$('rouletteCorrect').addEventListener('click', () => resolveMath('correct'));
+$('rouletteWrong').addEventListener('click', () => resolveMath('wrong'));
+$('rouletteCancel').addEventListener('click', () => resolveMath('cancel'));
+mathDialog.addEventListener('cancel', event => {
+  event.preventDefault();
+  resolveMath('cancel');
 });
 
 $('rouletteYear').addEventListener('change', updateScoringOptions);
@@ -301,7 +404,8 @@ $('rouletteSetup').addEventListener('submit', event => {
   if (year !== next) previousPanel = -1;
   year = next;
   updateScoringOptions();
-  manualScoring = $('rouletteManual').checked;
+  tablesMode = $('rouletteTables').checked;
+  manualScoring = $('rouletteManual').checked || tablesMode;
   mixedOperations = $('rouletteMixed').checked;
   configureWheel();
   players = names.filter(Boolean).map(name => ({name, score: 0}));
@@ -312,9 +416,12 @@ $('rouletteSetup').addEventListener('submit', event => {
 });
 $('rouletteSpin').addEventListener('click', spin);
 $('rouletteReplay').addEventListener('click', newGame);
+$('rouletteResultReplay').addEventListener('click', newGame);
+resultDialog.addEventListener('close', () => { if (phase === 'over') $('rouletteReplay').focus(); });
 $('rouletteSettings').addEventListener('click', () => {
   clearTimeout(spinTimer);
   spinTimer = null;
+  revealId++;
   pending = null;
   setPhase('setup');
   $('rouletteGame').hidden = true;
