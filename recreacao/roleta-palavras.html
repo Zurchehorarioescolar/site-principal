@@ -6,8 +6,8 @@
 <title>Roleta de Palavras — Zurche Atividades</title>
 <link rel="icon" href="../assets/logo-zurche-help-escolar.png">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="roleta-palavras.css?v=4">
-<script src="roleta-palavras.js?v=5" defer></script>
+<link rel="stylesheet" href="roleta-palavras.css?v=5">
+<script src="roleta-palavras.js?v=6" defer></script>
 </head>
 <body><div class="shell">
 <header><a class="brand" href="../index.html"><img src="../assets/logo-zurche-help-escolar.png" alt="Zurche"><span>Zurche — Atividades</span></a><a class="back" href="jogos.html">← Jogos</a></header>
@@ -53,6 +53,7 @@
 </section>
 </div>
 </div>
+<div id="rouletteCry" class="roulette-cry" aria-hidden="true" hidden><span>😢</span></div>
 </dialog>
 <dialog id="rouletteMathDialog" class="roulette-dialog roulette-math" aria-labelledby="rouletteMathTitle" aria-describedby="rouletteMathClue">
 <p class="eyebrow">Pontuação da jogada</p>
@@ -74,6 +75,25 @@
 <button id="rouletteWrong" type="button" class="roulette-wrong">Errada</button>
 </div>
 </div>
+</dialog>
+<dialog id="rouletteSolve" class="roulette-dialog roulette-solve" aria-labelledby="rouletteSolveTitle" aria-describedby="rouletteSolveHint">
+<p class="eyebrow">Palpite final</p>
+<h2 id="rouletteSolveTitle">Já sabe as respostas?</h2>
+<p id="rouletteSolveHint"></p>
+<div id="rouletteSolveChoice" class="roulette-actions">
+<button id="rouletteSolveYes" type="button" class="primary">Sim, tentar</button>
+<button id="rouletteSolveNo" type="button">Não, girar a roleta</button>
+</div>
+<form id="rouletteSolveForm" hidden>
+<p class="help">Digite as três palavras na ordem em que aparecem no painel.</p>
+<label>Palavra 1<input id="rouletteWord1" required maxlength="40" autocomplete="off"></label>
+<label>Palavra 2<input id="rouletteWord2" required maxlength="40" autocomplete="off"></label>
+<label>Palavra 3<input id="rouletteWord3" required maxlength="40" autocomplete="off"></label>
+<div class="roulette-actions">
+<button type="submit" class="primary">Conferir respostas</button>
+<button id="rouletteSolveBack" type="button">Continuar na roleta</button>
+</div>
+</form>
 </dialog>
 <dialog id="rouletteResult" class="roulette-dialog roulette-result" aria-labelledby="rouletteResultTitle" aria-describedby="rouletteWinner rouletteFinalScore">
 <div id="rouletteConfetti" aria-hidden="true"></div>

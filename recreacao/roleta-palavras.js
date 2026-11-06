@@ -65,10 +65,14 @@ const formatter = new Intl.NumberFormat('pt-BR');
 const buttons = new Map();
 const gameDialog = $('rouletteGame');
 const mathDialog = $('rouletteMathDialog');
+const solveDialog = $('rouletteSolve');
 const resultDialog = $('rouletteResult');
+const cry = $('rouletteCry');
+const solveInputs = [1, 2, 3].map(index => $('rouletteWord' + index));
 let players = [], words = [], previousPanel = -1, year = '', active = 0;
 let rotation = 0, stake = 0, phase = 'setup', spinTimer = null;
 let guessed = new Set(), tiles = [], revealId = 0;
+let solveOffered = false;
 let outcomes = [], manualScoring = false, mixedOperations = false, tablesMode = false, pending = null;
 let audio = null, spinSoundTimer = null;
 
@@ -187,12 +191,14 @@ function configureWheel() {
 function newGame() {
   revealId++;
   if (resultDialog.open) resultDialog.close();
+  cry.hidden = true;
   const choices = panels[year];
   const indices = choices.map((_, index) => index).filter(index => index !== previousPanel);
   previousPanel = indices[Math.floor(Math.random() * indices.length)];
   const [clue, answers] = choices[previousPanel];
   words = answers;
   guessed = new Set();
+  solveOffered = false;
   for (const player of players) player.score = 0;
   active = 0;
   stake = 0;
@@ -233,6 +239,7 @@ function spin() {
       player.score = 0;
       $('rouletteValue').textContent = resetSector;
       passTurn(player.name + ' perdeu todos os pontos.', turnSounds.reset);
+      flashCry();
       return;
     }
     stake = outcome;
@@ -244,6 +251,15 @@ function spin() {
     }
   }, duration);
 }
+
+function flashCry() {
+  cry.hidden = true;
+  cry.getBoundingClientRect();
+  cry.hidden = false;
+}
+cry.addEventListener('animationend', event => {
+  if (event.animationName === 'roulette-cry') cry.hidden = true;
+});
 
 function passTurn(message, sound = turnSounds.pass) {
   stake = 0;
@@ -335,46 +351,109 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function awardPoints({letter, count, equation, earned}) {
+async function revealTiles(reveals) {
   const run = ++revealId;
   setPhase('revealing');
-  $('rouletteStatus').textContent = count + 'Revelando as letras…';
   const slow = !reducedMotion.matches;
-  for (const {tile, char} of tiles.filter(item => item.key === letter)) {
+  for (const {tile, char} of reveals) {
     tile.classList.add('roulette-primed');
     await wait(slow ? 160 : 70);
-    if (run !== revealId) return;
+    if (run !== revealId) return false;
     if (slow) {
       tile.classList.add('roulette-turning');
       await wait(110);
-      if (run !== revealId) return;
+      if (run !== revealId) return false;
     }
     tile.textContent = char;
     tile.dataset.visible = 'true';
     tile.classList.remove('roulette-primed', 'roulette-turning');
     chime([[1480, 0, .095], [1110, .085, .13]]);
     await wait(slow ? 150 : 110);
-    if (run !== revealId) return;
+    if (run !== revealId) return false;
   }
+  return true;
+}
+
+async function awardPoints({letter, count, equation, earned}) {
+  $('rouletteStatus').textContent = count + 'Revelando as letras…';
+  if (!(await revealTiles(tiles.filter(item => item.key === letter)))) return;
   guessed.add(letter);
   const player = players[active];
   player.score += earned;
-  const done = tiles.every(item => guessed.has(item.key));
-  let message = count + equation + ' = ' + formatter.format(earned) + ' pontos para ' + player.name + '.';
-  setPhase(done ? 'over' : 'ready');
+  settlePanel(count + equation + ' = ' + formatter.format(earned) + ' pontos para ' + player.name + '.');
+}
+
+function settlePanel(message) {
+  const remaining = tiles.filter(item => !guessed.has(item.key)).length;
+  const offer = !solveOffered && remaining > 0 && remaining <= 5;
+  setPhase(remaining === 0 ? 'over' : offer ? 'solve' : 'ready');
   renderWords();
   renderScores();
-  if (done) {
+  if (remaining === 0) {
     const highScore = Math.max(...players.map(entry => entry.score));
     const winners = players.filter(entry => entry.score === highScore).map(entry => entry.name);
     message += players.length === 1 ? ' Você completou o painel!' :
       winners.length === 1 ? ' Vitória de ' + winners[0] + '!' : ' Empate entre ' + winners.join(', ') + '!';
     celebrate(winners, highScore);
+  } else if (offer) {
+    offerSolve(remaining);
   } else {
     $('rouletteSpin').focus();
   }
   $('rouletteStatus').textContent = message;
 }
+
+function offerSolve(remaining) {
+  solveOffered = true;
+  const count = remaining === 1 ? 'falta 1 letra' : 'faltam ' + remaining + ' letras';
+  $('rouletteSolveHint').textContent = players[active].name + ', ' + count + ' no painel.';
+  $('rouletteSolveChoice').hidden = false;
+  $('rouletteSolveForm').hidden = true;
+  $('rouletteSolveForm').reset();
+  solveDialog.showModal();
+  $('rouletteSolveYes').focus();
+}
+
+function skipSolve() {
+  if (phase !== 'solve') return;
+  solveDialog.close();
+  setPhase('ready');
+  $('rouletteStatus').textContent = 'Continue girando a roleta.';
+  $('rouletteSpin').focus();
+}
+
+$('rouletteSolveYes').addEventListener('click', () => {
+  $('rouletteSolveChoice').hidden = true;
+  $('rouletteSolveForm').hidden = false;
+  solveInputs[0].focus();
+});
+$('rouletteSolveNo').addEventListener('click', skipSolve);
+$('rouletteSolveBack').addEventListener('click', skipSolve);
+solveDialog.addEventListener('cancel', event => {
+  event.preventDefault();
+  skipSolve();
+});
+$('rouletteSolveForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (phase !== 'solve') return;
+  const answers = solveInputs.map(input => normalize(input.value.trim()));
+  const blank = answers.indexOf('');
+  if (blank !== -1) {
+    solveInputs[blank].value = '';
+    solveInputs[blank].reportValidity();
+    return;
+  }
+  solveDialog.close();
+  if (!words.every((word, index) => normalize(word) === answers[index])) {
+    passTurn('O palpite não está correto.', turnSounds.wrong);
+    return;
+  }
+  const unrevealed = tiles.filter(item => !guessed.has(item.key));
+  $('rouletteStatus').textContent = 'As três respostas estão corretas! Revelando o painel…';
+  if (!(await revealTiles(unrevealed))) return;
+  for (const item of unrevealed) guessed.add(item.key);
+  settlePanel(players[active].name + ' descobriu as três palavras.');
+});
 
 function celebrate(winners, score) {
   $('rouletteResultTitle').textContent = players.length === 1 ? 'Parabéns!' : winners.length === 1 ? 'Vitória!' : 'Empate!';
@@ -457,6 +536,7 @@ function leaveGame() {
   stopSpinSound();
   revealId++;
   pending = null;
+  cry.hidden = true;
   setPhase('setup');
   $('rouletteSetup').hidden = false;
   gameDialog.close();

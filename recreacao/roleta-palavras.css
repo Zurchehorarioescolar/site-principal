@@ -4,7 +4,7 @@
 .roulette-fields label{font-weight:700}
 .roulette-fields small{font-weight:400;color:var(--muted)}
 .roulette-fields label:not(.roulette-check){display:block}
-.roulette-fields :is(input:not([type=checkbox]),select),.roulette-answer input{display:block;width:100%;min-height:44px;padding:9px 11px;background:#0d1626;color:var(--text);border:1px solid #40536c;border-radius:9px;font:inherit}
+.roulette-fields :is(input:not([type=checkbox]),select),.roulette-answer input,.roulette-solve input{display:block;width:100%;min-height:44px;padding:9px 11px;background:#0d1626;color:var(--text);border:1px solid #40536c;border-radius:9px;font:inherit}
 .roulette-fields :is(input:not([type=checkbox]),select){margin:6px 0 14px}
 .roulette-check{display:flex;align-items:center;gap:8px;margin:10px 0}
 .roulette-check input{width:18px;height:18px;accent-color:#82e9c3;flex:none}
@@ -15,6 +15,12 @@ body:has(.roulette-game[open]){overflow:hidden}
 .roulette-game{position:fixed;inset:0;margin:0;width:100%;max-width:none;height:100dvh;max-height:none;overflow:hidden;padding:max(clamp(8px,2vw,24px),env(safe-area-inset-top)) max(clamp(8px,2vw,24px),env(safe-area-inset-right)) max(clamp(8px,2vw,24px),env(safe-area-inset-bottom)) max(clamp(8px,2vw,24px),env(safe-area-inset-left));border:0;background:radial-gradient(ellipse at top left,#143346 0,transparent 60%),#0b1020;color:var(--text)}
 .roulette-stage{display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:clamp(5px,1.25dvh,14px);height:100%;max-width:1240px;margin:auto}
 .roulette-stage :is(p,h2){margin:0}
+.roulette-cry{position:fixed;inset:0;z-index:2;display:grid;place-items:center;pointer-events:none}
+.roulette-cry span{font-size:clamp(64px,23vmin,156px);line-height:1;filter:drop-shadow(0 7px 16px #0008);animation:roulette-cry 740ms ease-in-out both}
+@keyframes roulette-cry{
+  0%,100%{opacity:0;transform:scale(var(--cry-small,.82))}
+  26%,65%{opacity:1;transform:scale(1)}
+}
 .roulette-heading,.roulette-title{display:flex;align-items:center;gap:clamp(5px,1.3vw,12px)}
 .roulette-heading{justify-content:space-between}
 .roulette-title h2{font-size:clamp(15px,2.5vw,25px);line-height:1.2}
@@ -59,6 +65,10 @@ body:has(.roulette-game[open]){overflow:hidden}
 .roulette-answer input{width:min(100%,150px)}
 .roulette-verdict{margin-top:18px;padding-top:10px;border-top:1px solid #3b4d67}
 .roulette-actions{display:flex;flex-wrap:wrap;gap:8px}
+.roulette-solve p{margin:0 0 8px}
+.roulette-solve label{display:block;margin-top:7px;font-weight:700}
+.roulette-solve input{margin-top:3px;min-height:40px;padding:6px 10px}
+.roulette-solve .roulette-actions{margin-top:12px}
 .roulette-right{background:#205043;color:#c9ffe7}
 .roulette-wrong{background:#743241;color:#ffe0e5}
 .roulette-result{text-align:center;border-color:#ffda76}
@@ -102,4 +112,4 @@ body:has(.roulette-game[open]){overflow:hidden}
   .roulette-row span{font-size:12px}
 }
 @media(max-width:540px){.roulette-fields{grid-template-columns:1fr;gap:0}}
-@media(prefers-reduced-motion:reduce){.roulette-wheel,.roulette-row span{transition:none}#rouletteConfetti{display:none}}
+@media(prefers-reduced-motion:reduce){.roulette-wheel,.roulette-row span{transition:none}#rouletteConfetti{display:none}.roulette-cry{--cry-small:1}}
