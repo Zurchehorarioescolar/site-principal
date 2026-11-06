@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roleta de Palavras — Zurche Atividades</title>
+<link rel="icon" href="../assets/logo-zurche-help-escolar.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="roleta-palavras.css?v=4">
+<script src="roleta-palavras.js?v=5" defer></script>
+</head>
+<body><div class="shell">
+<header><a class="brand" href="../index.html"><img src="../assets/logo-zurche-help-escolar.png" alt="Zurche"><span>Zurche — Atividades</span></a><a class="back" href="jogos.html">← Jogos</a></header>
+<main>
+<section class="intro roulette-intro"><span class="eyebrow">Alfabetização</span><h1>Roleta de <span>Palavras</span></h1><p>Uma dica, três palavras e até três participantes.</p></section>
+<form id="rouletteSetup" class="panel roulette-setup">
+<p class="help">Gire a roleta e escolha uma letra. Cada aparição vale o número de pontos sorteado. Se acertar, gire novamente. Se errar, a vez passa.</p>
+<div class="roulette-fields">
+<div class="roulette-names">
+<label>Nome do participante 1<input id="rouletteName1" required maxlength="30" autocomplete="off"></label>
+<label>Nome do participante 2 <small>(opcional)</small><input id="rouletteName2" maxlength="30" autocomplete="off"></label>
+<label>Nome do participante 3 <small>(opcional)</small><input id="rouletteName3" maxlength="30" autocomplete="off"></label>
+</div>
+<div class="roulette-options">
+<label>Ano/série<select id="rouletteYear" required><option value="">Selecione o ano</option></select></label>
+<label class="roulette-check" id="rouletteManualOption"><input type="checkbox" id="rouletteManual" aria-describedby="rouletteMathHint" disabled> Somar pontuação manualmente?</label>
+<label class="roulette-check" id="rouletteMixedOption" hidden><input type="checkbox" id="rouletteMixed"> Multiplicar e somar?</label>
+<label class="roulette-check" id="rouletteTablesOption" hidden><input type="checkbox" id="rouletteTables" aria-describedby="rouletteMathHint" disabled> Usar tabuada para confirmar os pontos?</label>
+<p id="rouletteMathHint" class="help">Escolha o ano para ver as opções de pontuação.</p>
+</div>
+</div>
+<button type="submit" class="primary">Iniciar partida →</button>
+<p id="rouletteSetupStatus" role="status"></p>
+</form>
+</main>
+<dialog id="rouletteGame" class="roulette-game" aria-labelledby="rouletteGameTitle">
+<div class="roulette-stage">
+<div class="roulette-heading"><div class="roulette-title"><h2 id="rouletteGameTitle">Roleta de Palavras</h2><span id="rouletteGrade" class="badge"></span></div><button type="button" id="rouletteSettings" aria-label="Voltar à configuração da partida">← Configuração</button></div>
+<div id="rouletteScores" class="roulette-scores" aria-label="Placar"></div>
+<div class="roulette-layout">
+<section class="panel roulette-spin" aria-label="Roleta">
+<div class="roulette-mechanism" aria-hidden="true"><span class="roulette-pointer"></span><div id="rouletteWheel" class="roulette-wheel"></div><div class="roulette-hub">Z</div></div>
+<p id="rouletteValue">Pronta para girar</p>
+<button id="rouletteSpin" type="button" class="primary">Girar roleta</button>
+</section>
+<section class="panel roulette-puzzle" aria-label="Painel de palavras">
+<p class="roulette-clue"><span>Dica</span> <strong id="rouletteClue"></strong></p>
+<div id="rouletteWords" class="roulette-words"></div>
+<p id="rouletteTurn" class="roulette-turn"></p>
+<p id="rouletteStatus" class="roulette-status" role="status"></p>
+<div id="rouletteKeyboard" class="roulette-keyboard" role="group" aria-label="Escolha uma letra"></div>
+<button id="rouletteReplay" type="button" class="primary" hidden>Novo jogo →</button>
+</section>
+</div>
+</div>
+</dialog>
+<dialog id="rouletteMathDialog" class="roulette-dialog roulette-math" aria-labelledby="rouletteMathTitle" aria-describedby="rouletteMathClue">
+<p class="eyebrow">Pontuação da jogada</p>
+<h2 id="rouletteMathTitle">Confirme os pontos</h2>
+<p id="rouletteMathClue"></p>
+<form id="rouletteMath">
+<p id="rouletteEquation" class="roulette-equation"></p>
+<label for="rouletteAnswer">Quantos pontos vale essa jogada?</label>
+<div class="roulette-answer">
+<input type="number" id="rouletteAnswer" min="0" step="1" inputmode="numeric" autocomplete="off" aria-describedby="rouletteEquation" required>
+<button type="submit" class="primary">Conferir resposta</button>
+</div>
+</form>
+<div class="roulette-verdict" role="group" aria-label="Correção pelo professor">
+<p class="help">Correção pelo professor</p>
+<div class="roulette-actions">
+<button id="rouletteCorrect" type="button" class="roulette-right">Correta</button>
+<button id="rouletteCancel" type="button">Cancelar</button>
+<button id="rouletteWrong" type="button" class="roulette-wrong">Errada</button>
+</div>
+</div>
+</dialog>
+<dialog id="rouletteResult" class="roulette-dialog roulette-result" aria-labelledby="rouletteResultTitle" aria-describedby="rouletteWinner rouletteFinalScore">
+<div id="rouletteConfetti" aria-hidden="true"></div>
+<div class="roulette-result-content">
+<p class="eyebrow">Painel completo</p>
+<h2 id="rouletteResultTitle">Fim de jogo</h2>
+<p id="rouletteWinner" class="roulette-winner"></p>
+<p id="rouletteFinalScore"></p>
+<div class="roulette-actions">
+<a class="btn" href="jogos.html">Sair</a>
+<button id="rouletteResultReplay" type="button" class="primary">Novo jogo →</button>
+</div>
+</div>
+</dialog>
+<footer>Zurche — Atividades · <a href="mailto:contato@zurche.com.br">contato@zurche.com.br</a></footer>
+</div></body></html>
