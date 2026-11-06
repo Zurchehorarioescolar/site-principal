@@ -184,6 +184,8 @@ function configureWheel() {
     }
     label.style.left = (50 + 34 * Math.sin(angle)) + '%';
     label.style.top = (50 - 34 * Math.cos(angle)) + '%';
+    // Each label faces upright when its sector reaches the top pointer.
+    label.style.transform = 'translate(-50%, -50%) rotate(' + index * degrees + 'deg)';
     return label;
   }));
 }
