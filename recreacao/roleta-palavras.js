@@ -6,6 +6,11 @@ const regularValues = [50, 100, 150, 200, 250, 300, 400, 500];
 const wheelColors = ['#276c75', '#3a527f', '#78506b', '#8a5c29', '#3d6d58', '#684e8d', '#9b5249', '#315979'];
 const passSector = 'Passe a vez';
 const resetSector = 'Perde tudo';
+const turnSounds = {
+  pass: [[440, 0, .11], [330, .09, .19]],
+  wrong: [[370, 0, .10], [247, .10, .24]],
+  reset: [[392, 0, .15], [277, .13, .18], [196, .28, .35]]
+};
 const normalize = text => text.toLocaleUpperCase('pt-BR').normalize('NFD').replace(/\p{M}/gu, '');
 const panels = {
   1: [
@@ -64,7 +69,7 @@ let players = [], words = [], previousPanel = -1, year = '', active = 0;
 let rotation = 0, stake = 0, phase = 'setup', spinTimer = null;
 let guessed = new Set(), tiles = [], revealId = 0;
 let outcomes = [], manualScoring = false, mixedOperations = false, tablesMode = false, pending = null;
-let audio = null;
+let audio = null, spinSoundTimer = null;
 
 for (const grade of Object.keys(panels)) $('rouletteYear').add(new Option(grade + 'º ano', grade));
 for (const letter of alphabet) {
@@ -208,8 +213,11 @@ function spin() {
   setPhase('spinning');
   $('rouletteValue').textContent = 'Girando…';
   $('rouletteWheel').style.transform = 'rotate(' + rotation + 'deg)';
+  const duration = reducedMotion.matches ? 0 : 1320;
+  playSpinSound(duration);
   spinTimer = setTimeout(() => {
     spinTimer = null;
+    stopSpinSound();
     const outcome = outcomes[index];
     if (outcome === passSector) {
       $('rouletteValue').textContent = passSector;
@@ -220,7 +228,7 @@ function spin() {
       const player = players[active];
       player.score = 0;
       $('rouletteValue').textContent = resetSector;
-      passTurn(player.name + ' perdeu todos os pontos.');
+      passTurn(player.name + ' perdeu todos os pontos.', turnSounds.reset);
       return;
     }
     stake = outcome;
@@ -230,16 +238,17 @@ function spin() {
     for (const button of buttons.values()) {
       if (!button.disabled) { button.focus(); break; }
     }
-  }, reducedMotion.matches ? 0 : 1320);
+  }, duration);
 }
 
-function passTurn(message) {
+function passTurn(message, sound = turnSounds.pass) {
   stake = 0;
   pending = null;
   active = (active + 1) % players.length;
   setPhase('ready');
   renderScores();
   $('rouletteStatus').textContent = message + ' Vez de ' + players[active].name + '.';
+  chime(sound, .055);
   $('rouletteSpin').focus();
 }
 
@@ -278,7 +287,7 @@ function enableAudio() {
   } catch {}
 }
 
-function chime(notes) {
+function chime(notes, peak = .07) {
   if (audio?.state !== 'running') return;
   try {
     const now = audio.currentTime;
@@ -288,7 +297,7 @@ function chime(notes) {
       const start = now + delay;
       tone.frequency.value = frequency;
       volume.gain.setValueAtTime(.001, start);
-      volume.gain.exponentialRampToValueAtTime(.07, start + .012);
+      volume.gain.exponentialRampToValueAtTime(peak, start + .012);
       volume.gain.exponentialRampToValueAtTime(.001, start + duration);
       tone.connect(volume).connect(audio.destination);
       tone.onended = () => { tone.disconnect(); volume.disconnect(); };
@@ -296,6 +305,26 @@ function chime(notes) {
       tone.stop(start + duration);
     }
   } catch {}
+}
+
+function stopSpinSound() {
+  clearTimeout(spinSoundTimer);
+  spinSoundTimer = null;
+}
+
+function playSpinSound(duration) {
+  stopSpinSound();
+  const started = performance.now();
+  const tick = () => {
+    if (phase !== 'spinning') return;
+    const progress = duration ? Math.min(1, (performance.now() - started) / duration) : 1;
+    chime([[960 - 270 * progress, 0, .038]], .028);
+    if (progress < 1) {
+      const interval = 50 + 135 * progress ** 2;
+      if (interval + 38 < duration * (1 - progress)) spinSoundTimer = setTimeout(tick, interval);
+    }
+  };
+  tick();
 }
 
 function wait(ms) {
@@ -368,7 +397,7 @@ function resolveMath(verdict) {
   pending = null;
   mathDialog.close();
   if (verdict === 'correct') awardPoints(play);
-  else if (verdict === 'wrong') passTurn('A conta não confere.');
+  else if (verdict === 'wrong') passTurn('A conta não confere.', turnSounds.wrong);
   else {
     $('rouletteStatus').textContent = 'Conta cancelada. Escolha uma letra para esta mesma jogada.';
     setPhase('letter');
@@ -421,6 +450,7 @@ resultDialog.addEventListener('close', () => { if (phase === 'over') $('roulette
 $('rouletteSettings').addEventListener('click', () => {
   clearTimeout(spinTimer);
   spinTimer = null;
+  stopSpinSound();
   revealId++;
   pending = null;
   setPhase('setup');
@@ -428,6 +458,7 @@ $('rouletteSettings').addEventListener('click', () => {
   $('rouletteSetup').hidden = false;
   $('rouletteYear').focus();
 });
+window.addEventListener('pagehide', stopSpinSound);
 document.addEventListener('keydown', event => {
   if (phase !== 'letter' || event.repeat || event.ctrlKey || event.metaKey || event.altKey || event.isComposing ||
       event.target.closest('input, select, textarea, [contenteditable]')) return;
