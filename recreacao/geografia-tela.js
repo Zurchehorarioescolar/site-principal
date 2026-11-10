@@ -31,7 +31,7 @@ function fit(){
  }
  if(!main.clientHeight)return;
  const hasFlags=!byId('flagArea').hidden||!byId('choices').hidden;
- const maximumScale=hasFlags?1:1.5;
+ const maximumScale=hasFlags||!byId('textChoices').hidden?1:1.5;
  stage.style.setProperty('--geo-scale',String(maximumScale));
  stage.style.setProperty('--geo-flag-scale','1');
  if(contentFits())return;
