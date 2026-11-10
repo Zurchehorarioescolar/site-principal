@@ -1,4 +1,30 @@
 /* Shared viewport layout for the Brazil and world challenges. */
+.geo-mode-choice{margin:0 0 32px;padding:clamp(18px,3vw,30px);border:1px solid var(--line);border-radius:24px;background:linear-gradient(130deg,#17263b,#111a2d)}
+.geo-mode-choice h2{font-size:clamp(24px,4vw,32px);margin:8px 0}
+.geo-mode-choice>p{margin:0 0 22px}
+.geo-mode-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.geo-mode-card{
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;
+ padding:24px;text-align:left;border:1px solid #526980;background:#12283b;
+}
+.geo-mode-card svg{width:34px;height:34px;color:var(--mint);flex:none}
+.geo-mode-card strong{font-size:23px;line-height:1.2;font-family:Manrope,Arial,sans-serif}
+.geo-mode-card>span{font-size:14px;line-height:1.5;font-weight:400;color:var(--muted)}
+.geo-mode-card .geo-mode-link{font-weight:700;color:var(--mint);margin-top:auto;padding-top:6px}
+.geo-mode-card:hover{border-color:var(--mint);background:#163247}
+.geo-mode-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px}
+.geo-mode-bar>span{font-size:14px;font-weight:700;color:var(--mint)}
+.geo-mode-bar button{font-size:13px;padding:8px 12px}
+.geography-page .settings input[type=text]{width:100%;padding:12px;border:1px solid #34415a;border-radius:10px;background:#0c1424;color:var(--text);font:inherit}
+@media(max-width:620px){
+ .geo-mode-cards{grid-template-columns:1fr;gap:12px}
+ .geo-mode-card{display:grid;grid-template-columns:32px minmax(0,1fr);gap:8px 14px;padding:18px}
+ .geo-mode-card svg{grid-row:1 / span 3;width:30px;height:30px}
+ .geo-mode-card strong,.geo-mode-card>span{grid-column:2}
+ .geo-mode-card strong{font-size:20px}
+ .geo-mode-card>span{font-size:13px}
+ .geo-mode-card .geo-mode-link{padding-top:0}
+}
 .geography-page #gameModal{
  position:fixed;inset:0;margin:0;width:100%;height:100dvh;max-width:none;max-height:none;overflow:hidden;
 }
