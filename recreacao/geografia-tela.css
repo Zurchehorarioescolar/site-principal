@@ -5,6 +5,7 @@
 .geography-page #gameModal .stage,
 .geography-page #gameModal .stage.urgent{
  --geo-scale:1;
+ --geo-flag-scale:1;
  position:relative;inset:auto;display:grid;
  grid-template-rows:auto auto auto minmax(0,1fr) auto;
  gap:clamp(4px,.9dvh,10px);width:100%;height:100%;min-height:0;
@@ -26,7 +27,7 @@
 .geography-page #gameModal .stage.has-choices .student{
  width:100%;margin:0;padding:0;font-size:clamp(19px,3.6vmin,36px);line-height:1.15;
 }
-.geography-page #gameModal .prompt{margin:0;font-size:clamp(12px,2vmin,17px);line-height:1.25}
+.geography-page #gameModal .prompt{margin:0;font-size:clamp(17px,2.9vmin,30px);font-weight:600;line-height:1.2}
 .geo-stage-main{
  min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
  gap:calc(clamp(4px,1.1dvh,12px) * var(--geo-scale));overflow:hidden;
@@ -36,17 +37,17 @@
 .geography-page #gameModal .stage.urgent .equation,
 .geography-page #gameModal .stage.has-choices .equation{
  flex:none;max-width:100%;margin:0;padding:0;letter-spacing:-.025em;
- font-size:max(15px,calc(clamp(24px,5.3vmin,64px) * var(--geo-scale)));line-height:1.15;overflow-wrap:anywhere;
+ font-size:max(22px,calc(clamp(36px,8vmin,100px) * var(--geo-scale)));line-height:1.1;overflow-wrap:anywhere;
 }
 .geography-page #gameModal .answer{
  margin:calc(5px * var(--geo-scale)) 0 0;
- font-size:max(12px,calc(clamp(17px,3.3vmin,36px) * var(--geo-scale)));line-height:1.2;letter-spacing:0;
+ font-size:max(14px,calc(clamp(20px,4vmin,44px) * var(--geo-scale)));line-height:1.2;letter-spacing:0;
 }
 .geography-page #gameModal .flag-area{
  flex:none;margin:0;max-width:650px;width:100%;
 }
 .geography-page #gameModal .flag-area img{
- max-width:100%;max-height:none;height:max(30px,calc(clamp(55px,24dvh,250px) * var(--geo-scale)));width:auto;
+ max-width:100%;max-height:none;height:max(30px,calc(clamp(55px,24dvh,250px) * var(--geo-flag-scale)));width:auto;
 }
 .geography-page #gameModal .flag-area figcaption{font-size:max(10px,calc(12px * var(--geo-scale)));margin:4px 0 0;line-height:1.1}
 .geography-page #gameModal .flag-choices{
@@ -62,22 +63,22 @@
  font-size:max(11px,calc(14px * var(--geo-scale)));flex:none;
 }
 .geography-page #gameModal .flag-option img{
- width:100%;height:max(25px,calc(clamp(40px,16dvh,145px) * var(--geo-scale)));object-fit:contain;
+ width:100%;height:max(25px,calc(clamp(40px,16dvh,145px) * var(--geo-flag-scale)));object-fit:contain;
 }
 .geography-page #gameModal .geo-details-button{flex:none;padding:5px 10px;font-size:12px;line-height:1.2}
-.geo-stage-bottom{display:grid;gap:clamp(3px,.65dvh,7px);width:100%;max-width:1240px;margin:auto}
+.geo-stage-bottom{display:grid;grid-template-columns:clamp(70px,10vw,115px) minmax(0,1fr);align-items:center;gap:clamp(3px,.65dvh,7px) 10px;width:100%;max-width:1240px;margin:auto}
 .geography-page #gameModal .clock,
-.geography-page #gameModal .stage.urgent .clock{font-size:clamp(22px,4vmin,34px);line-height:1.1}
-.geography-page #gameModal .clock small{font-size:11px}
-.geography-page #gameModal .timebar{height:4px;margin:0}
+.geography-page #gameModal .stage.urgent .clock{grid-column:1;grid-row:1;font-size:clamp(42px,7.4vmin,80px);line-height:1}
+.geography-page #gameModal .clock small{display:block;font-size:11px;margin-top:3px}
+.geography-page #gameModal .timebar{grid-column:1 / -1;grid-row:2;height:4px;margin:0}
 .geography-page #gameModal .stage-actions,
 .geography-page #gameModal .stage.urgent .stage-actions{
  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;
- margin:0;padding:0;justify-content:normal;
+ grid-column:2;grid-row:1;margin:0;padding:0;justify-content:normal;
 }
 .geography-page #gameModal .stage-actions button{padding:6px 5px;min-height:30px;font-size:clamp(11px,1.45vw,14px);line-height:1.2}
 .geography-page #gameModal .stage-actions #draw:disabled{display:none}
-.geography-page #gameModal .stage-note{min-height:1.2em;margin:0;font-size:clamp(11px,1.4vw,13px);line-height:1.2}
+.geography-page #gameModal .stage-note{grid-column:1 / -1;grid-row:3;min-height:1.2em;margin:0;font-size:clamp(11px,1.4vw,13px);line-height:1.2}
 .geography-page #gameModal .stage.urgent #question{animation:geo-question-glow 1s ease-in-out infinite}
 @keyframes geo-question-glow{50%{filter:brightness(1.55)}}
 .geo-details-modal{
@@ -96,7 +97,7 @@
  .geography-page #gameModal .stage-top button{padding:4px 7px}
  .geography-page #gameModal .student{font-size:19px}
  .geography-page #gameModal .stage-actions button{min-height:25px;padding:4px}
- .geography-page #gameModal .clock,.geography-page #gameModal .stage.urgent .clock{font-size:22px}
+ .geography-page #gameModal .clock,.geography-page #gameModal .stage.urgent .clock{font-size:40px}
  .geography-page #gameModal .flag-option{flex-direction:row}
  .geography-page #gameModal .flag-option .option-letter{align-self:center}
  .geography-page #gameModal .flag-option img{min-width:0;flex:1}

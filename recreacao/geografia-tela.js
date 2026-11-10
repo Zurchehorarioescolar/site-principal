@@ -2,23 +2,43 @@
 'use strict';
 const byId=id=>document.getElementById(id);
 const game=byId('gameModal'),main=byId('stageMain'),stage=byId('stage');
+const student=byId('student');
 const facts=byId('facts'),details=byId('geoDetailsModal'),detailsButton=byId('showGeoDetails');
 let frame=null;
+function contentFits(){
+ return main.scrollHeight<=main.clientHeight&&main.scrollWidth<=main.clientWidth;
+}
+function fitProperty(name,low,high){
+ let best=low;
+ for(let index=0;index<10;index++){
+  const value=(low+high)/2;
+  stage.style.setProperty(name,String(value));
+  if(contentFits()){best=value;low=value;}
+  else high=value;
+ }
+ stage.style.setProperty(name,String(Math.floor(best*1000)/1000));
+}
 function fit(){
  frame=null;
  if(detailsButton.hidden!==facts.hidden)detailsButton.hidden=facts.hidden;
- if(!game.open||!main.clientHeight)return;
- // Reserve the controls and shrink only the question, answer and flags.
- let low=.2,high=1,best=.2;
- stage.style.setProperty('--geo-scale','1');
- if(main.scrollHeight<=main.clientHeight&&main.scrollWidth<=main.clientWidth)return;
- for(let index=0;index<10;index++){
-  const scale=(low+high)/2;
-  stage.style.setProperty('--geo-scale',String(scale));
-  if(main.scrollHeight<=main.clientHeight&&main.scrollWidth<=main.clientWidth){best=scale;low=scale;}
-  else high=scale;
+ if(!game.open)return;
+ // Keep long student names from taking the question's space.
+ student.style.fontSize='';
+ const maximum=parseFloat(getComputedStyle(student).fontSize);
+ const nameHeight=Math.max(24,Math.min(50,game.clientHeight*.075));
+ for(let size=maximum;size>=10&&student.offsetHeight>nameHeight;size--){
+  student.style.fontSize=size+'px';
  }
- stage.style.setProperty('--geo-scale',String(Math.floor(best*1000)/1000));
+ if(!main.clientHeight)return;
+ const hasFlags=!byId('flagArea').hidden||!byId('choices').hidden;
+ const maximumScale=hasFlags?1:1.5;
+ stage.style.setProperty('--geo-scale',String(maximumScale));
+ stage.style.setProperty('--geo-flag-scale','1');
+ if(contentFits())return;
+ // Reduce flag height before reducing the question.
+ stage.style.setProperty('--geo-flag-scale','.2');
+ if(contentFits()){fitProperty('--geo-flag-scale',.2,1);return;}
+ fitProperty('--geo-scale',.2,maximumScale);
 }
 function schedule(){
  if(frame===null)frame=requestAnimationFrame(fit);
