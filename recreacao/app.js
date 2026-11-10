@@ -40,7 +40,7 @@ function progress(){const drawn=(mathMode==='solo'?Number($('mathCount').value):
 function resetRound(){stop();current=null;$('stage').classList.remove('expired');$('student').textContent='Turma preparada!';$('prompt').textContent='Quem será o primeiro a encarar o desafio?';$('question').textContent='? × ?';$('answer').hidden=true;remaining=cfg.seconds*1000;displayTime();for(const id of ['pause','reveal','correct','wrong'])$(id).disabled=true;$('draw').disabled=false;$('draw').textContent='Sortear e iniciar →';$('restart').hidden=true;progress();$('status').textContent='Todos participam uma vez antes de repetir.';}
 $('settings').addEventListener('submit',e=>{e.preventDefault();try{
  const next=Tabuada.config(Number($('min').value),Number($('max').value),Number($('seconds').value));
- const names=Tabuada.parseNames($('names').value);if(!names.length)throw Error('Inclua pelo menos um aluno.');
+ const names=mathMode==='solo'?[$('mathPlayerName').value.trim()].filter(Boolean):Tabuada.parseNames($('names').value);if(!names.length)throw Error('Inclua pelo menos um aluno.');
  if(current&&!current.recorded)record('Sem avaliação');cfg=next;roster=names;queue=mathQueue(roster);resetRound();notice(`Turma pronta: ${names.length} alunos. Vamos começar!`);save();$('gameModal').showModal();$('resumeGame').hidden=false;
 }catch(err){notice(err.message);}});
 $('draw').addEventListener('click',()=>{if(!cfg||!queue.length)return;enableAudio();stop();alerted=new Set();record('Sem avaliação');

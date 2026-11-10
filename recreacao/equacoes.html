@@ -1,10 +1,10 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1020"><title>Desafio das equações — Zurche</title><link rel="icon" href="../assets/logo-zurche-help-escolar.png"><link rel="stylesheet" href="style.css"><script src="game.js" defer></script><link rel="stylesheet" href="equacoes.css"><script src="equacoes-rules.js" defer></script><script src="session-report.js?v=1" defer></script><script src="equacoes-app.js?v=modos1" defer></script><link rel="stylesheet" href="geografia-tela.css?v=7"></head><body class="equations-page"><div class="shell"><header><a class="brand" href="index.html"><img src="../assets/logo-zurche-help-escolar.png" alt="Zurche"><span>Atividades / Equações</span></a><a class="back" href="matematica.html">← Matemática</a></header><main><div class="page-title"><div><span class="eyebrow">Um desafio para cada aluno</span><h1>Desafio das equações</h1><p>A turma participa. O aprendizado fica.</p></div></div><section id="modeChoice" class="geo-mode-choice" aria-labelledby="modeTitle">
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1020"><title>Desafio das equações — Zurche</title><link rel="icon" href="../assets/logo-zurche-help-escolar.png"><link rel="stylesheet" href="style.css"><script src="game.js" defer></script><link rel="stylesheet" href="equacoes.css"><script src="equacoes-rules.js" defer></script><script src="session-report.js?v=1" defer></script><script src="equacoes-app.js?v=modos2" defer></script><link rel="stylesheet" href="geografia-tela.css?v=7"><link rel="stylesheet" href="matematica-modos.css?v=1"></head><body class="equations-page"><div class="shell"><header><a class="brand" href="index.html"><img src="../assets/logo-zurche-help-escolar.png" alt="Zurche"><span>Atividades / Equações</span></a><a class="back" href="matematica.html">← Matemática</a></header><main><div class="page-title"><div><span class="eyebrow">Um desafio para cada aluno</span><h1>Desafio das equações</h1><p>A turma participa. O aprendizado fica.</p></div></div><section id="modeChoice" class="geo-mode-choice" aria-labelledby="modeTitle">
 <span class="eyebrow">Antes de começar</span><h2 id="modeTitle" tabindex="-1">Como você quer jogar?</h2>
 <p>Escolha o modo para preparar o desafio.</p>
 <div class="geo-mode-cards">
 <button id="chooseSolo" type="button" class="geo-mode-card">
 <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="16" cy="10" r="5"/><path d="M6 28v-3a10 10 0 0 1 20 0v3"/></svg>
-<strong>Jogador único</strong><span>Jogue sozinho com 5, 10, 15 ou 20 perguntas, quatro alternativas e sua pontuação no final.</span><span class="geo-mode-link" aria-hidden="true">Jogar sozinho →</span>
+<strong>Jogador único</strong><span>Jogue sozinho com 5, 10, 15 ou 20 perguntas, respostas digitadas e sua pontuação no final.</span><span class="geo-mode-link" aria-hidden="true">Jogar sozinho →</span>
 </button>
 <button id="chooseClass" type="button" class="geo-mode-card">
 <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="16" cy="8" r="4"/><circle cx="5" cy="13" r="3"/><circle cx="27" cy="13" r="3"/><path d="M8 28v-3a8 8 0 0 1 16 0v3M1 27v-4a5 5 0 0 1 7-4M31 27v-4a5 5 0 0 0-7-4"/></svg>
@@ -16,10 +16,10 @@
 <form id="settings" class="setup-grid settings">
 <section class="panel roster-panel" aria-labelledby="roster-title">
 <div class="step">01 / A turma</div><h2 id="roster-title">Quem vai participar?</h2>
-<p class="help">Digite ou cole um nome por linha.</p>
+<div id="mathClassFields"><p class="help">Digite ou cole um nome por linha.</p>
 <label for="names">Lista de alunos</label><textarea id="names" placeholder="Ana Souza&#10;Bruno Lima&#10;Clara Santos" required></textarea>
 <label for="file">Ou importe um arquivo</label><input id="file" type="file" accept=".txt,.csv,text/plain,text/csv">
-<p class="help">TXT ou CSV UTF-8 com uma coluna de nomes. Do Excel, copie a coluna e cole acima.</p>
+<p class="help">TXT ou CSV UTF-8 com uma coluna de nomes. Do Excel, copie a coluna e cole acima.</p></div><div id="mathSingleFields" hidden><label for="mathPlayerName">Nome do jogador</label><input id="mathPlayerName" type="text" maxlength="120" autocomplete="given-name" placeholder="Digite seu nome" disabled></div>
 </section>
 <section class="panel options-panel" aria-labelledby="options-title">
 <div class="step">02 / O desafio</div><h2 id="options-title">Como vamos jogar?</h2>
@@ -50,4 +50,4 @@
 <div class="feedback-secondary"><button id="feedbackRestart" type="button">Recomeçar</button><button id="feedbackCancel" class="quiet" type="button">Cancelar</button></div>
 </div>
 </dialog>
-<script defer src="geografia-retorno.js?v=1"></script><script defer src="geografia-alternativas.js?v=2"></script><script defer src="matematica-modos.js?v=1"></script></body></html>
+<script defer src="geografia-retorno.js?v=1"></script><script defer src="geografia-alternativas.js?v=2"></script><script defer src="matematica-modos.js?v=2"></script></body></html>
