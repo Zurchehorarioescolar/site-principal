@@ -38,7 +38,7 @@ function updateHistory(){
  }
  $('totals').textContent=rows.length?`${rows.filter(r=>r.result==='Acertou').length} acertos · ${rows.length} rodadas`:'Nenhuma rodada ainda';
 }
-function record(result){if(!current||current.recorded)return;current.recorded=true;rows.push({...current,result});updateHistory();}
+function record(result){if(!current||current.recorded)return;current.recorded=true;current.result=result;rows.push({...current,result});updateHistory();}
 function reveal(){if(!current)return;if(current.textChoices)GeoAlternativas.mark(current,$('textChoices'));$('answer').hidden=false;$('answer').textContent=current.answer;$('facts').hidden=false;const country=current.state;$('facts').textContent=country.name+' · Capitais / sede: '+country.capitals.join(' / ')+' · Idiomas de referência: '+country.languages.join(', ')+' · Continente: '+country.continents.join(' e ')+(country.note?' · '+country.note:'');if(current.topic==='escolha'){for(const [i,button] of [...$('choices').children].entries()){button.classList.toggle('is-correct',i===current.correctIndex);button.classList.toggle('is-wrong',i===current.selectedIndex&&i!==current.correctIndex);button.disabled=true;button.setAttribute('aria-label',`${'ABCD'[i]}: ${current.choices[i].name}${i===current.correctIndex?' — resposta correta':''}`);}}if(current.topic==='bandeira'){$('flagImage').alt=`Bandeira: ${current.state.name}`;$('flagCaption').textContent=current.state.name;}}
 function progress(){
  const total=cfg.solo?cfg.questionCount:roster.length,drawn=total-queue.length;
@@ -77,7 +77,7 @@ function showSoloResult(){
  $('soloMessage').textContent=score.message;
  $('soloResultModal').showModal();$('soloNewGame').focus();
 }
-function resetRound(){stop();current=null;$('stage').classList.remove('expired');$('student').textContent=cfg.solo?roster[0]:'Turma preparada!';$('prompt').textContent=cfg.solo?'Escolha uma alternativa em cada pergunta.':'Quem será o primeiro a encarar o desafio?';$('question').textContent='Conhece o mundo?';$('answer').hidden=true;$('facts').hidden=true;$('flagArea').hidden=true;$('choices').hidden=true;$('choices').replaceChildren();$('textChoices').hidden=true;$('textChoices').replaceChildren();$('stage').classList.remove('has-choices');$('retryFlag').hidden=true;remaining=cfg.seconds*1000;displayTime();for(const id of ['pause','reveal','correct','wrong'])$(id).disabled=true;$('draw').disabled=false;$('draw').textContent=cfg.solo?'Começar perguntas →':'Sortear e iniciar →';$('restart').hidden=true;progress();$('status').textContent=cfg.solo?`Uma partida com ${cfg.questionCount} perguntas. Boa sorte!`:'Todos participam uma vez antes de repetir.';}
+function resetRound(){feedback.close();stop();current=null;$('stage').classList.remove('expired');$('student').textContent=cfg.solo?roster[0]:'Turma preparada!';$('prompt').textContent=cfg.solo?'Escolha uma alternativa em cada pergunta.':'Quem será o primeiro a encarar o desafio?';$('question').textContent='Conhece o mundo?';$('answer').hidden=true;$('facts').hidden=true;$('flagArea').hidden=true;$('choices').hidden=true;$('choices').replaceChildren();$('textChoices').hidden=true;$('textChoices').replaceChildren();$('stage').classList.remove('has-choices');$('retryFlag').hidden=true;remaining=cfg.seconds*1000;displayTime();for(const id of ['pause','reveal','correct','wrong'])$(id).disabled=true;$('draw').disabled=false;$('draw').textContent=cfg.solo?'Começar perguntas →':'Sortear e iniciar →';$('restart').hidden=true;progress();$('status').textContent=cfg.solo?`Uma partida com ${cfg.questionCount} perguntas. Boa sorte!`:'Todos participam uma vez antes de repetir.';}
 $('settings').addEventListener('submit',e=>{e.preventDefault();try{
  if(!playMode)throw Error('Escolha Jogador único ou Desafio para a turma.');
  const next=GeografiaMundo.config(Number($('seconds').value),['capital','idioma','continente','bandeira','escolha'].filter(t=>$(t).checked),$('region').value,$('direction').value);
@@ -89,7 +89,7 @@ $('settings').addEventListener('submit',e=>{e.preventDefault();try{
  if(next.solo)next.clickAnswers=true;
  if(current&&!current.recorded)record('Sem avaliação');cfg=next;$('stage').classList.toggle('solo-game',cfg.solo);soloStart=rows.length;$('stage').classList.toggle('click-answers',cfg.clickAnswers);questionQueue=[];loadVersion++;roster=names;queue=createQueue();resetRound();notice(cfg.solo?`Partida pronta: ${cfg.questionCount} perguntas. Vamos começar!`:`Turma pronta: ${names.length} alunos. Vamos começar!`);save();$('gameModal').showModal();$('resumeGame').hidden=false;
 }catch(err){notice(err.message);}});
-$('draw').addEventListener('click',()=>{if(!cfg||!queue.length)return;enableAudio();stop();alerted=new Set();record('Sem avaliação');
+$('draw').addEventListener('click',()=>{if(!cfg||!queue.length||feedback.isOpen())return;enableAudio();stop();alerted=new Set();record('Sem avaliação');
  loadVersion++;current={name:queue.pop(),...nextQuestion(),recorded:false};
  $('student').textContent=current.name;$('prompt').textContent=current.prompt;$('question').textContent=current.question;$('stage').style.setProperty('--urgent-size',`${Math.min(16,130/$('question').textContent.length)}vw`);$('answer').hidden=true;$('facts').hidden=true;$('flagArea').hidden=true;$('choices').hidden=true;$('choices').replaceChildren();$('textChoices').hidden=true;$('textChoices').replaceChildren();$('stage').classList.remove('has-choices');$('retryFlag').hidden=true;$('stage').classList.remove('expired');
  for(const id of ['pause','reveal','correct','wrong'])$(id).disabled=false;
@@ -97,17 +97,18 @@ $('draw').addEventListener('click',()=>{if(!cfg||!queue.length)return;enableAudi
 });
 $('pause').addEventListener('click',()=>{if(!current)return;if(running){remaining=Math.max(0,deadline-performance.now());stop();displayTime();$('pause').textContent='Continuar';$('status').textContent='Cronômetro pausado.';}else{enableAudio();startTimer();$('status').textContent='Valendo!';}});
 $('reveal').addEventListener('click',()=>{if(running)remaining=Math.max(0,deadline-performance.now());stop();displayTime();reveal();$('pause').disabled=true;$('status').textContent='Resposta revelada. Marque o resultado ou passe ao próximo aluno.';});
-for(const [id,result] of [['correct','Acertou'],['wrong','Errou']])$(id).addEventListener('click',()=>{if(!current||current.recorded)return;if(running)remaining=Math.max(0,deadline-performance.now());stop();displayTime();reveal();record(result);for(const key of ['correct','wrong','pause'])$(key).disabled=true;$('status').textContent=queue.length?'Resultado registrado. Vamos ao próximo aluno?':'Todos participaram! Reinicie a turma para uma nova sequência.';});
+for(const [id,result] of [['correct','Acertou'],['wrong','Errou']])$(id).addEventListener('click',()=>{if(!current||current.recorded)return;if(running)remaining=Math.max(0,deadline-performance.now());stop();displayTime();reveal();record(result);for(const key of ['correct','wrong','pause'])$(key).disabled=true;$('status').textContent=queue.length?'Resultado registrado. Vamos ao próximo aluno?':'Todos participaram! Reinicie a turma para uma nova sequência.';feedback.show(current,result,{solo:cfg.solo,hasNext:!!queue.length});});
 $('restart').addEventListener('click',()=>{record('Sem avaliação');queue=createQueue();soloStart=rows.length;resetRound();notice(cfg.solo?'Nova partida pronta!':'Nova sequência pronta. O histórico da sessão foi mantido.');});
 $('file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>1024*1024)throw Error('Use um arquivo de até 1 MB.');const names=Tabuada.parseNames(await file.text());if(!names.length)throw Error('O arquivo não contém nomes.');$('names').value=names.join('\n');updateSoloSettings();notice(`${names.length} nomes importados. Clique em Iniciar game.`);}catch(err){notice(err.message);}finally{e.target.value='';}});
 $('remember').addEventListener('change',()=>{if(!$('remember').checked){try{localStorage.removeItem(KEY);}catch{}notice('Dados salvos removidos deste navegador.');}});
 $('erase').addEventListener('click',()=>{if(!confirm('Apagar a lista, a configuração salva e o histórico desta sessão?'))return;stop();try{localStorage.removeItem(KEY);}catch{}loadVersion++;questionQueue=[];roster=[];queue=[];cfg=null;current=null;rows=[];$('resumeGame').hidden=true;$('settings').reset();classClickAnswers=$('clickAnswers').defaultChecked;updateSoloSettings();$('student').textContent='Vamos jogar?';$('prompt').textContent='Prepare a lista ao lado para começar.';$('question').textContent='Conhece o mundo?';$('answer').hidden=true;$('facts').hidden=true;$('flagArea').hidden=true;$('choices').hidden=true;$('choices').replaceChildren();$('textChoices').hidden=true;$('textChoices').replaceChildren();$('stage').classList.remove('has-choices');$('retryFlag').hidden=true;$('clock').textContent='20';$('bar').style.width='100%';$('stage').classList.remove('expired');$('progress').textContent='● Aguardando a turma';for(const id of ['draw','pause','reveal','correct','wrong'])$(id).disabled=true;$('restart').hidden=true;updateHistory();notice('Dados apagados.');$('status').textContent='Todos participam uma vez antes de repetir.';});
 $('fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('gameModal').requestFullscreen();}catch{$('status').textContent='Tela cheia indisponível neste navegador. Você pode continuar em tela normal.';}});
 function pauseOnClose(){loadVersion++;if(current&&hasFlags(current)&&$('pause').disabled&&remaining>0&&!current.recorded&&$('answer').hidden){$('retryFlag').hidden=false;}if(running){remaining=Math.max(0,deadline-performance.now());stop();displayTime();if(remaining>0){$('pause').textContent='Continuar';$('status').textContent='Cronômetro pausado. Clique em Continuar para retomar.';}else{$('pause').disabled=true;$('status').textContent='Tempo esgotado!';}}}
-$('closeGame').addEventListener('click',async()=>{pauseOnClose();if(document.fullscreenElement){try{await document.exitFullscreen();}catch{}}$('gameModal').close();});
+async function closeGame(){feedback.close();pauseOnClose();if(document.fullscreenElement){try{await document.exitFullscreen();}catch{}}$('gameModal').close();}
+$('closeGame').addEventListener('click',closeGame);
 $('gameModal').addEventListener('cancel',pauseOnClose);
 $('gameModal').addEventListener('close',pauseOnClose);
-$('resumeGame').addEventListener('click',()=>{if(cfg)$('gameModal').showModal();});
+$('resumeGame').addEventListener('click',()=>{if(!cfg)return;$('gameModal').showModal();if(current?.recorded)feedback.show(current,current.result||rows.at(-1)?.result,{solo:cfg.solo,hasNext:!!queue.length});});
 document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'⛶ Sair da tela cheia':'⛶ Tela cheia';});
 try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved&&typeof saved.names==='string'){GeografiaMundo.config(saved.seconds,saved.topics,saved.region,saved.direction||'ambos');$('direction').value=saved.direction||'ambos';for(const t of ['capital','idioma','continente','bandeira','escolha'])$(t).checked=saved.topics.includes(t);$('region').value=saved.region;$('names').value=saved.names;$('seconds').value=saved.seconds;if([5,10,15,20].includes(saved.questionCount))$('questionCount').value=saved.questionCount;if(typeof saved.soloName==='string')$('soloName').value=saved.soloName;else if(saved.solo&&Tabuada.parseNames(saved.names).length===1)$('soloName').value=Tabuada.parseNames(saved.names)[0];if(typeof saved.classClickAnswers==='boolean')classClickAnswers=saved.classClickAnswers;else if(!saved.solo&&typeof saved.clickAnswers==='boolean')classClickAnswers=saved.clickAnswers;$('remember').checked=true;notice('Configuração recuperada. Escolha como quer jogar.');}}catch{}
 
@@ -128,7 +129,8 @@ function finishClickAnswer(round,index){
  for(const id of ['pause','reveal','correct','wrong'])$(id).disabled=true;
  const next=cfg.solo?(queue.length?'Próxima pergunta para continuar.':'Partida concluída!'):queue.length?'Próximo aluno para continuar.':'Todos participaram! Você pode reiniciar a turma.';
  $('status').textContent=(timedOut?'Tempo esgotado.':result==='Acertou'?'✓ Resposta correta!':'✕ Resposta incorreta. Confira a opção verde.')+' '+next;
- if(cfg.solo){$('draw').disabled=!queue.length;$('restart').hidden=!!queue.length;showSoloResult();}
+ if(cfg.solo){$('draw').disabled=!queue.length;$('restart').hidden=!!queue.length;}
+ feedback.show(current,result,{solo:cfg.solo,hasNext:!!queue.length});
 }
 function hasFlags(round){return round&&['bandeira','escolha'].includes(round.topic);}
 function preloadFlag(url){return new Promise((resolve,reject)=>{const image=new Image(),timer=setTimeout(()=>{image.onload=image.onerror=null;reject(Error('timeout'));},12000);image.onload=()=>{clearTimeout(timer);resolve();};image.onerror=()=>{clearTimeout(timer);reject(Error('load'));};image.src=url;});}
@@ -184,3 +186,13 @@ $('clickAnswers').addEventListener('change',()=>{if(playMode==='turma')classClic
 $('soloNewGame').addEventListener('click',()=>{$('soloResultModal').close();$('restart').click();});
 $('soloExit').addEventListener('click',()=>{$('soloResultModal').close();$('closeGame').click();});
 updateSoloSettings();
+
+const feedback=GeoRetorno.init({
+ next:async()=>{
+  if(queue.length){$('draw').click();return;}
+  if(cfg.solo){showSoloResult();return;}
+  await closeGame();$('history').closest('.results').scrollIntoView({block:'start'});
+ },
+ restart:()=>{$('restart').click();$('draw').click();},
+ cancel:closeGame
+});

@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1020"><title>Desafio dos Países do Mundo — Zurche</title><link rel="icon" href="../assets/logo-zurche-help-escolar.png"><link rel="stylesheet" href="style.css"><script src="game.js" defer></script><link rel="stylesheet" href="geografia.css?v=2"><link rel="stylesheet" href="mundo.css?v=1"><script src="mundo-dados.js?v=1" defer></script><script src="mundo-regras.js?v=1" defer></script><script src="geografia-alternativas.js?v=2" defer></script><script src="session-report.js?v=1" defer></script><script src="mundo-app.js?v=entrada1" defer></script><link rel="stylesheet" href="geografia-tela.css?v=6"><script src="geografia-tela.js?v=3" defer></script></head><body class="geography-page"><div class="shell"><header><a class="brand" href="index.html"><img src="../assets/logo-zurche-help-escolar.png" alt="Zurche"><span>Atividades / Geografia</span></a><a class="back" href="geografia-menu.html">← Geografia</a></header><main><div class="page-title"><div><span class="eyebrow">Aprenda jogando</span><h1>Desafio dos Países do Mundo</h1><p>Jogue sozinho ou desafie a turma.</p></div></div><section id="modeChoice" class="geo-mode-choice" aria-labelledby="modeTitle">
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1020"><title>Desafio dos Países do Mundo — Zurche</title><link rel="icon" href="../assets/logo-zurche-help-escolar.png"><link rel="stylesheet" href="style.css"><script src="game.js" defer></script><link rel="stylesheet" href="geografia.css?v=2"><link rel="stylesheet" href="mundo.css?v=1"><script src="mundo-dados.js?v=1" defer></script><script src="mundo-regras.js?v=1" defer></script><script src="geografia-alternativas.js?v=2" defer></script><script src="session-report.js?v=1" defer></script><script src="geografia-retorno.js?v=1" defer></script><script src="mundo-app.js?v=retorno1" defer></script><link rel="stylesheet" href="geografia-tela.css?v=7"><script src="geografia-tela.js?v=3" defer></script></head><body class="geography-page"><div class="shell"><header><a class="brand" href="index.html"><img src="../assets/logo-zurche-help-escolar.png" alt="Zurche"><span>Atividades / Geografia</span></a><a class="back" href="geografia-menu.html">← Geografia</a></header><main><div class="page-title"><div><span class="eyebrow">Aprenda jogando</span><h1>Desafio dos Países do Mundo</h1><p>Jogue sozinho ou desafie a turma.</p></div></div><section id="modeChoice" class="geo-mode-choice" aria-labelledby="modeTitle">
 <span class="eyebrow">Antes de começar</span><h2 id="modeTitle" tabindex="-1">Como você quer jogar?</h2>
 <p>Escolha o modo para preparar o desafio.</p>
 <div class="geo-mode-cards">
@@ -65,4 +65,16 @@
 <h2 id="soloResultTitle"></h2><div id="soloPercentage" class="solo-percentage"></div>
 <p id="soloSummary"></p><p id="soloMessage" class="solo-message"></p>
 <div class="solo-result-actions"><button id="soloNewGame" type="button" class="primary">Jogar novamente →</button><button id="soloExit" type="button" class="quiet">Voltar à configuração</button></div>
-</dialog></body></html>
+</dialog><dialog id="roundFeedbackModal" class="geo-round-feedback" aria-labelledby="feedbackTitle" aria-describedby="feedbackAnswer">
+<div class="feedback-summary">
+<p id="feedbackPlayer" class="feedback-player"></p>
+<div id="feedbackEmoji" class="feedback-emoji" aria-hidden="true"></div>
+<h2 id="feedbackTitle" tabindex="-1"></h2>
+<p id="feedbackAnswer" class="feedback-answer"></p>
+</div>
+<div id="feedbackActions" class="feedback-actions" hidden>
+<button id="feedbackNext" class="primary feedback-next" type="button">Próxima →</button>
+<div class="feedback-secondary"><button id="feedbackRestart" type="button">Recomeçar</button><button id="feedbackCancel" class="quiet" type="button">Cancelar</button></div>
+</div>
+</dialog>
+</body></html>

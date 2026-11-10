@@ -152,6 +152,29 @@
 .geo-solo-result .solo-message{font-size:clamp(22px,5vw,30px);font-weight:800;line-height:1.2;color:#fff;margin:18px 0 24px}
 .solo-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .solo-result-actions button{font-size:14px;padding:10px 8px}
+.geo-round-feedback{
+ position:fixed;inset:0;margin:auto;width:min(560px,calc(100% - 24px));max-height:calc(100dvh - 24px);
+ padding:clamp(18px,4vw,30px);overflow:auto;gap:20px;border:2px solid var(--mint);border-radius:24px;
+ background:radial-gradient(ellipse at 50% 0,#244a45,transparent 72%),#111f33;color:var(--text);text-align:center;
+}
+.geo-round-feedback[open]{display:grid}
+.geo-round-feedback::backdrop{background:#050d1bd9;backdrop-filter:blur(5px)}
+.geo-round-feedback.is-negative{border-color:#ff8a9a;background:radial-gradient(ellipse at 50% 0,#4d283e,transparent 72%),#111f33}
+.feedback-summary{display:grid;justify-items:center;gap:8px;min-width:0}
+.geo-round-feedback .feedback-player{
+ margin:0;max-width:100%;font-size:16px;line-height:1.2;color:var(--muted);overflow-wrap:anywhere;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+}
+.feedback-emoji{font-size:88px;line-height:1.1;animation:geo-feedback-pop .65s ease-out both}
+.geo-round-feedback h2{margin:0;font-size:clamp(26px,5vw,36px);line-height:1.15;color:var(--mint)}
+.geo-round-feedback.is-negative h2{color:#ff9aaa}
+.geo-round-feedback .feedback-answer{margin:0;font-size:17px;line-height:1.3;color:#f4f7fc;overflow-wrap:anywhere}
+.feedback-actions{display:grid;gap:10px;animation:geo-feedback-actions .2s ease-out both}
+.geo-round-feedback .feedback-next{width:100%;min-height:72px;font-size:clamp(22px,5vw,26px);padding:14px 12px}
+.feedback-secondary{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.feedback-secondary button{min-height:44px;padding:10px;font-size:15px}
+@keyframes geo-feedback-pop{0%{opacity:0;transform:scale(.5) rotate(-8deg)}70%{opacity:1;transform:scale(1.12)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes geo-feedback-actions{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:620px){
  .geography-page #gameModal .stage-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
  .geography-page #gameModal .flag-choices{max-width:540px}
@@ -169,8 +192,20 @@
  .geo-solo-result h2{font-size:20px;margin:8px 0}
  .geo-solo-result .solo-percentage{font-size:52px}
  .geo-solo-result .solo-message{font-size:22px;margin:10px 0 14px}
+ .geo-round-feedback{padding:14px;gap:12px}
+ .feedback-summary{gap:6px}
+ .geo-round-feedback .feedback-player{font-size:14px}
+ .feedback-emoji{font-size:56px}
+ .geo-round-feedback h2{font-size:22px}
+ .geo-round-feedback .feedback-answer{font-size:15px}
+ .geo-round-feedback .feedback-next{min-height:58px;font-size:24px;padding:10px}
+ .feedback-actions{gap:8px}
 }
 @media(max-height:450px) and (min-width:480px){
  .geography-page #gameModal .text-choices{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .feedback-summary{grid-template-columns:64px minmax(0,1fr);justify-items:start;align-items:center;text-align:left}
+ .feedback-summary .feedback-emoji{grid-column:1;grid-row:1 / span 3}
+ .feedback-summary :is(.feedback-player,h2,.feedback-answer){grid-column:2}
 }
 @media(prefers-reduced-motion:reduce){.geography-page #gameModal .stage.urgent #question{animation:none}}
+@media(prefers-reduced-motion:reduce){.feedback-emoji,.feedback-actions{animation:none}}
