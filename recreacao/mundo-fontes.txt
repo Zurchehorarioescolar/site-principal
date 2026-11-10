@@ -1,0 +1,236 @@
+DESAFIO DOS PAÍSES DO MUNDO — FONTES E CRITÉRIOS
+Consulta e revisão em 10/11/2026.
+
+Cobertura: 193 países do serviço Países do IBGE, mais Palestina e Vaticano (195).
+Capitais e idiomas: serviço Países do IBGE. Os idiomas são referências de uso e não uma lista completa de línguas oficiais.
+https://servicodados.ibge.gov.br/api/v1/paises/todos
+https://servicodados.ibge.gov.br/api/docs/paises
+https://paises.ibge.gov.br/
+
+Palestina e Santa Sé / Vaticano: ONU e UNData.
+https://www.un.org/en/about-us/non-member-states
+https://data.un.org/legacy/en/iso/ps.html
+https://data.un.org/legacy/en/iso/va.html
+
+América é tratada como continente único. O filtro América do Norte agrupa Canadá, Estados Unidos e México. Os demais países americanos estão nos grupos América Central e Caribe ou América do Sul.
+Países transcontinentais incluídos em mais de um filtro: Rússia, Turquia, Cazaquistão, Egito e Indonésia. As fronteiras convencionais dos continentes podem variar entre materiais didáticos.
+Capitais com funções distintas aparecem juntas como respostas aceitas. Em casos sem capital formal, a pergunta trata da sede do governo.
+
+Revisões e complementos de capitais:
+Guiné Equatorial — Ciudad de la Paz, proclamada em janeiro de 2026.
+https://www.guineaecuatorialpress.com/noticias/el_presidente_de_la_republica_proclama_la_ciudad_de_la_paz_como_capital_de_la_republica_de_guinea_ecuatorial_con_la_firma_de_un_decreto_ley
+África do Sul — Pretória, Cidade do Cabo e Bloemfontein; 12 idiomas oficiais.
+https://www.gov.za/about-sa/south-africa-glance
+Indonésia — Jacarta; transferência formal depende de decreto presidencial.
+https://en.mkri.id/news/details/2026-05-12/Capital_Relocation_Depends_on_Issuance_of_Presidential_Decree
+Nauru — distrito de Yaren (Iarém), sede de governo.
+https://data.un.org/legacy/en/iso/nr.html
+Bolívia — Sucre (constitucional) e La Paz (sede de governo).
+https://portal.mec.gov.br/setec/arquivos/pdf/mercosul_apresenta_bolivia.pdf
+Israel — a pergunta trata de Jerusalém como sede do governo. O status da cidade é disputado.
+https://m.knesset.gov.il/EN/activity/documents/BasicLawsPDF/BasicLawJerusalem.pdf
+https://www.un.org/unispal/permanent-status-issues/
+Demais notas de capitais e sedes: informações de referência do IBGE e lista de países mledoze/countries.
+https://github.com/mledoze/countries
+
+BANDEIRAS
+Flagpedia / FlagCDN, imagens PNG de 320 px, baseadas em vetores da Wikimedia Commons. Incluídas no arquivo mundo-dados.js para carregamento local.
+https://flagpedia.net/download/api
+https://flagpedia.net
+
+Fontes de cada imagem:
+AD https://flagcdn.com/w320/ad.png
+AE https://flagcdn.com/w320/ae.png
+AF https://flagcdn.com/w320/af.png
+AG https://flagcdn.com/w320/ag.png
+AL https://flagcdn.com/w320/al.png
+AM https://flagcdn.com/w320/am.png
+AO https://flagcdn.com/w320/ao.png
+AR https://flagcdn.com/w320/ar.png
+AT https://flagcdn.com/w320/at.png
+AU https://flagcdn.com/w320/au.png
+AZ https://flagcdn.com/w320/az.png
+BA https://flagcdn.com/w320/ba.png
+BB https://flagcdn.com/w320/bb.png
+BD https://flagcdn.com/w320/bd.png
+BE https://flagcdn.com/w320/be.png
+BF https://flagcdn.com/w320/bf.png
+BG https://flagcdn.com/w320/bg.png
+BH https://flagcdn.com/w320/bh.png
+BI https://flagcdn.com/w320/bi.png
+BJ https://flagcdn.com/w320/bj.png
+BN https://flagcdn.com/w320/bn.png
+BO https://flagcdn.com/w320/bo.png
+BR https://flagcdn.com/w320/br.png
+BS https://flagcdn.com/w320/bs.png
+BT https://flagcdn.com/w320/bt.png
+BW https://flagcdn.com/w320/bw.png
+BY https://flagcdn.com/w320/by.png
+BZ https://flagcdn.com/w320/bz.png
+CA https://flagcdn.com/w320/ca.png
+CD https://flagcdn.com/w320/cd.png
+CF https://flagcdn.com/w320/cf.png
+CG https://flagcdn.com/w320/cg.png
+CH https://flagcdn.com/w320/ch.png
+CI https://flagcdn.com/w320/ci.png
+CL https://flagcdn.com/w320/cl.png
+CM https://flagcdn.com/w320/cm.png
+CN https://flagcdn.com/w320/cn.png
+CO https://flagcdn.com/w320/co.png
+CR https://flagcdn.com/w320/cr.png
+CU https://flagcdn.com/w320/cu.png
+CV https://flagcdn.com/w320/cv.png
+CY https://flagcdn.com/w320/cy.png
+CZ https://flagcdn.com/w320/cz.png
+DE https://flagcdn.com/w320/de.png
+DJ https://flagcdn.com/w320/dj.png
+DK https://flagcdn.com/w320/dk.png
+DM https://flagcdn.com/w320/dm.png
+DO https://flagcdn.com/w320/do.png
+DZ https://flagcdn.com/w320/dz.png
+EC https://flagcdn.com/w320/ec.png
+EE https://flagcdn.com/w320/ee.png
+EG https://flagcdn.com/w320/eg.png
+ER https://flagcdn.com/w320/er.png
+ES https://flagcdn.com/w320/es.png
+ET https://flagcdn.com/w320/et.png
+FI https://flagcdn.com/w320/fi.png
+FJ https://flagcdn.com/w320/fj.png
+FM https://flagcdn.com/w320/fm.png
+FR https://flagcdn.com/w320/fr.png
+GA https://flagcdn.com/w320/ga.png
+GB https://flagcdn.com/w320/gb.png
+GD https://flagcdn.com/w320/gd.png
+GE https://flagcdn.com/w320/ge.png
+GH https://flagcdn.com/w320/gh.png
+GM https://flagcdn.com/w320/gm.png
+GN https://flagcdn.com/w320/gn.png
+GQ https://flagcdn.com/w320/gq.png
+GR https://flagcdn.com/w320/gr.png
+GT https://flagcdn.com/w320/gt.png
+GW https://flagcdn.com/w320/gw.png
+GY https://flagcdn.com/w320/gy.png
+HN https://flagcdn.com/w320/hn.png
+HR https://flagcdn.com/w320/hr.png
+HT https://flagcdn.com/w320/ht.png
+HU https://flagcdn.com/w320/hu.png
+ID https://flagcdn.com/w320/id.png
+IE https://flagcdn.com/w320/ie.png
+IL https://flagcdn.com/w320/il.png
+IN https://flagcdn.com/w320/in.png
+IQ https://flagcdn.com/w320/iq.png
+IR https://flagcdn.com/w320/ir.png
+IS https://flagcdn.com/w320/is.png
+IT https://flagcdn.com/w320/it.png
+JM https://flagcdn.com/w320/jm.png
+JO https://flagcdn.com/w320/jo.png
+JP https://flagcdn.com/w320/jp.png
+KE https://flagcdn.com/w320/ke.png
+KG https://flagcdn.com/w320/kg.png
+KH https://flagcdn.com/w320/kh.png
+KI https://flagcdn.com/w320/ki.png
+KM https://flagcdn.com/w320/km.png
+KN https://flagcdn.com/w320/kn.png
+KP https://flagcdn.com/w320/kp.png
+KR https://flagcdn.com/w320/kr.png
+KW https://flagcdn.com/w320/kw.png
+KZ https://flagcdn.com/w320/kz.png
+LA https://flagcdn.com/w320/la.png
+LB https://flagcdn.com/w320/lb.png
+LC https://flagcdn.com/w320/lc.png
+LI https://flagcdn.com/w320/li.png
+LK https://flagcdn.com/w320/lk.png
+LR https://flagcdn.com/w320/lr.png
+LS https://flagcdn.com/w320/ls.png
+LT https://flagcdn.com/w320/lt.png
+LU https://flagcdn.com/w320/lu.png
+LV https://flagcdn.com/w320/lv.png
+LY https://flagcdn.com/w320/ly.png
+MA https://flagcdn.com/w320/ma.png
+MC https://flagcdn.com/w320/mc.png
+MD https://flagcdn.com/w320/md.png
+ME https://flagcdn.com/w320/me.png
+MG https://flagcdn.com/w320/mg.png
+MH https://flagcdn.com/w320/mh.png
+MK https://flagcdn.com/w320/mk.png
+ML https://flagcdn.com/w320/ml.png
+MM https://flagcdn.com/w320/mm.png
+MN https://flagcdn.com/w320/mn.png
+MR https://flagcdn.com/w320/mr.png
+MT https://flagcdn.com/w320/mt.png
+MU https://flagcdn.com/w320/mu.png
+MV https://flagcdn.com/w320/mv.png
+MW https://flagcdn.com/w320/mw.png
+MX https://flagcdn.com/w320/mx.png
+MY https://flagcdn.com/w320/my.png
+MZ https://flagcdn.com/w320/mz.png
+NA https://flagcdn.com/w320/na.png
+NE https://flagcdn.com/w320/ne.png
+NG https://flagcdn.com/w320/ng.png
+NI https://flagcdn.com/w320/ni.png
+NL https://flagcdn.com/w320/nl.png
+NO https://flagcdn.com/w320/no.png
+NP https://flagcdn.com/w320/np.png
+NR https://flagcdn.com/w320/nr.png
+NZ https://flagcdn.com/w320/nz.png
+OM https://flagcdn.com/w320/om.png
+PA https://flagcdn.com/w320/pa.png
+PE https://flagcdn.com/w320/pe.png
+PG https://flagcdn.com/w320/pg.png
+PH https://flagcdn.com/w320/ph.png
+PK https://flagcdn.com/w320/pk.png
+PL https://flagcdn.com/w320/pl.png
+PS https://flagcdn.com/w320/ps.png
+PT https://flagcdn.com/w320/pt.png
+PW https://flagcdn.com/w320/pw.png
+PY https://flagcdn.com/w320/py.png
+QA https://flagcdn.com/w320/qa.png
+RO https://flagcdn.com/w320/ro.png
+RS https://flagcdn.com/w320/rs.png
+RU https://flagcdn.com/w320/ru.png
+RW https://flagcdn.com/w320/rw.png
+SA https://flagcdn.com/w320/sa.png
+SB https://flagcdn.com/w320/sb.png
+SC https://flagcdn.com/w320/sc.png
+SD https://flagcdn.com/w320/sd.png
+SE https://flagcdn.com/w320/se.png
+SG https://flagcdn.com/w320/sg.png
+SI https://flagcdn.com/w320/si.png
+SK https://flagcdn.com/w320/sk.png
+SL https://flagcdn.com/w320/sl.png
+SM https://flagcdn.com/w320/sm.png
+SN https://flagcdn.com/w320/sn.png
+SO https://flagcdn.com/w320/so.png
+SR https://flagcdn.com/w320/sr.png
+SS https://flagcdn.com/w320/ss.png
+ST https://flagcdn.com/w320/st.png
+SV https://flagcdn.com/w320/sv.png
+SY https://flagcdn.com/w320/sy.png
+SZ https://flagcdn.com/w320/sz.png
+TD https://flagcdn.com/w320/td.png
+TG https://flagcdn.com/w320/tg.png
+TH https://flagcdn.com/w320/th.png
+TJ https://flagcdn.com/w320/tj.png
+TL https://flagcdn.com/w320/tl.png
+TM https://flagcdn.com/w320/tm.png
+TN https://flagcdn.com/w320/tn.png
+TO https://flagcdn.com/w320/to.png
+TR https://flagcdn.com/w320/tr.png
+TT https://flagcdn.com/w320/tt.png
+TV https://flagcdn.com/w320/tv.png
+TZ https://flagcdn.com/w320/tz.png
+UA https://flagcdn.com/w320/ua.png
+UG https://flagcdn.com/w320/ug.png
+US https://flagcdn.com/w320/us.png
+UY https://flagcdn.com/w320/uy.png
+UZ https://flagcdn.com/w320/uz.png
+VA https://flagcdn.com/w320/va.png
+VC https://flagcdn.com/w320/vc.png
+VE https://flagcdn.com/w320/ve.png
+VN https://flagcdn.com/w320/vn.png
+VU https://flagcdn.com/w320/vu.png
+WS https://flagcdn.com/w320/ws.png
+YE https://flagcdn.com/w320/ye.png
+ZA https://flagcdn.com/w320/za.png
+ZM https://flagcdn.com/w320/zm.png
+ZW https://flagcdn.com/w320/zw.png

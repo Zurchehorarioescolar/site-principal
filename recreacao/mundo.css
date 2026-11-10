@@ -1,0 +1,5 @@
+.world-notes{padding:10px 12px;margin:12px 0;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--muted)}
+.world-notes summary{cursor:pointer;color:var(--text);font-weight:700}
+.world-notes p{margin:8px 0;line-height:1.5}
+.geography-page .answer{font-size:clamp(19px,3.2vw,42px);line-height:1.3}
+.geography-page .geo-facts{font-size:clamp(12px,1.7vw,16px);line-height:1.5}
