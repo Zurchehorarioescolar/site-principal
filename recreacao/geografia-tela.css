@@ -1,0 +1,104 @@
+/* Shared viewport layout for the Brazil and world challenges. */
+.geography-page #gameModal{
+ position:fixed;inset:0;margin:0;width:100%;height:100dvh;max-width:none;max-height:none;overflow:hidden;
+}
+.geography-page #gameModal .stage,
+.geography-page #gameModal .stage.urgent{
+ --geo-scale:1;
+ position:relative;inset:auto;display:grid;
+ grid-template-rows:auto auto auto minmax(0,1fr) auto;
+ gap:clamp(4px,.9dvh,10px);width:100%;height:100%;min-height:0;
+ padding:max(8px,env(safe-area-inset-top)) max(clamp(8px,2vw,28px),env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(clamp(8px,2vw,28px),env(safe-area-inset-left));
+ overflow:hidden;justify-content:normal;
+}
+.geography-page #gameModal .stage-top{
+ display:flex;flex-wrap:nowrap;justify-content:space-between;gap:6px;
+ width:100%;max-width:1240px;margin:0 auto;
+}
+.geography-page #gameModal .stage-top .live-dot{
+ min-width:0;margin-right:auto;font-size:clamp(10px,1.4vw,13px);line-height:1.2;text-align:left;
+}
+.geography-page #gameModal .stage-top button{padding:6px 9px;white-space:nowrap;font-size:clamp(11px,1.6vw,14px)}
+.geography-page #gameModal :is(.student,.equation,.clock){font-family:Manrope,"DM Sans",Arial,sans-serif}
+.geography-page #gameModal #fullscreen{font-size:0;min-width:32px}
+.geography-page #gameModal #fullscreen::before{content:"⛶";font-size:19px;line-height:1}
+.geography-page #gameModal .student,
+.geography-page #gameModal .stage.has-choices .student{
+ width:100%;margin:0;padding:0;font-size:clamp(19px,3.6vmin,36px);line-height:1.15;
+}
+.geography-page #gameModal .prompt{margin:0;font-size:clamp(12px,2vmin,17px);line-height:1.25}
+.geo-stage-main{
+ min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:calc(clamp(4px,1.1dvh,12px) * var(--geo-scale));overflow:hidden;
+ width:100%;max-width:1200px;margin:0 auto;
+}
+.geography-page #gameModal .equation,
+.geography-page #gameModal .stage.urgent .equation,
+.geography-page #gameModal .stage.has-choices .equation{
+ flex:none;max-width:100%;margin:0;padding:0;letter-spacing:-.025em;
+ font-size:max(15px,calc(clamp(24px,5.3vmin,64px) * var(--geo-scale)));line-height:1.15;overflow-wrap:anywhere;
+}
+.geography-page #gameModal .answer{
+ margin:calc(5px * var(--geo-scale)) 0 0;
+ font-size:max(12px,calc(clamp(17px,3.3vmin,36px) * var(--geo-scale)));line-height:1.2;letter-spacing:0;
+}
+.geography-page #gameModal .flag-area{
+ flex:none;margin:0;max-width:650px;width:100%;
+}
+.geography-page #gameModal .flag-area img{
+ max-width:100%;max-height:none;height:max(30px,calc(clamp(55px,24dvh,250px) * var(--geo-scale)));width:auto;
+}
+.geography-page #gameModal .flag-area figcaption{font-size:max(10px,calc(12px * var(--geo-scale)));margin:4px 0 0;line-height:1.1}
+.geography-page #gameModal .flag-choices{
+ flex:none;grid-template-columns:repeat(4,minmax(0,1fr));width:min(100%,920px);
+ margin:0;gap:calc(clamp(4px,1.4vw,14px) * var(--geo-scale));
+}
+.geography-page #gameModal .flag-option{
+ min-height:0;min-width:0;padding:calc(6px * var(--geo-scale));border-radius:10px;
+ gap:calc(5px * var(--geo-scale));position:relative;
+}
+.geography-page #gameModal .flag-option .option-letter{
+ width:max(16px,calc(26px * var(--geo-scale)));height:max(16px,calc(26px * var(--geo-scale)));
+ font-size:max(11px,calc(14px * var(--geo-scale)));flex:none;
+}
+.geography-page #gameModal .flag-option img{
+ width:100%;height:max(25px,calc(clamp(40px,16dvh,145px) * var(--geo-scale)));object-fit:contain;
+}
+.geography-page #gameModal .geo-details-button{flex:none;padding:5px 10px;font-size:12px;line-height:1.2}
+.geo-stage-bottom{display:grid;gap:clamp(3px,.65dvh,7px);width:100%;max-width:1240px;margin:auto}
+.geography-page #gameModal .clock,
+.geography-page #gameModal .stage.urgent .clock{font-size:clamp(22px,4vmin,34px);line-height:1.1}
+.geography-page #gameModal .clock small{font-size:11px}
+.geography-page #gameModal .timebar{height:4px;margin:0}
+.geography-page #gameModal .stage-actions,
+.geography-page #gameModal .stage.urgent .stage-actions{
+ display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;
+ margin:0;padding:0;justify-content:normal;
+}
+.geography-page #gameModal .stage-actions button{padding:6px 5px;min-height:30px;font-size:clamp(11px,1.45vw,14px);line-height:1.2}
+.geography-page #gameModal .stage-actions #draw:disabled{display:none}
+.geography-page #gameModal .stage-note{min-height:1.2em;margin:0;font-size:clamp(11px,1.4vw,13px);line-height:1.2}
+.geography-page #gameModal .stage.urgent #question{animation:geo-question-glow 1s ease-in-out infinite}
+@keyframes geo-question-glow{50%{filter:brightness(1.55)}}
+.geo-details-modal{
+ position:fixed;inset:0;margin:auto;width:min(650px,calc(100% - 28px));max-height:calc(100dvh - 28px);
+ overflow:auto;padding:clamp(18px,4vw,28px);border:1px solid #4b637c;border-radius:16px;background:#13243a;color:var(--text);
+}
+.geo-details-modal::backdrop{background:#07101cbb}
+.geo-details-modal h2{margin:0 0 12px;font-size:22px}
+.geo-details-modal .geo-facts{font-size:15px;padding:12px;line-height:1.6;margin-bottom:16px}
+@media(max-width:620px){
+ .geography-page #gameModal .stage-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .geography-page #gameModal .flag-choices{max-width:540px}
+}
+@media(max-height:450px){
+ .geography-page #gameModal .stage,.geography-page #gameModal .stage.urgent{gap:3px;padding-top:5px;padding-bottom:5px}
+ .geography-page #gameModal .stage-top button{padding:4px 7px}
+ .geography-page #gameModal .student{font-size:19px}
+ .geography-page #gameModal .stage-actions button{min-height:25px;padding:4px}
+ .geography-page #gameModal .clock,.geography-page #gameModal .stage.urgent .clock{font-size:22px}
+ .geography-page #gameModal .flag-option{flex-direction:row}
+ .geography-page #gameModal .flag-option .option-letter{align-self:center}
+ .geography-page #gameModal .flag-option img{min-width:0;flex:1}
+}
+@media(prefers-reduced-motion:reduce){.geography-page #gameModal .stage.urgent #question{animation:none}}
