@@ -28,6 +28,7 @@
  width:100%;margin:0;padding:0;font-size:clamp(19px,3.6vmin,36px);line-height:1.15;
 }
 .geography-page #gameModal .prompt{margin:0;font-size:clamp(17px,2.9vmin,30px);font-weight:600;line-height:1.2}
+.geo-question-row{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:center;gap:clamp(8px,2vw,24px);width:100%;max-width:1200px;margin:auto}
 .geo-stage-main{
  min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
  gap:calc(clamp(4px,1.1dvh,12px) * var(--geo-scale));overflow:hidden;
@@ -66,15 +67,15 @@
  width:100%;height:max(25px,calc(clamp(40px,16dvh,145px) * var(--geo-flag-scale)));object-fit:contain;
 }
 .geography-page #gameModal .geo-details-button{flex:none;padding:5px 10px;font-size:12px;line-height:1.2}
-.geo-stage-bottom{display:grid;grid-template-columns:clamp(70px,10vw,115px) minmax(0,1fr);align-items:center;gap:clamp(3px,.65dvh,7px) 10px;width:100%;max-width:1240px;margin:auto}
+.geo-stage-bottom{display:grid;align-items:center;gap:clamp(3px,.65dvh,7px);width:100%;max-width:1240px;margin:auto}
 .geography-page #gameModal .clock,
-.geography-page #gameModal .stage.urgent .clock{grid-column:1;grid-row:1;font-size:clamp(42px,7.4vmin,80px);line-height:1}
+.geography-page #gameModal .stage.urgent .clock{grid-column:2;grid-row:1;min-width:2.2ch;font-size:clamp(42px,7.4vmin,80px);font-variant-numeric:tabular-nums;line-height:1}
 .geography-page #gameModal .clock small{display:block;font-size:11px;margin-top:3px}
-.geography-page #gameModal .timebar{grid-column:1 / -1;grid-row:2;height:4px;margin:0}
+.geography-page #gameModal .timebar{grid-row:1;height:4px;margin:0}
 .geography-page #gameModal .stage-actions,
 .geography-page #gameModal .stage.urgent .stage-actions{
  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;
- grid-column:2;grid-row:1;margin:0;padding:0;justify-content:normal;
+ grid-row:2;margin:0;padding:0;justify-content:normal;
 }
 .geography-page #gameModal .stage-actions button{padding:6px 5px;min-height:30px;font-size:clamp(11px,1.45vw,14px);line-height:1.2}
 .geography-page #gameModal .stage-actions #draw:disabled{display:none}
