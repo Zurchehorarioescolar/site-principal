@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A boneca de Cacá — Zurche</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff4da;color:#301b4d;font:1.15rem system-ui,sans-serif}main{max-width:760px;margin:auto;padding:20px}section{background:white;border-radius:24px;padding:clamp(16px,4vw,32px);margin:20px 0;box-shadow:0 5px 0 #e4c8f4}h1,h2{line-height:1.1}h1{font-size:clamp(2rem,7vw,3.4rem)}p{line-height:1.55}button,.next{font:700 1rem system-ui;padding:12px 16px;border:0;border-radius:14px;background:#6233a4;color:#fff;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #192280;outline-offset:4px}.reading{font-weight:750}.illustration{font-size:clamp(2.6rem,10vw,5rem);background:#ffd2ec;border-radius:20px;text-align:center;padding:12px}.scene{position:relative;display:flex;justify-content:space-around;align-items:center;gap:10px;min-height:240px;background:linear-gradient(#d1f5ff 70%,#ffe1ad 70%);border-radius:20px;margin-top:16px;overflow:hidden}.doll,.target{font-size:clamp(2.8rem,12vw,5.5rem);padding:6px;background:#fff7;border:3px dashed #986bd4;color:#301b4d;min-width:85px;min-height:100px}.doll{touch-action:none;cursor:grab;background:#ffe1f2;z-index:2;position:relative}.target small{display:block;font-size:1rem}.target.chosen,.doll[aria-pressed=true]{outline:4px solid #6233a4}.landing{position:absolute;pointer-events:none;z-index:3;font-size:clamp(2.8rem,12vw,5.5rem);line-height:1;transform:translate(-50%,-50%)}.fall{animation:fall 1.05s ease-in forwards}@keyframes fall{0%,23%{transform:translate(-50%,-50%)}100%{transform:translate(48%,var(--floor-drop)) rotate(82deg)}}[hidden]{display:none!important}
+.drawing{display:inline-block;width:clamp(66px,19vw,132px);vertical-align:middle;line-height:0;pointer-events:none}.drawing svg{width:100%;height:auto}.bed{width:clamp(88px,26vw,170px)}.illustration{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:end}.landing .drawing{width:clamp(48px,13vw,84px)}.target #picture{display:block}.scene{min-height:280px}.doll:hover{border-color:#6233a4}.celebrate .drawing{animation:happy-hop .65s ease-in-out 2}@keyframes happy-hop{50%{transform:translateY(-12px) rotate(-6deg)}}@media(prefers-reduced-motion:reduce){.celebrate .drawing{animation:none}}
+main{text-transform:uppercase}.syllable-layout{display:flex;gap:16px;align-items:center}.syllable-work{min-width:0;flex:1}.tiles,.slots{display:flex;flex-wrap:wrap;gap:8px;min-height:50px;margin:10px 0}.tiles button{touch-action:none}.slots button{min-width:48px;background:#e9d8ff;color:#301b4d}.tiles [aria-pressed=true]{outline:3px solid #301b4d}.word-input{display:block;width:100%;max-width:320px;padding:12px;margin:8px 0;font:inherit;border:2px solid #986bd4;border-radius:10px;text-transform:uppercase}
+
+#scene.reverse{flex-direction:row-reverse}
+#advance:not([hidden]),#wordNext:not([hidden]){animation:guide 1.4s ease-in-out infinite}
+@keyframes guide{50%{background:#8543ca;box-shadow:0 0 0 5px #8543ca40}}
+@media(prefers-reduced-motion:reduce){#advance:not([hidden]),#wordNext:not([hidden]){animation:none;outline:3px solid #8543ca;outline-offset:4px}}
+main button{text-transform:uppercase}
+
+.scene{container-type:inline-size;min-height:0;padding:22px 8px 42px}
+.target-art{position:relative;text-align:center}
+.target-art .drawing{width:clamp(140px,57cqw,330px)}
+.reverse .target-art .drawing{width:clamp(125px,47cqw,245px)}
+#target{position:absolute;left:62%;top:39%;transform:translate(-50%,-50%);width:var(--slot);height:var(--slot);padding:0;border:3px dashed #583683;border-radius:9px;background:#ffffff67}
+.reverse #target{left:50%;top:60%}
+#targetName{display:block;font-weight:700}
+#scene{--slot:clamp(50px,15cqw,86px)}
+#doll{min-width:0;min-height:0;padding:4px;border:0;background:transparent}
+#doll .drawing,.landing .drawing{width:clamp(39px,12cqw,70px)}
+#target:disabled{visibility:hidden}
+@keyframes fall{0%,22%{transform:translate(-50%,-50%)}54%{transform:translate(30%,-32%) rotate(25deg)}100%{transform:translate(48%,var(--floor-drop)) rotate(82deg)}}
+
+.story-crop svg{overflow:hidden;border-radius:12px}
+.target-art .story-crop{width:clamp(115px,49cqw,210px)}
+.reverse .target-art .story-crop{width:clamp(100px,43cqw,155px)}
+#target{left:42%;top:27%}
+.reverse #target{left:69%;top:66%}
+#doll .story-crop,.landing .story-crop{width:clamp(52px,19cqw,95px)}
+.target-art img.story-crop{display:block;height:auto;border-radius:12px}
+.reverse #target{left:61%;top:68%}
+.target-art img.bed{width:clamp(135px,60cqw,340px)}
+#scene:not(.reverse) #target{left:60%;top:55%}
+
+#scene:not(.reverse){display:block;padding:0;aspect-ratio:334 / 253;background:url("caca-cama-v2.png") center / 100% 100% no-repeat}
+#scene:not(.reverse) .target-art{position:absolute;inset:0}
+#scene:not(.reverse) :is(#picture,#targetName){display:none}
+#scene:not(.reverse) #target{left:60%;top:45%}
+#scene:not(.reverse) #doll{position:absolute;left:24%;top:89%;translate:-50% -50%}
+#scene:not(.reverse) :is(#doll,.landing) .drawing{width:clamp(46px,16cqw,96px)}
+@keyframes room-fall{
+ 0%,22%{transform:translate(-50%,-50%)}
+ 54%{transform:translate(calc(-50% + var(--rug-x)*.45),-65%) rotate(24deg)}
+ 100%{transform:translate(calc(-50% + var(--rug-x)),calc(-50% + var(--rug-y))) rotate(70deg)}
+}
+#scene:not(.reverse) .fall{animation-name:room-fall}
+
+#reading img{max-height:57dvh;object-fit:contain}
+#scene:not(.reverse){width:min(100%, calc(48dvh * 334 / 253));margin-inline:auto}
+#scene.reverse{min-height:0;padding:12px}
+.reverse .target-art .story-crop{width:min(43cqw, 25dvh, 155px)}
+@media(max-height:760px){
+ #play,#reading,#syllables{padding:12px;margin-block:12px}
+ #play h2,#reading h1,#syllables h2{margin-block:8px}
+ #play p,#syllables p{margin-block:8px}
+}
+.step-nav{display:flex;flex-wrap:wrap;gap:8px}.step-back{background:#eee5fa;color:#442475}
+
+main button{font-size:.82rem;padding:8px 12px;min-height:36px;border-radius:10px}
+#reading h1{font-size:clamp(1.25rem,3vw,1.85rem);margin:0 0 10px}
+#reading img{max-height:min(74dvh,720px)}
+.reading-actions{display:flex;flex-wrap:wrap;gap:8px}
+@media(min-width:700px){
+ #reading{display:grid;grid-template-columns:minmax(0,1fr) 164px;gap:10px 16px;align-items:start}
+ #reading h1{grid-column:1/-1;margin:0}
+ #reading img{margin-bottom:0!important}
+ .reading-actions{display:grid;align-self:center}
+}
+
+.instruction-heading{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+#reading .instruction-heading{grid-column:1/-1}
+#reading .instruction-heading h1,.instruction-heading h2{margin:0}
+main button.instruction-audio{width:38px;height:38px;flex:0 0 38px;padding:0;font-size:1rem}
+.activity-nav{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px}
+
+.activity-nav :is(a,button){
+ display:inline-flex;align-items:center;justify-content:center;
+ min-height:36px;padding:8px 12px;border-radius:10px;
+ background:#eee5fa;color:#442475;font:700 .82rem system-ui,sans-serif;text-decoration:none
+}
+#reading img{max-height:min(82dvh,800px)}
+#scene:not(.reverse){width:min(100%,calc(56dvh * 334 / 253))}
+.reverse .target-art .story-crop{width:min(47cqw,32dvh,190px)}
+
+
+#scene.reverse{display:block;padding:0;width:min(100%,calc(56dvh * 341 / 249));margin-inline:auto;aspect-ratio:341 / 249;background:url("caca-colo-quarto.png") center / 100% 100% no-repeat}
+#scene.reverse .target-art{position:absolute;inset:0}
+#scene.reverse :is(#picture,#targetName){display:none}
+#scene.reverse #target{left:47%;top:51%}
+#scene.reverse #doll{position:absolute;left:84%;top:81%;translate:-50% -50%}
+
+#scene.reverse.lap-complete{background:#fff0dc}
+#scene.reverse.lap-complete #picture{display:grid;place-items:center;height:100%}
+#scene.reverse.lap-complete #picture .drawing{width:auto;height:100%}
+#scene.reverse.lap-complete #picture svg{width:auto;height:100%}
+
+.story-page{position:relative;width:min(100%,82dvh,800px);margin:0 auto 10px}
+.story-page img{display:block;width:100%;height:auto}
+#readingMarker{position:absolute;border:3px solid #a95600;border-radius:7px;background:#ffcf3033;pointer-events:none}
+</style>
+<main><nav class="activity-nav" aria-label="NAVEGAÇÃO"><a href="historias.html">← ESCOLHA A HISTÓRIA</a><button id="playBack" class="step-back" type="button" hidden></button><button id="wordBack" class="step-back" type="button" hidden></button></nav>
+<section id="reading"><div class="instruction-heading"><h1>A BONECA DE CACÁ</h1><button id="readListen" class="instruction-audio" type="button" aria-label="OUVIR INSTRUÇÃO" title="OUVIR INSTRUÇÃO">🔊</button></div><div class="story-page"><img src="boneca-de-caca.png" alt="CACÁ PEGA A BONECA. CACÁ BOTA A BONECA NA CAMA. A BONECA CAI. CACÁ PEGA A BONECA. CACÁ BOTA A BONECA NO COLO. E A BONECA FICA BONITA NO COLO DA CACÁ."><span id="readingMarker" aria-hidden="true" hidden></span></div>
+<div class="reading-actions"><button id="storyListen" type="button">🔊 OUVIR A HISTÓRIA</button>  <button id="start">COMEÇAR</button></div></section>
+<section id="play" hidden><div class="instruction-heading"><h2 id="title" tabindex="-1"></h2><button id="listen" class="instruction-audio" type="button" aria-label="OUVIR INSTRUÇÃO" title="OUVIR INSTRUÇÃO">🔊</button></div><p id="instruction"></p>
+<div class="scene" id="scene"><button id="doll" class="doll" aria-label="Boneca" aria-pressed="false"></button><div class="target-art"><span id="picture" aria-hidden="true"></span><button id="target" type="button" aria-labelledby="targetName"></button><small id="targetName"></small></div><span id="landing" class="landing" aria-hidden="true" hidden></span></div>
+<p id="feedback" role="status"></p><div class="step-nav"><button id="advance" hidden></button></div></section>
+<section id="syllables" hidden>
+<div class="instruction-heading"><h2 id="syllableTitle" tabindex="-1">MONTE A PALAVRA</h2><button id="wordListen" class="instruction-audio" type="button" aria-label="OUVIR INSTRUÇÃO" title="OUVIR INSTRUÇÃO">🔊</button></div>
+<p>ARRASTE AS SÍLABAS PARA OS ESPAÇOS. VOCÊ TAMBÉM PODE TOCAR NA SÍLABA E DEPOIS NO ESPAÇO.</p>
+
+<div class="syllable-layout"><div id="wordPicture" role="img"></div><div class="syllable-work">
+<div id="tiles" class="tiles"></div><div id="slots" class="slots"></div>
+<form id="wordForm"><label for="wordInput">DIGITE A PALAVRA COMPLETA</label><input id="wordInput" class="word-input" autocomplete="off" autocapitalize="characters" spellcheck="false"><button>CONFERIR</button></form>
+</div></div><p id="wordFeedback" role="status"></p><div class="step-nav"><button id="wordNext" hidden></button></div>
+</section></main>
+<script>
+const byId=id=>document.getElementById(id);
+const doll=byId('doll'),target=byId('target'),landing=byId('landing'),feedback=byId('feedback'),advance=byId('advance');
+const bedArt='<img class="drawing story-crop bed" src="caca-cama-v2.png" alt="" draggable="false">';
+const liliArt='<img class="drawing story-crop" src="caca-colo-quarto.png" alt="" draggable="false">';
+const happyCaca='<span class="drawing story-crop" aria-hidden="true"><svg viewBox="820 634 257 438"><image href="boneca-de-caca.png" width="1086" height="1080"/></svg></span>';
+const dollArt='<img class="drawing story-crop" src="caca-boneca-transparente.png" alt="" draggable="false">';
+const tasks=[
+ {title:'A boneca na cama',instruction:'Coloque a boneca da Cacá na cama.',picture:bedArt,target:'Cama'},
+ {title:'A boneca no colo',instruction:'Coloque a boneca no colo da Cacá.',picture:liliArt,target:'Colo da Cacá'}
+];
+let step=0,done=false,drag=null,selected=false;
+function select(value){selected=value;doll.setAttribute('aria-pressed',String(value));}
+function showReading(){
+ byId('playBack').hidden=true;
+ byId('wordBack').hidden=true;
+ resetAudio();
+ landing.onanimationend=null;
+ byId('play').hidden=true;
+ byId('syllables').hidden=true;
+ byId('reading').hidden=false;
+ byId('start').focus();
+}
+byId('playBack').onclick=()=>{if(step===0)showReading();else setup(0);};
+byId('wordBack').onclick=()=>{if(wordIndex===0)setup(1);else openWord(0);};
+function setup(index){
+ byId('scene').classList.remove('lap-complete');
+ byId('playBack').hidden=false;
+ byId('wordBack').hidden=true;
+ landing.onanimationend=null;
+ landing.style.transform='';
+ byId('syllables').hidden=true;
+ byId('playBack').textContent=index===0?'← VOLTAR PARA O TEXTO':'← VOLTAR PARA A CAMA';
+ resetAudio();
+ step=index;byId('scene').classList.toggle('reverse',step===1);done=false;drag=null;select(false);
+ const task=tasks[step];
+ byId('reading').hidden=true;byId('play').hidden=false;
+ byId('title').textContent=task.title;byId('instruction').textContent=task.instruction;
+ byId('picture').innerHTML=task.picture;byId('targetName').textContent=task.target;
+ doll.innerHTML=dollArt;doll.hidden=false;target.disabled=false;landing.hidden=true;landing.classList.remove('fall','celebrate');byId('picture').classList.remove('celebrate');
+ feedback.textContent='';
+ advance.hidden=true;byId('title').focus();
+}
+function finish(){
+ if(done)return;
+ done=true;select(false);
+ const box=target.getBoundingClientRect(),scene=byId('scene').getBoundingClientRect();
+ landing.style.left=(box.left-scene.left+box.width/2)+'px';
+ landing.style.top=(box.top-scene.top+box.height/2)+'px';
+ landing.style.setProperty('--rug-x',(scene.width*.20)+'px');
+ landing.style.setProperty('--rug-y',(scene.height*.36)+'px');
+ landing.innerHTML=dollArt;landing.hidden=false;
+ doll.hidden=true;target.disabled=true;
+ if(step===0){
+  landing.classList.add('fall');
+  const fallen=()=>{feedback.textContent='Ahhh, a boneca caiu! Vamos tentar colocar ela no colo da Cacá.';playRecording('bibi-queda.mp3');advance.textContent='IR PARA O COLO →';advance.hidden=false;advance.focus();};
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){landing.style.transform='translate(calc(-50% + var(--rug-x)),calc(-50% + var(--rug-y))) rotate(70deg)';fallen();}
+  else landing.onanimationend=()=>{landing.onanimationend=null;fallen();};
+ }else{
+
+  byId('picture').classList.add('celebrate');
+  landing.hidden=true;
+  byId('picture').innerHTML=happyCaca;
+  byId('scene').classList.add('lap-complete');
+  feedback.textContent='A boneca fica bonita no colo da Cacá.';playFeedback(true);
+  advance.textContent='MONTAR PALAVRAS →';advance.hidden=false;advance.focus();
+ }
+}
+doll.addEventListener('pointerdown',e=>{
+ if(e.button!==0||drag)return;
+ drag={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false};doll.setPointerCapture(e.pointerId);
+});
+doll.addEventListener('pointermove',e=>{
+ if(drag?.id!==e.pointerId)return;
+ const x=e.clientX-drag.x,y=e.clientY-drag.y;
+ if(Math.hypot(x,y)>6)drag.moved=true;
+ if(drag.moved)doll.style.transform='translate('+x+'px,'+y+'px)';
+});
+doll.addEventListener('pointerup',e=>{
+ if(drag?.id!==e.pointerId)return;
+ const moved=drag.moved;drag=null;doll.style.transform='';
+ if(!moved)return;
+ const box=target.getBoundingClientRect();
+ if(e.clientX>=box.left&&e.clientX<=box.right&&e.clientY>=box.top&&e.clientY<=box.bottom)finish();
+ else {feedback.textContent='Tente soltar a boneca em '+tasks[step].target.toLowerCase()+'.';playFeedback(false);}
+});
+doll.addEventListener('pointercancel',()=>{drag=null;doll.style.transform='';});
+doll.onclick=()=>{if(!done)select(true);};
+target.onclick=()=>{if(selected)finish();else feedback.textContent='Primeiro, selecione a boneca.';};
+byId('start').onclick=()=>setup(0);
+advance.onclick=()=>{if(step===0){landing.style.transform='';setup(1);}else{byId('play').hidden=true;openWord(0);}};
+const feedbackAudio = new Audio();
+let activeButton=null, activeSource=null, paused=false;
+let nextRecording=null;
+function setAudioButton(button,label){
+ if(button.classList.contains('instruction-audio')){
+  button.textContent=label.includes('PAUSAR')?'⏸':label.includes('RETOMAR')?'▶':'🔊';
+  const description=label.includes('PAUSAR')?'PAUSAR INSTRUÇÃO':label.includes('RETOMAR')?'RETOMAR INSTRUÇÃO':'OUVIR INSTRUÇÃO';
+  button.setAttribute('aria-label',description);
+  button.title=description;
+ }else button.textContent=label;
+}
+function resetAudio(){
+ byId('readingMarker').hidden=true;
+ nextRecording=null;
+ if(activeButton) setAudioButton(activeButton,activeButton.dataset.playLabel);
+ activeButton=null;
+ activeSource=null;
+ paused=false;
+ feedbackAudio.pause();
+ if('speechSynthesis' in window) speechSynthesis.cancel();
+}
+function toggleAudio(button,source,start){
+ if(activeButton===button&&activeSource===source){
+  paused=!paused;
+  setAudioButton(button,paused?'▶ RETOMAR':'⏸ PAUSAR');
+  if(source.endsWith('.mp3')){
+   if(paused) feedbackAudio.pause();
+   else feedbackAudio.play().catch(error=>{if(error.name!=='AbortError')resetAudio();});
+  }else if(paused) speechSynthesis.pause();
+  else speechSynthesis.resume();
+  return;
+ }
+ resetAudio();
+ button.dataset.playLabel ||= button.textContent;
+ activeButton=button;
+ activeSource=source;
+ setAudioButton(button,'⏸ PAUSAR');
+ start();
+}
+feedbackAudio.addEventListener('ended',()=>{
+ const next=nextRecording;
+ if(next) playRecording(next);
+ else resetAudio();
+});
+// Time in seconds, then the text rectangle as percentages of the story image.
+const readingCues=[
+ [0,1,1,31,7],[2.137,34,1,31,7],[3.628,67,1,32,9],
+ [5.862,1,51,23,6],[7.068,26,51,23,6],[8.981,51,51,23,8],[10.819,76,51,23,8]
+];
+function markReading(){
+ if(activeButton!==byId('storyListen'))return;
+ const [,left,top,width,height]=readingCues.findLast(cue=>cue[0]<=feedbackAudio.currentTime)||readingCues[0];
+ const marker=byId('readingMarker');
+ Object.assign(marker.style,{left:left+'%',top:top+'%',width:width+'%',height:height+'%'});
+ marker.hidden=false;
+}
+feedbackAudio.addEventListener('playing',markReading);
+feedbackAudio.addEventListener('timeupdate',markReading);
+function playFeedback(correct){
+ playRecording(correct ? 'lili-acerto.mp3' : 'lili-erro.mp3');
+}
+function playRecording(filename,controlled=false){
+ if(!controlled)resetAudio();
+ if ('speechSynthesis' in window) speechSynthesis.cancel();
+ feedbackAudio.pause();
+ feedbackAudio.src = filename;
+ feedbackAudio.play().catch(error=>{if(error.name!=='AbortError'&&activeSource===filename)resetAudio();});
+}
+function speak(message,status,rate=.85,controlled=false){
+ if(!controlled)resetAudio();
+ feedbackAudio.pause();
+ if(!('speechSynthesis' in window)){
+  if(status&&!status.textContent)status.textContent='ÁUDIO INDISPONÍVEL. LEIA A INSTRUÇÃO NA TELA.';
+  if(controlled)resetAudio();
+  return;
+ }
+ speechSynthesis.cancel();
+ const speech=new SpeechSynthesisUtterance(message);
+ speech.lang='pt-BR';
+ const voices=speechSynthesis.getVoices().filter(voice=>voice.lang.replace('_','-').toLowerCase()==='pt-br');
+ const feminineVoice=voices.find(voice=>/\b(francisca|maria|luciana|vitoria|vitória|fernanda|female|feminina)\b/i.test(voice.name));
+ if(feminineVoice) speech.voice=feminineVoice;
+ speech.rate=rate;
+ if(controlled){
+  speech.onend=speech.onerror=()=>{if(activeSource===message)resetAudio();};
+ }
+ speechSynthesis.resume();
+ speechSynthesis.speak(speech);
+}
+function bindRecording(button,filename){
+ toggleAudio(button,filename,()=>playRecording(filename,true));
+}
+function bindSpeech(button,message,status){
+ toggleAudio(button,message,()=>speak(message,status,.85,true));
+}
+byId('storyListen').onclick=e=>bindRecording(e.currentTarget,'caca-narracao.mp3');
+byId('readListen').onclick=e=>bindRecording(e.currentTarget,'caca-instrucoes-iniciais.mp3');
+byId('listen').onclick=e=>{
+ bindRecording(e.currentTarget,step===0?'caca-instrucao-cama.mp3':'caca-instrucao-colo.mp3');
+};
+byId('wordListen').onclick=e=>bindRecording(e.currentTarget,'caca-instrucao-silabas.mp3');
+
+const words=[
+ {name:'BONECA',parts:['BO','NE','CA'],tiles:['CA','BO','NE'],art:dollArt},
+ {name:'CAMA',parts:['CA','MA'],tiles:['MA','CA'],art:bedArt}
+];
+let wordIndex=0,placed=[],picked=null,tileDrag=null;
+function openWord(index){
+ byId('playBack').hidden=true;
+ byId('wordBack').hidden=false;
+ byId('play').hidden=true;
+ byId('wordBack').textContent=index===0?'← VOLTAR PARA O COLO':'← VOLTAR PARA BONECA';
+ resetAudio();
+ wordIndex=index;placed=Array(words[index].parts.length).fill(null);picked=null;
+ byId('syllables').hidden=false;
+ const picture=byId('wordPicture');
+ picture.innerHTML=words[index].art;
+ picture.setAttribute('aria-label',words[index].name);
+ byId('wordInput').value='';byId('wordInput').disabled=false;
+ byId('wordFeedback').textContent='';byId('wordNext').hidden=true;
+ renderWord();byId('syllableTitle').focus();
+}
+function place(part,index){
+ if(placed[index]||placed.includes(part))return;
+ placed[index]=part;picked=null;renderWord();
+ const next=placed.indexOf(null);
+ (next<0?byId('wordInput'):byId('slots').children[next]).focus();
+}
+function renderWord(){
+ const tiles=byId('tiles'),slots=byId('slots');
+ tiles.replaceChildren();slots.replaceChildren();
+ for(const part of words[wordIndex].tiles){
+  const tile=document.createElement('button');
+  tile.textContent=part;tile.disabled=placed.includes(part);
+  tile.setAttribute('aria-pressed',String(picked===part));
+  tile.onclick=()=>{picked=part;for(const item of tiles.children)item.setAttribute('aria-pressed',String(item===tile));};
+  tile.onpointerdown=e=>{
+   if(e.button!==0||tileDrag)return;
+   tileDrag={id:e.pointerId,x:e.clientX,y:e.clientY};
+   tile.setPointerCapture(e.pointerId);
+  };
+  tile.onpointermove=e=>{
+   if(tileDrag?.id!==e.pointerId)return;
+   tile.style.position='relative';tile.style.zIndex='2';
+   tile.style.transform='translate('+(e.clientX-tileDrag.x)+'px,'+(e.clientY-tileDrag.y)+'px)';
+  };
+  const reset=()=>{tileDrag=null;tile.style.transform='';tile.style.zIndex='';};
+  tile.onpointercancel=reset;
+  tile.onlostpointercapture=()=>{if(tileDrag)reset();};
+  tile.onpointerup=e=>{
+   if(tileDrag?.id!==e.pointerId)return;
+   const index=[...slots.children].findIndex(slot=>{
+    const box=slot.getBoundingClientRect();
+    return e.clientX>=box.left&&e.clientX<=box.right&&e.clientY>=box.top&&e.clientY<=box.bottom;
+   });
+   reset();if(index>=0)place(part,index);
+  };
+  tiles.append(tile);
+ }
+ placed.forEach((part,index)=>{
+  const slot=document.createElement('button');
+  slot.textContent=part||'___';
+  slot.setAttribute('aria-label','ESPAÇO '+(index+1)+(part?', '+part+'. TOQUE PARA DEVOLVER.':''));
+  slot.onclick=()=>{
+   if(part){placed[index]=null;renderWord();tiles.querySelector('button:not(:disabled)')?.focus();}
+   else if(picked)place(picked,index);
+  };
+  slots.append(slot);
+ });
+}
+byId('wordInput').oninput=e=>{e.target.value=e.target.value.toUpperCase();};
+byId('wordForm').onsubmit=e=>{
+ e.preventDefault();
+ const word=words[wordIndex].name;
+ if(placed.join('')!==word){playFeedback(false);byId('wordFeedback').textContent='CONFIRA A ORDEM DAS SÍLABAS. TOQUE EM UMA SÍLABA MONTADA PARA DEVOLVÊ-LA.';return;}
+ if(byId('wordInput').value.trim()!==word){playFeedback(false);byId('wordFeedback').textContent='LEIA AS SÍLABAS QUE VOCÊ JUNTOU E TENTE DIGITAR DE NOVO.';return;}
+ byId('wordFeedback').textContent='MUITO BEM! VOCÊ MONTOU E DIGITOU '+word+'!';
+ playFeedback(true);
+ byId('wordNext').textContent=wordIndex===0?'PRÓXIMA PALAVRA →':'LER E BRINCAR DE NOVO';
+ byId('wordNext').hidden=false;byId('wordNext').focus();
+};
+byId('wordNext').onclick=()=>{
+ resetAudio();
+ if(wordIndex===0){openWord(1);return;}
+ showReading();
+};
+</script></html>
