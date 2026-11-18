@@ -166,16 +166,15 @@
   .finish-panel p{ color:var(--mute); max-width:38rem; margin:0 auto 1.8rem; line-height:1.6; }
 
   /* ---------- video ---------- */
-  .video-frame{ position:relative; aspect-ratio:16/9; border-radius: var(--radius-lg); overflow:hidden; cursor:pointer; }
-  .video-frame .cover{ position:absolute; inset:0; background:
-      radial-gradient(circle at 30% 20%, rgba(251,122,46,.35), transparent 55%),
-      radial-gradient(circle at 75% 75%, rgba(31,174,152,.35), transparent 55%),
-      linear-gradient(160deg, #17181c, #0a0a0c); }
-  .video-frame .rows{ position:absolute; inset:0; opacity:.5; }
-  .video-frame .rows div{ position:absolute; left:6%; right:6%; height:1px; background: rgba(255,255,255,.08); }
-  .play-btn{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem; }
-  .play-circle{ width:84px; height:84px; border-radius:50%; background: linear-gradient(135deg, var(--orange-2), var(--orange)); display:flex; align-items:center; justify-content:center; box-shadow: 0 20px 45px -14px rgba(251,122,46,.7); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
-  .video-frame:hover .play-circle{ transform: scale(1.1); }
+  .video-frame { display:block; width:min(100%, 720px); margin:0 auto; border-radius:var(--radius-lg); overflow:hidden; border:1px solid rgba(255,255,255,.15); color:#fff; text-decoration:none; background:#131418; box-shadow:0 20px 48px rgba(0,0,0,.35); }
+  .video-preview { display:grid; place-items:center; position:relative; aspect-ratio:16/9; isolation:isolate; }
+  .video-preview img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:-1; }
+  .video-play { display:grid; place-items:center; width:clamp(54px, 12vw, 76px); aspect-ratio:1.45; border-radius:14px; background:#ed1624; color:#fff; box-shadow:0 4px 24px rgba(0,0,0,.55); transition:transform .2s ease; }
+  .video-play::before { content:''; margin-left:4px; border-block:9px solid transparent; border-left:15px solid currentColor; }
+  .video-caption { display:block; padding:.85rem 1rem; text-align:center; font-weight:700; }
+  .video-frame:hover .video-play, .video-frame:focus-visible .video-play { transform:scale(1.08); }
+  .video-frame:focus-visible { outline:3px solid var(--orange); outline-offset:4px; }
+  @media (prefers-reduced-motion:reduce) { .video-play { transition:none; } }
 
   /* ---------- pricing ---------- */
   .price-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1.8rem; max-width:900px; margin:0 auto; }
@@ -403,18 +402,12 @@
       <h2>Veja o Zurche na prática</h2>
       <p>Um tutorial curto mostrando como é rápido gerar a grade de horários da sua escola.</p>
     </div>
-    <a href="https://www.youtube.com/watch?v=k0OYgBmdcdM&t=16s" target="_blank" class="video-frame glass">
-      <div class="cover">
-        <div class="rows">
-          <div style="top:25%"></div><div style="top:45%"></div><div style="top:65%"></div><div style="top:85%"></div>
-        </div>
-      </div>
-      <div class="play-btn">
-        <div class="play-circle">
-          <svg width="30" height="30" viewBox="0 0 20 20" fill="#180a02"><path d="M4.516 3.548a.75.75 0 0 1 .792-.04l10.5 6a.75.75 0 0 1 0 1.284l-10.5 6A.75.75 0 0 1 4 15.5V4.5a.75.75 0 0 1 .516-.652z"/></svg>
-        </div>
-        <span style="font-size:.85rem;font-weight:600;color:var(--mute);">Assistir no YouTube</span>
-      </div>
+    <a href="https://youtu.be/k0OYgBmdcdM" target="_blank" rel="noopener noreferrer" class="video-frame">
+      <span class="video-preview">
+        <img src="zurche-video.png" width="1280" height="720" loading="lazy" decoding="async" alt="">
+        <span class="video-play" aria-hidden="true"></span>
+      </span>
+      <span class="video-caption">Assistir no YouTube</span>
     </a>
   </div>
 </section>
