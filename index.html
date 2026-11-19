@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1020">
-  <meta name="description" content="Zurche Help Escolar reúne ferramentas digitais para apoiar a gestão e o trabalho pedagógico das escolas.">
-  <title>Zurche — Help Escolar</title>
+  <meta name="description" content="Zurche Tecnologia reúne ferramentas digitais para apoiar a gestão e o trabalho pedagógico das escolas.">
+  <title>Zurche Tecnologia</title>
   <link rel="icon" type="image/png" href="./assets/logo-zurche-help-escolar.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -176,13 +176,16 @@
       .brand-logo { flex: 0 0 42px; width: 42px; height: 42px; }
       .brand-name { font-size: 15px; }
     }
+    .apps .card-action .button:hover { transform: none; filter: none; }
+    .apps .card-action .button::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+    .apps .app-card:focus-within { outline: 3px solid #8ce8ff; outline-offset: 4px; }
   </style>
 </head>
 <body>
   <header class="shell topbar">
-    <a class="brand" href="./index.html" aria-label="Zurche Help Escolar — início">
+    <a class="brand" href="./index.html" aria-label="Zurche Tecnologia — início">
       <img class="brand-logo" src="./assets/logo-zurche-help-escolar.png" alt="">
-      <span class="brand-name">Zurche Help Escolar</span>
+      <span class="brand-name">Zurche Tecnologia</span>
     </a>
     <nav class="top-actions" aria-label="Contato e navegação">
       <details class="contact-menu">
@@ -269,7 +272,7 @@
   </main>
   <footer>
     <div class="shell footer-inner">
-      <span>© 2026 Zurche Help Escolar</span>
+      <span>© 2026 Zurche Tecnologia</span>
       <span>Tecnologia a serviço da educação.</span>
     </div>
   </footer>
