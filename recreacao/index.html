@@ -11,6 +11,32 @@
 </style>
 <link rel="stylesheet" href="../assets/application-header.css">
 <script defer src="../assets/application-header.js"></script>
+
+<style>
+  .intro-heading { display:flex; align-items:center; justify-content:flex-start; gap:14px; flex-wrap:wrap; }
+  .intro-heading h1 { flex:0 1 auto; margin:16px 0; font-size:clamp(28px,4vw,44px); }
+  .all-activities { position:relative; z-index:10; font-size:13px; flex:none; }
+  .all-activities > summary { padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#111a2d; color:#c7d8ef; cursor:pointer; }
+  .activities-dropdown { position:absolute; top:100%; left:0; min-width:170px; padding:5px; border:1px solid var(--line); border-radius:12px; background:#16223a; box-shadow:0 12px 32px #0006; }
+  .activity-group { position:relative; }
+  .activity-group > summary { padding:9px 10px; cursor:pointer; border-radius:8px; }
+  .activity-group > summary:hover, .activity-group[open] > summary { background:#253653; color:#8ce8ff; }
+  .activity-submenu { position:absolute; left:100%; top:0; width:245px; padding:5px; border:1px solid var(--line); border-radius:12px; background:#16223a; box-shadow:0 12px 32px #0006; }
+  .activity-submenu a { display:block; padding:9px 10px; color:#c7d8ef; text-decoration:none; border-radius:8px; }
+  .activity-submenu a:hover { background:#253653; color:#fff; }
+  .all-activities :focus-visible { outline:2px solid #8ce8ff; outline-offset:2px; }
+  @media(max-width:820px) {
+    .intro-heading { display:flex; gap:8px 12px; }
+    .all-activities { width:fit-content; margin-bottom:16px; }
+    .activities-dropdown { left:0; right:auto; width:170px; }
+    .activity-submenu { width:min(245px,calc(100vw - 205px)); }
+  }
+</style>
+<style>
+  .digital-activities > summary { padding:9px 10px; cursor:pointer; color:#c7d8ef; border-radius:8px; }
+  .digital-activities > summary:hover, .digital-activities[open] > summary { background:#253653; color:#8ce8ff; }
+  .digital-options { padding-left:10px; border-left:1px solid #ffffff20; margin-left:12px; }
+</style>
 </head><body><header class="application-header">
   <div class="application-header-inner">
     <a class="application-brand" href="../index.html">
@@ -24,11 +50,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </summary>
       <div class="product-menu-panel">
-
-        <a href="matematica.html">Matemática</a>
-        <a href="geografia-menu.html">Geografia</a>
-        <a href="alfabetizacao.html">Alfabetização</a>
-        <a href="jogos.html">Jogos</a>
         <details class="product-contact">
           <summary>Contato</summary>
           <a href="mailto:contato@zurche.com.br">contato@zurche.com.br</a>
@@ -39,7 +60,37 @@
     </div>
   </div>
 </header>
-<div class="shell"><main><section class="intro"><span class="eyebrow">Aprender em cada descoberta</span><h1>O que vamos <span>aprender hoje?</span></h1><p>Escolha uma área para encontrar as atividades.</p></section><section class="cards" aria-label="Atividades">
+<div class="shell"><main><section class="intro"><span class="eyebrow">Aprender em cada descoberta</span><div class="intro-heading"><h1>O que vamos <span>aprender hoje?</span></h1><details class="all-activities">
+  <summary>Todas as atividades</summary>
+  <div class="activities-dropdown">
+        <details class="activity-group">
+          <summary>Matemática</summary><div class="activity-submenu">
+          <a href="tabuada.html">Desafio da tabuada</a>
+          <a href="equacoes.html">Desafio das equações</a>
+        </div></details>
+        <details class="activity-group">
+          <summary>Geografia</summary><div class="activity-submenu">
+          <a href="geografia.html">Estados brasileiros</a>
+          <a href="mundo.html">Países do mundo</a>
+        </div></details>
+        <details class="activity-group">
+          <summary>Alfabetização</summary><div class="activity-submenu">
+          <a href="fluencia.html?versao=10">Fluência leitora</a>
+          <details class="digital-activities">
+            <summary>Alfabetização digital</summary>
+            <div class="digital-options">
+              <a href="lili.html">A boneca de Cacá</a>
+            </div>
+          </details>
+        </div></details>
+        <details class="activity-group">
+          <summary>Jogos</summary><div class="activity-submenu">
+          <a href="forca.html">Jogo da Forca</a>
+          <a href="roleta-palavras.html">Roleta de Palavras</a>
+        </div></details>
+
+  </div>
+</details></div><p>Escolha uma área para encontrar as atividades.</p></section><section class="cards" aria-label="Atividades">
   <a class="card activity-card" href="matematica.html"><span class="category-symbol" aria-hidden="true">1 2 3</span><h2>Matemática</h2><p>Tabuada e equações: desafios para raciocinar, calcular e participar.</p><span class="activity-link">Explorar atividades →</span></a>
   <a class="card activity-card" href="geografia-menu.html"><span class="category-symbol" aria-hidden="true">🌐</span><h2>Geografia</h2><p>Estados brasileiros, capitais, siglas e bandeiras.</p><span class="activity-link">Explorar atividades →</span></a>
   <a class="card activity-card" href="alfabetizacao.html"><span class="category-symbol" aria-hidden="true">A B C</span><h2>Alfabetização</h2><p>Leitura, compreensão e acompanhamento individual do estudante.</p><span class="activity-link">Explorar atividades →</span></a>
@@ -47,4 +98,48 @@
 </section>
 </main><footer>Zurche — Atividades · <a href="mailto:contato@zurche.com.br">contato@zurche.com.br</a></footer></div>
 
+<script>
+  const activityMenu = document.querySelector('.all-activities');
+  function positionActivityMenu() {
+    const dropdown = activityMenu.querySelector('.activities-dropdown');
+    dropdown.style.transform = '';
+    const requiredWidth = Math.min(425, window.innerWidth - 32);
+    const available = window.innerWidth - 16 - dropdown.getBoundingClientRect().left;
+    if (available < requiredWidth) dropdown.style.transform = 'translateX(-' + (requiredWidth - available) + 'px)';
+  }
+  activityMenu.addEventListener('toggle', () => {
+    if (activityMenu.open) positionActivityMenu();
+  });
+  window.addEventListener('resize', () => {
+    if (activityMenu.open) positionActivityMenu();
+  });
+  const activityGroups = [...activityMenu.querySelectorAll('.activity-group, .digital-activities')];
+  for (const group of [activityMenu, ...activityGroups]) {
+    group.addEventListener('pointerenter', event => {
+      if (event.pointerType !== 'mouse') return;
+      if (group !== activityMenu) {
+        for (const sibling of activityGroups) {
+          if (sibling !== group && !sibling.contains(group) && !group.contains(sibling) && !sibling.contains(document.activeElement)) sibling.open = false;
+        }
+      }
+      group.open = true;
+    });
+    group.addEventListener('pointerleave', event => {
+      if (event.pointerType === 'mouse' && !group.contains(document.activeElement)) group.open = false;
+    });
+  }
+  document.addEventListener('click', event => {
+    if (!activityMenu.contains(event.target) || event.target.closest('.activity-submenu a')) activityMenu.open = false;
+  });
+  activityMenu.addEventListener('focusout', event => {
+    if (!activityMenu.contains(event.relatedTarget)) activityMenu.open = false;
+  });
+  activityMenu.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    const group = event.target.closest('.digital-activities[open], .activity-group[open]') || activityMenu;
+    group.open = false;
+    group.querySelector('summary').focus();
+    event.stopPropagation();
+  });
+</script>
 </body></html>
