@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BIBI NO ZOOLÓGICO</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f8f6ef;color:#322052;font:700 16px system-ui,sans-serif}
+main{max-width:900px;margin:auto;padding:14px}
+a,button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 14px;border:0;border-radius:12px;font:inherit;background:#e1f3ed;color:#322052;text-decoration:none;cursor:pointer}
+h1{font-size:clamp(20px,4vw,28px);margin:12px 0}
+.book{background:#fff;border:2px solid #c9dfd9;border-radius:18px;padding:12px;box-shadow:0 5px 0 #dbe9e4;perspective:1000px}
+.page{margin:0;display:grid;place-items:center;min-height:200px}
+.page img{display:block;max-width:100%;width:auto;height:auto;max-height:65dvh;image-rendering:auto}
+nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+#next{background:#6034aa;color:white}
+button:disabled{opacity:.4;cursor:default}
+:focus-visible{outline:3px solid #8654c9;outline-offset:3px}
+.turn-next{animation:turn-next .35s ease-out}.turn-back{animation:turn-back .35s ease-out}
+@keyframes turn-next{from{opacity:.3;transform:rotateY(-24deg)}to{opacity:1;transform:rotateY(0)}}
+@keyframes turn-back{from{opacity:.3;transform:rotateY(24deg)}to{opacity:1;transform:rotateY(0)}}
+@media(prefers-reduced-motion:reduce){.turn-next,.turn-back{animation:none}}
+main{height:100dvh;display:flex;flex-direction:column;padding:10px;gap:8px}
+main>a{align-self:flex-start}h1{margin:0;font-size:20px}.book{flex:1;min-height:0;display:grid;padding:6px}.page{min-height:0;height:100%}.page img{width:100%;height:100%;max-height:100%;min-height:0;object-fit:contain}nav{margin-top:0;flex:none}
+[hidden]{display:none!important}#ending{align-self:center;text-align:center}#ending h2{font-size:clamp(60px,18vw,130px);color:#6034aa;margin:20px}#ending a{background:#6034aa;color:white}
+.book{position:relative;overflow:hidden;perspective:1200px}
+.turning-sheet{position:absolute;inset:6px;background:#fff;z-index:2;pointer-events:none;display:grid;box-shadow:8px 0 22px #301b4d45;backface-visibility:hidden}
+.turning-sheet::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#301b4d22,transparent 15%,transparent 75%,#301b4d18)}
+.turning-sheet>div{align-self:center;text-align:center}.turning-sheet h2{font-size:clamp(60px,18vw,130px);margin:20px}
+</style></head>
+<body><main><a href="historias.html">← ESCOLHA A HISTÓRIA</a><h1>BIBI NO ZOOLÓGICO <button id="bookAudio" type="button" data-zoo-audio="zoo-orientacao.mp3" aria-label="OUVIR ORIENTAÇÃO">🔊</button></h1>
+<div class="book"><figure id="page" class="page"><img id="picture" src="bibi-zoo-pagina-1.png" alt="BIBI NO ZOOLÓGICO"></figure><div id="ending" hidden><h2>FIM</h2><a href="bibi-zoo-atividades.html">INICIAR ATIVIDADES →</a></div></div>
+<nav aria-label="FOLHEAR O LIVRO"><button id="back" type="button" disabled>← VOLTAR</button><button id="last" type="button">ÚLTIMA DA HISTÓRIA →</button><span id="progress" role="status" aria-live="polite">PÁGINA 1 DE 10</span><button id="next" type="button">PRÓXIMA →</button></nav>
+</main>
+<script>
+const pages=[["BIBI VAI AO ZOOLÓGICO.", "bibi-zoo-pagina-1.png"], ["ELA VÊ O MACACO COMENDO BANANA.", "bibi-zoo-pagina-2.png"], ["VÊ O LEÃO DORMINDO.", "bibi-zoo-pagina-3.png"], ["VÊ A ARARA VOANDO.", "bibi-zoo-pagina-4.png"], ["VÊ A GIRAFA ANDANDO.", "bibi-zoo-pagina-5.png"], ["E O ELEFANTE BEBENDO ÁGUA.", "bibi-zoo-pagina-6.png"], ["MAS BIBI LEVA UM SUSTO, AO VER O URSO.", "bibi-zoo-pagina-7.png"], ["E VOLTA FELIZ PARA CASA.", "bibi-zoo-pagina-8.png"]];
+pages.push(['HISTÓRIA COMPLETA','bibi-zoo-completa.png']);
+pages.push(['FIM',null]);
+let current=0;
+const image=document.getElementById('picture'),page=document.getElementById('page');
+function show(index){
+ window.dispatchEvent(new Event('zooStopAudio'));
+ const audioButton=document.getElementById('bookAudio');audioButton.hidden=![0,7,8].includes(index);audioButton.dataset.zooAudio=index===0?'zoo-orientacao.mp3':'zoo-narracao.mp3';
+ const backwards=index<current;
+ current=index;
+ const isEnd=index===pages.length-1;
+ page.hidden=isEnd;document.getElementById('ending').hidden=!isEnd;
+ if(!isEnd){image.src=pages[index][1];image.alt=pages[index][0];}
+ document.getElementById('progress').textContent='PÁGINA '+(index+1)+' DE '+pages.length;
+ document.getElementById('back').disabled=index===0;
+ document.getElementById('next').textContent=index===pages.length-1?'INICIAR ATIVIDADES →':'PRÓXIMA →';
+
+ if(index===0)document.getElementById('next').focus();
+}
+let turning=false;
+const book=document.querySelector('.book');
+async function turn(index){
+ if(turning||index<0||index>=pages.length)return;
+ turning=true;
+ const back=document.getElementById('back'),next=document.getElementById('next');
+ back.disabled=next.disabled=true;document.getElementById('last').disabled=true;
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const sheet=document.createElement('div');
+ sheet.className='turning-sheet';
+ sheet.setAttribute('aria-hidden','true');
+ const visible=current===pages.length-1?document.getElementById('ending'):page;
+ sheet.append(visible.cloneNode(true));
+ sheet.querySelectorAll('[id]').forEach(element=>element.removeAttribute('id'));
+ sheet.querySelectorAll('a,button').forEach(element=>element.tabIndex=-1);
+ const backwards=index<current;
+ try{
+  if(index<pages.length-1){
+   const preview=new Image();preview.src=pages[index][1];
+   await preview.decode().catch(()=>{});
+  }
+  book.append(sheet);
+  show(index);
+  back.disabled=next.disabled=true;document.getElementById('last').disabled=true;
+  if(!reduced){
+   sheet.style.transformOrigin=backwards?'right center':'left center';
+   const animation=sheet.animate([
+    {transform:'rotateY(0deg)',filter:'brightness(1)',opacity:1},
+    {transform:'rotateY('+(backwards?'75':'-75')+'deg)',filter:'brightness(.75)',opacity:1,offset:.65},
+    {transform:'rotateY('+(backwards?'110':'-110')+'deg)',filter:'brightness(.9)',opacity:0}
+   ],{duration:720,easing:'ease-in-out',fill:'forwards'});
+   await animation.finished;
+  }
+ }finally{
+  sheet.remove();turning=false;back.disabled=current===0;next.disabled=false;document.getElementById('last').disabled=false;
+ }
+}
+document.getElementById('last').onclick=()=>turn(pages.length-2);
+document.getElementById('back').onclick=()=>{if(current>0)turn(current-1);};
+document.getElementById('next').onclick=()=>{if(current===pages.length-1)location.href='bibi-zoo-atividades.html';else turn(current+1);};
+</script><script>
+const marker=document.createElement('span');marker.hidden=true;
+Object.assign(marker.style,{position:'absolute',border:'3px solid #a95600',background:'#ffcf3033',pointerEvents:'none',borderRadius:'6px'});
+page.style.position='relative';page.append(marker);
+const cueTimes=[0,3.61,5.735,7.179,8.707,10.682,12.499,14.32];
+function positionMarker(time){
+ if(![7,8].includes(current)||image.src.indexOf('bibi-zoo-completa.png')<0)return;
+ let cue=0;cueTimes.forEach((start,index)=>{if(time>=start)cue=index;});
+ const width=Math.min(image.clientWidth,image.clientHeight*image.naturalWidth/image.naturalHeight);
+ const height=width*image.naturalHeight/image.naturalWidth;
+ const left=image.offsetLeft+(image.clientWidth-width)/2;
+ const top=image.offsetTop+(image.clientHeight-height)/2;
+ Object.assign(marker.style,{left:(left+(cue%4)*width/4)+'px',top:(top+Math.floor(cue/4)*height/2)+'px',width:width/4+'px',height:height*.11+'px'});
+ marker.hidden=false;
+}
+window.addEventListener('zooAudioStart',()=>{if(current===7){image.src='bibi-zoo-completa.png';image.alt='HISTÓRIA COMPLETA';}});
+window.addEventListener('zooAudioTime',event=>positionMarker(event.detail));
+window.addEventListener('zooAudioStop',()=>{marker.hidden=true;if(current===7){image.src=pages[7][1];image.alt=pages[7][0];}});
+</script><script src="zoo-audio.js?v=1"></script></body></html>

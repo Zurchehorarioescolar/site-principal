@@ -18,13 +18,19 @@ header .back{color:#55278c;background:#e1f3ed;border-radius:16px;padding:8px 12p
 .story .story-link{display:inline-flex;background:#6034aa;color:white;padding:8px 14px;min-height:40px;font-size:13px;border-radius:14px}
 .story-link:hover{background:#482484}.story-link:focus-visible,.back:focus-visible{outline:3px solid #55278c;outline-offset:3px}
 .caca-cover{background:#d8eef9;padding:12px}.caca-cover img{display:block;max-width:100%;height:auto;max-height:245px;border-radius:10px}
+.cover.caca-cover{height:260px;padding:12px;align-items:center}.cover.caca-cover img{width:100%;height:100%;max-height:none;object-fit:contain}.story{display:flex;flex-direction:column}.story-copy{flex:1;display:flex;flex-direction:column}.story-link{align-self:flex-start;margin-top:auto}
+
+.story{position:relative}
+.story-link::after{content:"";position:absolute;inset:0;border-radius:24px}
+.story:has(.story-link:focus-visible){outline:3px solid #55278c;outline-offset:4px}
+.story:hover{border-color:#6034aa}
 </style>
 </head>
 <body><div class="shell">
 <header><span class="brand">ALFABETIZAÇÃO DIGITAL</span><a class="back" href="alfabetizacao.html">← ALFABETIZAÇÃO</a></header>
 <main>
 <div class="page-title"><h1>ESCOLHA A HISTÓRIA</h1></div>
-<section class="story-grid" aria-label="HISTÓRIAS">
+<label for="storySelect">ESCOLHA A HISTÓRIA</label><select id="storySelect" style="display:block;padding:10px;margin:10px 0 22px;max-width:100%;font:inherit"><option value="">SELECIONE</option><option value="lili.html">A BONECA DE CACÁ</option><option value="bibi-zoo.html">BIBI NO ZOOLÓGICO</option></select><script>document.getElementById("storySelect").onchange=e=>{if(e.target.value)location.href=e.target.value;};</script><section class="story-grid" aria-label="HISTÓRIAS">
 <article class="story"><div class="cover caca-cover"><img src="caca-capa.png" alt="Cacá com a boneca no colo"></div><div class="story-copy"><h2>A BONECA DE CACÁ</h2><p>LEIA, BRINQUE COM A BONECA E MONTE PALAVRAS.</p><a class="btn story-link" href="lili.html">LER A HISTÓRIA →</a></div></article>
-</section>
+<article class="story"><div class="cover caca-cover"><img src="bibi-zoo-pagina-1.png" alt="BIBI NA ENTRADA DO ZOOLÓGICO"></div><div class="story-copy"><h2>BIBI NO ZOOLÓGICO</h2><p>ACOMPANHE BIBI E FOLHEIE AS PÁGINAS DA HISTÓRIA.</p><a class="btn story-link" href="bibi-zoo.html">LER A HISTÓRIA →</a></div></article></section>
 </main></div></body></html>

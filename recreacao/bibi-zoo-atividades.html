@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BIBI — LIGUE OS ANIMAIS</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f8f6ef;color:#322052;font:700 16px system-ui,sans-serif}main{max-width:1000px;padding:16px;margin:auto}
+a,button{font:inherit;color:inherit}a{display:inline-block;padding:8px 12px;background:#e1f3ed;border-radius:10px;text-decoration:none}
+h1{font-size:clamp(20px,4vw,28px)}p{font-weight:500}button{cursor:pointer;border:2px solid #baa4d2;border-radius:12px;background:white;padding:8px;touch-action:none}
+.board{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,6vw,64px)}
+.column{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.card{position:relative;min-width:0;min-height:60px;display:grid;place-items:center;font-size:clamp(12px,2vw,20px)}
+.card img{width:100%;height:clamp(75px,14vw,145px);object-fit:contain;pointer-events:none}
+.card.selected{outline:4px solid #6034aa}.card.correct{background:#d1f2db;border:3px solid #227340}.card.wrong{background:#ffe0df;border:3px solid #c63333}
+.card:disabled{opacity:.8;cursor:default}.mark{position:absolute;right:4px;top:2px;color:#15592c;background:white;border-radius:50%;padding:0 4px}
+:focus-visible{outline:3px solid #6034aa;outline-offset:3px}
+#status{min-height:48px}#restart{background:#6034aa;color:white;touch-action:manipulation}
+@media(max-width:600px){.column{grid-template-columns:repeat(2,minmax(0,1fr))}.board{gap:18px}.card img{height:85px}}
+[hidden]{display:none!important}
+#celebration{text-align:center;padding:20px;background:#e1f3ed;border-radius:18px;margin-top:16px}
+.confetti{font-size:36px;color:#986200;animation:celebrate .9s ease-in-out 3}
+#nextTask,#checkWords{background:#6034aa;color:white;touch-action:manipulation}
+#writingCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:16px}
+.write-card{padding:10px;background:white;border:2px solid #c9dfd9;border-radius:14px;min-width:0}
+.write-card img{display:block;width:100%;height:clamp(85px,18vw,160px);object-fit:contain}
+.write-card label{display:block;font-size:13px;margin:8px 0}
+.write-card input{width:100%;min-width:0;padding:10px;font:inherit;text-transform:uppercase;border:2px solid #baa4d2;border-radius:8px}
+.write-card.correct{border-color:#227340}.write-card.wrong{border-color:#c63333}
+.write-card small{display:block;min-height:20px;margin-top:6px}
+@keyframes celebrate{50%{transform:translateY(-10px) scale(1.1)}}
+@media(max-width:600px){#writingCards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.confetti{animation:none}}
+.validate-word{font-size:12px;padding:6px 10px;margin-top:8px;min-height:32px;background:#6034aa;color:#fff;touch-action:manipulation}
+
+button.validate-word{
+ display:grid;place-items:center;width:34px;height:34px;min-height:34px;
+ padding:0;border:0;border-radius:50%;background:#218443;color:#fff;
+ font-size:23px;line-height:1;margin-top:8px;touch-action:manipulation
+}
+button.validate-word:hover{background:#166b33}
+.write-card.correct input{border-color:#227340;background:#e8f7ed}
+.write-card.wrong input{border-color:#c63333;background:#fff0ef}
+.write-card.correct small{color:#155c2e}
+.write-card.wrong small{color:#a82121}
+.vowel-blanks{display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin:8px 0}.vowel-blanks span{font-size:20px}.write-card input.vowel-input{width:30px;min-width:30px;padding:7px 2px;text-align:center;font-size:18px}#nextWriting{background:#6034aa;color:white;touch-action:manipulation}
+
+#writingCards .write-card{display:grid;grid-template-rows:auto auto minmax(52px,auto) 34px minmax(20px,auto);align-content:start;row-gap:8px}
+#writingCards .write-card>img{grid-row:1}
+#writingCards .write-card>label{grid-row:2;margin:0;min-height:32px}
+#writingCards .write-card>.vowel-blanks{grid-row:3;align-self:start;margin:0;min-height:52px}
+#writingCards .write-card>input:not([hidden]){grid-row:3;min-height:52px;align-self:start}
+#writingCards .write-card>input:not([hidden])+.validate-word{grid-row:4}
+#writingCards .write-card>.validate-word{grid-row:4;margin:0}
+#writingCards .write-card>small{grid-row:5;margin:0}
+.vowel-blanks:empty{display:none}
+
+#writingCards.vowels-stage .write-card{grid-template-columns:minmax(0,1fr) 34px;column-gap:8px}
+#writingCards.vowels-stage .write-card>:is(img,label,small){grid-column:1/-1}
+#writingCards.vowels-stage .write-card>.vowel-blanks{grid-column:1;grid-row:3;gap:8px;align-items:center}
+#writingCards.vowels-stage .write-card>.validate-word{grid-column:2;grid-row:3;align-self:center}
+#writingCards.vowels-stage .write-card>small{grid-row:4}
+#writingCards.vowels-stage .write-card{grid-template-rows:auto auto minmax(52px,auto) minmax(20px,auto)}
+@media(min-width:700px){#writingCards.vowels-stage{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){#writingCards.vowels-stage{grid-template-columns:1fr}}
+
+#writingCards:not(.vowels-stage) .write-card{grid-template-columns:minmax(0,1fr) 34px;column-gap:8px;grid-template-rows:auto auto minmax(52px,auto) minmax(20px,auto)}
+#writingCards:not(.vowels-stage) .write-card>:is(img,label,small){grid-column:1/-1}
+#writingCards:not(.vowels-stage) .write-card>input:not([hidden]){grid-column:1;grid-row:3}
+#writingCards:not(.vowels-stage) .write-card>input:not([hidden])+.validate-word{grid-column:2;grid-row:3;align-self:center}
+#writingCards:not(.vowels-stage) .write-card>small{grid-row:4}
+
+.task-heading{display:flex;align-items:center;gap:10px;margin:14px 0}
+.task-heading h2{font-size:clamp(20px,4vw,28px);margin:0}
+#taskAudio,#writingAudio{display:inline-grid;place-items:center;width:36px;height:36px;padding:0;flex:none;vertical-align:middle;touch-action:manipulation}
+#restart{font-size:14px;padding:8px 12px;border:0;border-radius:10px;margin-left:6px}
+</style></head><body><main>
+<a href="bibi-zoo.html">← VOLTAR AO LIVRO</a> <a href="historias.html">ESCOLHA A HISTÓRIA</a> <button id="restart">RECOMEÇAR</button>
+<h1>LIGUE OS ANIMAIS AOS NOMES <button id="taskAudio" data-zoo-audio="zoo-instrucao-1.mp3" aria-label="OUVIR INSTRUÇÃO">🔊</button></h1><p>ARRASTE A PALAVRA ATÉ O ANIMAL OU O ANIMAL ATÉ A PALAVRA. VOCÊ TAMBÉM PODE TOCAR NOS DOIS CARTÕES.</p>
+<div class="board"><div id="images" class="column" aria-label="ANIMAIS"></div><div id="words" class="column" aria-label="NOMES"></div></div>
+<p id="status" role="status" aria-live="polite"></p><button id="nextTask">IR PARA A SEGUNDA TAREFA →</button>
+<section id="celebration" hidden aria-labelledby="successTitle"><h2 id="successTitle" tabindex="-1">PARABÉNS! VOCÊ CONSEGUIU!</h2><div class="confetti" aria-hidden="true">★ ✦ ★ ✦ ★</div></section>
+<section id="writing" hidden><div class="task-heading"><h2 tabindex="-1" id="writingTitle">ESCREVA O NOME DOS ANIMAIS</h2><button id="writingAudio" data-zoo-audio="zoo-instrucao-2.mp3" aria-label="OUVIR INSTRUÇÃO">🔊</button></div><form id="writingForm"><div id="writingCards"></div></form><p id="writingFeedback" role="status"></p><button id="nextWriting" hidden>IR PARA A TERCEIRA TAREFA →</button></section></main><script>
+const animals=[['macaco','MACACO'],['leao','LEÃO'],['arara','ARARA'],['girafa','GIRAFA'],['elefante','ELEFANTE'],['urso','URSO']];
+let selected=null,drag=null,matched=0;
+function shuffle(items){
+ const list=[...items];
+ for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]];}
+ return list;
+}
+function clearSelected(){
+ document.querySelectorAll('.selected').forEach(card=>{card.classList.remove('selected');card.setAttribute('aria-pressed','false');});selected=null;
+}
+function pair(first,second){
+ if(first===second||first.disabled||second.disabled)return;
+ if(first.dataset.kind===second.dataset.kind){clearSelected();select(second);return;}
+ clearSelected();
+ const correct=first.dataset.animal===second.dataset.animal;
+ if(!correct){
+  playError();
+  for(const card of [first,second]){
+   card.classList.add('wrong');clearTimeout(card.errorTimer);
+   card.errorTimer=setTimeout(()=>card.classList.remove('wrong'),1100);
+  }
+  document.getElementById('status').textContent='✕ AINDA NÃO! TENTE OUTRO PAR.';return;
+ }
+ for(const card of [first,second]){
+  clearTimeout(card.errorTimer);card.classList.remove('wrong');card.classList.add('correct');card.disabled=true;
+  const mark=document.createElement('span');mark.className='mark';mark.textContent='✓';card.append(mark);
+ }
+ matched++;
+ if(matched<6)playWordSuccess();
+ if(matched===6){document.getElementById('celebration').hidden=false;playSuccess();document.getElementById('nextTask').focus();}
+ document.getElementById('status').textContent=matched===6?'✓ PARABÉNS! VOCÊ LIGOU TODOS OS ANIMAIS!':'✓ ACERTOU! '+matched+' DE 6 PARES.';
+}
+function select(card){
+ if(card.disabled)return;
+ if(selected){pair(selected,card);return;}
+ selected=card;card.classList.add('selected');card.setAttribute('aria-pressed','true');
+}
+function createCard(animal,name,kind){
+ const card=document.createElement('button');
+ card.className='card';card.type='button';card.dataset.animal=animal;card.dataset.kind=kind;card.setAttribute('aria-pressed','false');
+ if(kind==='image'){
+  const image=document.createElement('img');image.src='zoo-'+animal+'.png';image.alt=name;image.draggable=false;card.append(image);
+ }else card.textContent=name;
+ card.addEventListener('pointerdown',event=>{
+  if(event.button!==0||card.disabled)return;
+  drag={id:event.pointerId,card,x:event.clientX,y:event.clientY,moved:false};card.setPointerCapture(event.pointerId);
+ });
+ function reset(){card.style.transform='';card.style.zIndex='';drag=null;}
+ card.addEventListener('pointermove',event=>{
+  if(drag?.card!==card||drag.id!==event.pointerId)return;
+  const x=event.clientX-drag.x,y=event.clientY-drag.y;
+  if(Math.hypot(x,y)>7)drag.moved=true;
+  if(drag.moved){card.style.zIndex='3';card.style.transform='translate('+x+'px,'+y+'px)';}
+ });
+ card.addEventListener('pointerup',event=>{
+  if(drag?.card!==card||drag.id!==event.pointerId)return;
+  const moved=drag.moved;
+  const target=[...document.querySelectorAll('.card')].find(other=>{
+   if(other===card||other.disabled)return false;
+   const box=other.getBoundingClientRect();
+   return event.clientX>=box.left&&event.clientX<=box.right&&event.clientY>=box.top&&event.clientY<=box.bottom;
+  });
+  reset();
+  if(moved){card.ignoreClick=true;setTimeout(()=>card.ignoreClick=false,0);if(target)pair(card,target);}
+ });
+ card.addEventListener('pointercancel',reset);
+ card.addEventListener('lostpointercapture',()=>{if(drag?.card===card)reset();});
+ card.onclick=()=>{if(!card.ignoreClick)select(card);};
+ return card;
+}
+function start(){
+ window.dispatchEvent(new Event('zooStopAudio'));
+ document.getElementById('nextTask').hidden=false;
+ clearSelected();matched=0;drag=null;emptyAudio.pause();wordSuccessAudio.pause();errorAudio.pause();successAudio.pause();successAudio.currentTime=0;document.getElementById('celebration').hidden=true;document.getElementById('writing').hidden=true;document.querySelector('.board').hidden=false;
+ document.getElementById('status').textContent='';
+ for(const [id,kind] of [['images','image'],['words','word']]){
+  const column=document.getElementById(id);column.replaceChildren();
+  for(const [animal,name] of shuffle(animals))column.append(createCard(animal,name,kind));
+ }
+}
+const successAudio=new Audio('lili-acerto.mp3');
+const wordSuccessAudio=new Audio('zoo-boa-acertou.mp3');
+function playWordSuccess(){
+ window.dispatchEvent(new Event('zooStopAudio'));
+ emptyAudio.pause();
+ errorAudio.pause();successAudio.pause();wordSuccessAudio.src=Math.random()<.5?'zoo-boa-acertou.mp3':'zoo-ai-sim.mp3';
+ wordSuccessAudio.play().catch(()=>{});
+}
+const errorAudio=new Audio();
+const emptyAudio=new Audio('zoo-nao-fez-nada.mp3');
+function warnEmpty(message){
+ successAudio.pause();wordSuccessAudio.pause();errorAudio.pause();
+ emptyAudio.pause();emptyAudio.currentTime=0;emptyAudio.play().catch(()=>{});
+ document.getElementById('writingFeedback').textContent=message;
+ document.getElementById('status').textContent=message;
+}
+function playError(){
+ window.dispatchEvent(new Event('zooStopAudio'));
+ emptyAudio.pause();
+ wordSuccessAudio.pause();successAudio.pause();errorAudio.pause();
+ errorAudio.src=Math.random()<.5?'lili-erro.mp3':'zoo-erro-oxi.mp3';
+ errorAudio.play().catch(()=>{});
+}
+let completionAudioIndex;
+try{
+ completionAudioIndex=Number(sessionStorage.getItem('zurche.zoo.completionAudio')||0)%2;
+}catch{completionAudioIndex=0;}
+function playSuccess(){
+ emptyAudio.pause();
+ wordSuccessAudio.pause();
+ errorAudio.pause();
+ successAudio.pause();
+ const recordings=['lili-acerto.mp3','zoo-tudo-certo.mp3'];
+ successAudio.src=recordings[completionAudioIndex];
+ completionAudioIndex=1-completionAudioIndex;
+ try{sessionStorage.setItem('zurche.zoo.completionAudio',String(completionAudioIndex));}catch{}
+ successAudio.play().catch(()=>{});
+}
+let writingStage='vowels';
+document.getElementById('nextTask').onclick=()=>openWriting('vowels');
+function openWriting(stage){
+ writingStage=stage;
+ window.dispatchEvent(new Event('zooStopAudio'));
+ document.getElementById('writingAudio').dataset.zooAudio=stage==='vowels'?'zoo-instrucao-2.mp3':'zoo-instrucao-3.mp3';
+ document.getElementById('nextTask').hidden=true;
+ document.getElementById('nextWriting').textContent=stage==='vowels'?'IR PARA A TERCEIRA TAREFA →':'VOLTAR ÀS HISTÓRIAS →';
+ document.getElementById('writingCards').classList.toggle('vowels-stage',stage==='vowels');
+ document.getElementById('writingTitle').textContent=stage==='vowels'?'COMPLETE COM AS VOGAIS':'ESCREVA O NOME DOS ANIMAIS';
+ document.getElementById('writingFeedback').textContent='';
+ document.getElementById('nextWriting').hidden=false;
+ successAudio.pause();
+ document.querySelector('.board').hidden=true;
+ document.getElementById('celebration').hidden=true;
+ document.getElementById('status').textContent='';
+ document.querySelector('h1').hidden=true;
+ document.querySelector('main>p').hidden=true;
+ document.getElementById('writing').hidden=false;
+ const cards=document.getElementById('writingCards');cards.replaceChildren();
+ for(const [animal,name] of shuffle(animals)){
+  const card=document.createElement('div');card.className='write-card';
+  const image=document.createElement('img');image.src='zoo-'+animal+'.png';image.alt='ANIMAL '+(cards.children.length+1);
+  const label=document.createElement('label');label.htmlFor='write-'+animal;label.textContent='NOME DO ANIMAL';
+  const input=document.createElement('input');input.id=label.htmlFor;input.dataset.expected=name;input.autocomplete='off';input.spellcheck=false;input.setAttribute('autocapitalize','characters');
+  input.oninput=()=>{input.value=input.value.toUpperCase();card.classList.remove('correct','wrong');card.querySelector('small').textContent='';document.getElementById('writingFeedback').textContent='';document.getElementById('nextWriting').hidden=false;};
+  const blanks=document.createElement('div');blanks.className='vowel-blanks';
+  if(stage==='vowels'){
+   input.hidden=true;
+   label.textContent='DIGITE AS VOGAIS QUE FALTAM';
+   for(const letter of name){
+    if('AEIOUÃÁÉÍÓÚÊÔÕ'.includes(letter)){
+     const vowel=document.createElement('input');
+     vowel.className='vowel-input';vowel.maxLength=1;vowel.autocomplete='off';vowel.spellcheck=false;
+     vowel.setAttribute('aria-label','VOGAL '+(blanks.querySelectorAll('input').length+1)+' DO ANIMAL '+(cards.children.length+1));
+     vowel.oninput=()=>{
+      vowel.value=vowel.value.toUpperCase();
+      input.value=[...blanks.querySelectorAll('input')].map(field=>field.value).join('');
+      input.oninput();
+      if(vowel.value){
+       const fields=[...blanks.querySelectorAll('input')];
+       fields[fields.indexOf(vowel)+1]?.focus();
+      }
+     };
+     vowel.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();validateWord(input);}};
+     blanks.append(vowel);
+    }else{
+     const fixed=document.createElement('span');fixed.textContent=letter;blanks.append(fixed);
+    }
+   }
+   input.dataset.expected=[...name].filter(letter=>'AEIOUÃÁÉÍÓÚÊÔÕ'.includes(letter)).join('');
+  }
+  const validate=document.createElement('button');
+  validate.type='button';validate.className='validate-word';validate.textContent='✓';
+  validate.setAttribute('aria-label','CONFERIR NOME DO ANIMAL '+(cards.children.length+1));
+  validate.onclick=()=>validateWord(input);
+  input.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();validateWord(input);}};
+  const message=document.createElement('small');message.setAttribute('aria-live','polite');
+  card.append(image,label,blanks,input,validate,message);cards.append(card);
+ }
+ document.getElementById('writingTitle').focus();
+}
+function validateWord(input){
+ if(!input.value.trim()){
+  const card=input.parentElement;
+  card.classList.remove('correct');card.classList.add('wrong');
+  card.querySelector('small').textContent='COMPLETE A PALAVRA ANTES DE CONFIRMAR.';
+  warnEmpty('COMPLETE A PALAVRA ANTES DE CONFIRMAR.');return;
+ }
+ const normalize=value=>value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+ const valid=normalize(input.value)===normalize(input.dataset.expected);
+ const card=input.parentElement;
+ card.classList.toggle('correct',valid);card.classList.toggle('wrong',!valid);
+ card.querySelector('small').textContent=valid?'✓ ACERTOU!':'✕ TENTE DE NOVO.';
+ const complete=document.querySelectorAll('#writingCards .correct').length===animals.length;
+ document.getElementById('writingFeedback').textContent=complete?'PARABÉNS! VOCÊ ESCREVEU TODOS OS NOMES!':'';
+ if(complete){playSuccess();document.getElementById('nextWriting').hidden=false;}
+ else if(valid)playWordSuccess();
+ else playError();
+}
+document.getElementById('nextWriting').onclick=()=>{if(writingStage==='vowels')openWriting('words');else location.href='historias.html';};
+document.getElementById('writingForm').onsubmit=event=>event.preventDefault();
+document.getElementById('restart').onclick=()=>{
+ document.querySelector('h1').hidden=false;document.querySelector('main>p').hidden=false;
+ start();
+};
+start();
+</script><script src="zoo-audio.js?v=1"></script></body></html>
